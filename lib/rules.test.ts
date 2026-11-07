@@ -78,7 +78,7 @@ describe("mascotFor", () => {
 
   it("a rough day always calms it, however long the silence", () => {
     const result = mascotFor({ ...quiet, myStatusToday: "rough", mySilentDays: 5 });
-    expect(result.mood).toBe("caring");
+    expect(result.mood).toBe("sad");
     expect(result.angerLevel).toBe(0);
   });
 

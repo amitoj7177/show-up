@@ -1,13 +1,14 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { MOOD_BACKGROUND } from "@/lib/avatar";
 import type { DayMark } from "@/lib/rules";
 import type { Act, Config, Today } from "@/lib/types";
 import { MascotScreen } from "./MascotScreen";
+import { useLinePicker } from "./Moments";
 import { PartnerScreen } from "./PartnerScreen";
 import { PixelAvatar } from "./PixelAvatar";
-import { Card, DemoLabel, ErrorNote, PRIMARY_BUTTON, SECONDARY_BUTTON, SupportFooter, WhyPanel, Wordmark } from "./Shared";
+import { Card, DemoLabel, ErrorNote, PRIMARY_BUTTON, QUIET_BUTTON, SECONDARY_BUTTON, SupportFooter, WhyPanel, Wordmark } from "./Shared";
 
 type Tab = "today" | "partner" | "mascot";
 
@@ -33,7 +34,7 @@ function friendlyTime(time: string): string {
 // The week at a glance. Every mark also has words, so it never relies on colour.
 const MARKS: Record<DayMark, { symbol: string; words: string; style: string }> = {
   done: { symbol: "✓", words: "done", style: "bg-ink text-white" },
-  rough: { symbol: "~", words: "rough day", style: "bg-[#ffc4dc] text-ink" },
+  rough: { symbol: "~", words: "skipped", style: "bg-[#cfe0f5] text-ink" },
   missed: { symbol: "×", words: "missed", style: "bg-[#f7a58f] text-ink" },
   open: { symbol: "", words: "not yet", style: "bg-white text-muted" },
 };
@@ -99,8 +100,45 @@ export function TodayScreen({
   demoControls?: ReactNode;
 }) {
   const [tab, setTab] = useState<Tab>("today");
+  const [saying, setSaying] = useState("");
+  const [waveFrame, setWaveFrame] = useState(0);
+  const sayTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const pick = useLinePicker();
   const { partner, pair, mascot, me } = today;
+
+  useEffect(() => () => clearTimeout(sayTimer.current), []);
   if (!partner || !pair) return null;
+
+  const checkedIn = today.today.myCheckin === "done";
+  const skipped = today.today.myCheckin === "rough";
+
+  // Your character says something for 5 seconds, then goes back to its usual line.
+  function say(line: string) {
+    clearTimeout(sayTimer.current);
+    setSaying(line);
+    sayTimer.current = setTimeout(() => setSaying(""), 5000);
+  }
+
+  function pepTalk() {
+    say(pick("motivation", config?.talk.motivation));
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    let frames = 0;
+    const timer = setInterval(() => {
+      frames += 1;
+      setWaveFrame(frames > 5 ? 0 : frames % 2 === 1 ? 1 : 2);
+      if (frames > 5) clearInterval(timer);
+    }, 200);
+  }
+
+  async function checkIn() {
+    await act("/api/checkin", { status: "done" });
+    say(pick("checkin", config?.talk.checkin));
+  }
+
+  async function skip() {
+    await act("/api/checkin", { status: "rough" });
+    say(pick("skip", config?.talk.skip));
+  }
 
   return (
     <div className="space-y-4 pb-24">
@@ -116,36 +154,39 @@ export function TodayScreen({
         <div className="space-y-4">
           <h1 className="sr-only">Today</h1>
           <section aria-label="You and your partner" className="overflow-hidden border-[3px] border-ink shadow-[0_4px_0_var(--color-ink)]" style={{ background: MOOD_BACKGROUND[mascot.mood] }}>
-            <div className="p-4 pb-0">
-              <p className="border-[3px] border-ink bg-white p-3 text-xl leading-snug font-bold">{mascot.message}</p>
+            <div className="p-3 pb-0">
+              <p role="status" className="border-[3px] border-ink bg-white p-3 text-lg leading-snug font-bold">
+                {saying || mascot.message}
+              </p>
             </div>
-            <div className="flex items-end justify-around px-2 pt-3 pb-3">
+            <div className="flex items-end justify-evenly px-2 pt-3 pb-3">
+              <button type="button" onClick={pepTalk} aria-label="Tap your character for a pep talk" className="press flex flex-col items-center">
+                <PixelAvatar code={me.avatar} mood={mascot.mood} scale={4} animate={!waveFrame} wave={waveFrame} label={mascot.screenReaderText} />
+                <span className="font-display mt-1 text-xs">YOU</span>
+              </button>
               <figure className="flex flex-col items-center">
-                <PixelAvatar code={me.avatar} mood={mascot.mood} scale={4} animate label={mascot.screenReaderText} />
-                <figcaption className="font-bold">You</figcaption>
-              </figure>
-              <div className="mb-14 text-center">
-                <p className="font-display text-3xl leading-none">{pair.streak}</p>
-                <p className="font-semibold">day streak</p>
-              </div>
-              <figure className="flex flex-col items-center">
-                <PixelAvatar code={partner.avatar} mood={partner.mood} scale={3} label={`Your partner's character, looking ${partner.mood}.`} />
-                <figcaption className="font-bold">Partner</figcaption>
+                <PixelAvatar code={partner.avatar} mood={partner.mood} scale={4} label={`Your partner's character, looking ${partner.mood}.`} />
+                <figcaption className="font-display mt-1 text-xs break-all">{partner.nickname.toUpperCase()}</figcaption>
               </figure>
             </div>
+            <p className="border-t-[3px] border-ink bg-white px-3 py-2 text-center font-semibold">
+              <span className="font-display">{pair.streak}</span> day streak together · Tap yourself for a pep talk
+            </p>
           </section>
 
           <Card>
             <h2 className="text-xl font-bold">{me.goal.text}</h2>
-            <div className="grid gap-3">
-              <button type="button" aria-pressed={today.today.myCheckin === "done"} className={PRIMARY_BUTTON} onClick={() => act("/api/checkin", { status: "done" })}>
-                {today.today.myCheckin === "done" ? "Done today ✓" : "I did it"}
+            <button type="button" disabled={checkedIn} className={`${PRIMARY_BUTTON} py-5 text-lg`} onClick={checkIn}>
+              {checkedIn ? "CHECKED IN ✓" : "CHECK IN"}
+            </button>
+            {!checkedIn && !skipped && (
+              <button type="button" className={QUIET_BUTTON} onClick={skip}>
+                Skip today
               </button>
-              <button type="button" aria-pressed={today.today.myCheckin === "rough"} className={SECONDARY_BUTTON} onClick={() => act("/api/checkin", { status: "rough" })}>
-                {today.today.myCheckin === "rough" ? "Rough day noted ✓" : "Rough day"}
-              </button>
-            </div>
-            <p className="text-muted">Check in by {friendlyTime(me.checkInTime)}. A rough day keeps your streak safe.</p>
+            )}
+            <p className="text-muted">
+              {skipped ? "Skipped today. Your streak is safe." : `Check in by ${friendlyTime(me.checkInTime)}. Skipping keeps your streak safe.`}
+            </p>
           </Card>
 
           <Card>

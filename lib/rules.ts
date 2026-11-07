@@ -32,6 +32,20 @@ export const MESSAGES = [
   { id: "small-step", text: "Even a small step counts." },
 ];
 
+// What your character says: when you're matched, when you tap it, when you skip and when you check in.
+// Written by the team. Kind, never shaming.
+export const TALK = {
+  found: ["You two are partners now. You will see each other’s check-ins."],
+  motivation: [
+    "One small step still counts.",
+    "You showed up for yourself. That matters.",
+    "Tiny wins add up!",
+    "Be as kind to yourself as you would be to a friend.",
+  ],
+  skip: ["That’s okay. Rest is part of the plan.", "Hard day? Tomorrow is a fresh start.", "No stress. I’m right here."],
+  checkin: ["Nice! Your partner just got the news.", "Done! Look at you go."],
+};
+
 export const REPORT_REASONS = [
   { id: "goal", text: "Their goal made me uncomfortable" },
   { id: "unsafe", text: "I felt unsafe" },
@@ -150,7 +164,7 @@ export function partnerMood(checkin: CheckinStatus | null): MascotMood {
   return "waiting";
 }
 
-export type MascotMood = "waiting" | "happy" | "proud" | "caring" | "annoyed" | "mad" | "furious";
+export type MascotMood = "waiting" | "happy" | "proud" | "caring" | "sad" | "annoyed" | "mad" | "furious";
 
 export type Mascot = {
   mood: MascotMood;
@@ -163,7 +177,9 @@ function mascot(mood: MascotMood, angerLevel: Mascot["angerLevel"], message: str
   return { mood, angerLevel, message, screenReaderText: `Your character looks ${mood}. ${message}` };
 }
 
-export const MASCOT_MOODS: MascotMood[] = ["waiting", "happy", "proud", "caring", "annoyed", "mad", "furious"];
+// Your own character's moods. "caring" is only ever shown on your partner's character.
+export const MASCOT_MOODS: MascotMood[] = ["waiting", "happy", "proud", "sad", "annoyed", "mad", "furious"];
+export const ALL_MOODS: MascotMood[] = ["waiting", "happy", "proud", "caring", "sad", "annoyed", "mad", "furious"];
 
 // The anger is playful, and a rough-day tap always calms it down.
 // Anger depends only on how long you've been silent. It never insults anyone.
@@ -177,7 +193,7 @@ export function mascotFor(input: {
 }): Mascot {
   const { myStatusToday, mySilentDays, minutesPastCheckIn, partnerCheckedInToday, streak, gentle } = input;
 
-  if (myStatusToday === "rough") return mascot("caring", 0, "Rough days count. Rest up. I'm not mad.");
+  if (myStatusToday === "rough") return mascot("sad", 0, "That's okay. Rest is part of the plan. I'm not mad.");
   if (myStatusToday === "done") {
     if (streak >= 3) return mascot("proud", 0, `${streak} days together. I might cry.`);
     return mascot("happy", 0, "You showed up. I'm very pleased.");

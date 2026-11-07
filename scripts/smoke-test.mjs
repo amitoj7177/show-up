@@ -34,6 +34,7 @@ check("demo sample is labelled as demo", sample.json.data.isDemo === true);
 
 const config = await call("GET", "/api/config");
 check("config lists 8 messages", config.json.data.messages.length === 8);
+check("config has pep talk lines", config.json.data.talk.motivation.length === 4);
 
 const preflight = await fetch(`${BASE}/api/today`, { method: "OPTIONS" });
 check("web apps on other addresses are allowed", preflight.headers.get("access-control-allow-origin") === "*");
@@ -103,7 +104,7 @@ check("new match is refused too soon", (await call("POST", "/api/rematch", { tok
 
 // --- Rough days, gentle mode, leaving and reporting ---
 const rough = (await call("POST", "/api/checkin", { token: tokenB, body: { status: "rough" } })).json.data;
-check("rough day makes the mascot caring", rough.mascot.mood === "caring" && rough.mascot.angerLevel === 0);
+check("rough day makes your character sad, not angry", rough.mascot.mood === "sad" && rough.mascot.angerLevel === 0);
 
 const left = (await call("POST", "/api/leave", { token: tokenA })).json.data;
 check("leaving works", left.status === "left");
@@ -141,7 +142,7 @@ check("two silent days make the mascot furious", d.mascot.mood === "furious", d.
 check("my partner hasn't gone silent yet, so no new match", d.pair.canOfferNewMatch === false, d.pair);
 
 d = (await call("POST", "/api/checkin", { token: tokenD, body: { status: "rough" } })).json.data;
-check("a rough day calms even a furious mascot", d.mascot.mood === "caring");
+check("a rough day calms even a furious character", d.mascot.mood === "sad");
 
 await call("POST", "/api/demo/skip-day", { token: tokenD });
 await call("POST", "/api/demo/skip-day", { token: tokenD });

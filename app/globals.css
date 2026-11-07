@@ -106,7 +106,18 @@ body {
 .character-mad { animation: character-shake 0.45s steps(4) infinite; }
 .character-furious { animation: character-shake 0.2s steps(4) infinite; }
 
+@keyframes slide-in-left { from { transform: translateX(-150px); } to { transform: none; } }
+@keyframes slide-in-right { from { transform: translateX(150px); } to { transform: none; } }
+@keyframes pop-in { from { transform: scale(0); } to { transform: scale(1); } }
+@keyframes typing-dots { to { width: 3.2em; } }
+
+.slide-in-left { animation: slide-in-left 0.6s steps(6) both; }
+.slide-in-right { animation: slide-in-right 0.6s steps(6) both; }
+.pop-in { animation: pop-in 0.4s steps(4) 0.6s both; }
+.typing-dots { display: inline-block; overflow: hidden; vertical-align: bottom; width: 0; animation: typing-dots 1.2s steps(4) infinite; }
+
 /* Turned off for anyone who prefers less motion. */
 @media (prefers-reduced-motion: reduce) {
-  .character-happy, .character-mad, .character-furious { animation: none; }
+  .character-happy, .character-mad, .character-furious, .slide-in-left, .slide-in-right, .pop-in { animation: none; }
+  .typing-dots { animation: none; width: auto; }
 }

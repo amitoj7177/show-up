@@ -20,6 +20,7 @@ const MOOD_INPUTS: Record<MascotMood, Parameters<typeof mascotFor>[0]> = {
   happy: { myStatusToday: "done", mySilentDays: 0, minutesPastCheckIn: 5, partnerCheckedInToday: true, streak: 1, gentle: false },
   proud: { myStatusToday: "done", mySilentDays: 0, minutesPastCheckIn: 5, partnerCheckedInToday: true, streak: 5, gentle: false },
   caring: { myStatusToday: "rough", mySilentDays: 0, minutesPastCheckIn: 5, partnerCheckedInToday: true, streak: 4, gentle: false },
+  sad: { myStatusToday: "rough", mySilentDays: 0, minutesPastCheckIn: 5, partnerCheckedInToday: true, streak: 4, gentle: false },
   annoyed: { mySilentDays: 0, minutesPastCheckIn: 15, partnerCheckedInToday: true, streak: 4, gentle: false },
   mad: { mySilentDays: 1, minutesPastCheckIn: 15, partnerCheckedInToday: true, streak: 0, gentle: false },
   furious: { mySilentDays: 2, minutesPastCheckIn: 15, partnerCheckedInToday: true, streak: 0, gentle: false },

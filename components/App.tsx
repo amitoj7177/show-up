@@ -3,9 +3,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api, ApiError, clearToken, getToken } from "@/lib/api";
 import { DEMO_AVATAR, demoToday } from "@/lib/demo";
-import { MASCOT_MOODS, MESSAGES, NOT_MEDICAL_CARE, PRIVACY_LINE, REPORT_REASONS, SUPPORT_LINKS, type MascotMood } from "@/lib/rules";
+import { MASCOT_MOODS, MESSAGES, NOT_MEDICAL_CARE, PRIVACY_LINE, REPORT_REASONS, SUPPORT_LINKS, TALK, type MascotMood } from "@/lib/rules";
 import type { Act, Config, Today } from "@/lib/types";
-import { PixelAvatar } from "./PixelAvatar";
+import { FindingScreen, PartnerFoundScreen, useLinePicker } from "./Moments";
 import { PromiseScreen } from "./PromiseScreen";
 import { Card, ErrorNote, PRIMARY_BUTTON, QUIET_BUTTON, SECONDARY_BUTTON, SupportFooter, Wordmark } from "./Shared";
 import { TodayScreen } from "./TodayScreen";
@@ -38,6 +38,20 @@ function LiveApp() {
   const [offlineSince, setOfflineSince] = useState<Date | null>(null);
   const hasToday = useRef(false);
   hasToday.current = today !== null;
+  const [celebrating, setCelebrating] = useState(false);
+  const wasPaired = useRef<boolean | null>(null);
+  const pick = useLinePicker();
+  const [foundLine, setFoundLine] = useState("");
+
+  // Celebrate the moment someone goes from waiting to having a partner.
+  useEffect(() => {
+    const paired = today?.status === "paired";
+    if (wasPaired.current === false && paired) {
+      setFoundLine(pick("found", config?.talk.found ?? TALK.found));
+      setCelebrating(true);
+    }
+    if (today) wasPaired.current = paired;
+  }, [today, config, pick]);
 
   const refresh = useCallback(async () => {
     const token = getToken();
@@ -98,7 +112,17 @@ function LiveApp() {
 
   if (checking) return <p role="status">Loading...</p>;
   if (!today) {
-    return <PromiseScreen key={needsPromise ? "promise" : "start"} start={needsPromise ? "promise" : "welcome"} onJoined={setToday} onLoggedIn={refresh} />;
+    return (
+      <PromiseScreen
+        key={needsPromise ? "promise" : "start"}
+        start={needsPromise ? "promise" : "welcome"}
+        onJoined={(joined) => {
+          wasPaired.current = false;
+          setToday(joined);
+        }}
+        onLoggedIn={refresh}
+      />
+    );
   }
 
   const offlineNote = offlineSince && (
@@ -131,28 +155,16 @@ function LiveApp() {
 
   if (today.status === "waiting") {
     return (
-      <div className="space-y-5">
-        <Wordmark />
+      <div className="space-y-4">
         {offlineNote}
-        {today.notice && <ErrorNote message={today.notice} />}
-        <div className="flex justify-center border-[3px] border-ink bg-[#cfe0f5] py-6">
-          <PixelAvatar code={today.me.avatar} mood="waiting" scale={5} label={today.mascot.screenReaderText} />
-        </div>
-        <h1 aria-live="polite" className="font-display text-lg leading-relaxed">
-          Finding your partner...
-        </h1>
-        <p>
-          You're <strong>{today.me.nickname}</strong>. We look for someone on a similar goal first. It's usually under a minute if someone else is looking.
-        </p>
-        <Card title="Your promise">
-          <p>{today.me.goal.text}</p>
-        </Card>
-        <button type="button" className={QUIET_BUTTON} onClick={() => act("/api/leave")}>
-          Cancel
-        </button>
+        <FindingScreen today={today} onCancel={() => act("/api/leave")} />
         <SupportFooter support={today.support} notMedicalCare={today.notMedicalCare} />
       </div>
     );
+  }
+
+  if (celebrating) {
+    return <PartnerFoundScreen today={today} line={foundLine} onContinue={() => setCelebrating(false)} />;
   }
 
   return (
@@ -202,6 +214,7 @@ function DemoApp() {
   const config: Config = {
     goalTypes: [],
     messages: MESSAGES,
+    talk: TALK,
     reportReasons: REPORT_REASONS,
     support: SUPPORT_LINKS,
     notMedicalCare: NOT_MEDICAL_CARE,
@@ -211,7 +224,7 @@ function DemoApp() {
 
   const act: Act = async (path, body) => {
     const values = (body ?? {}) as { status?: string; gentleMascot?: boolean; avatar?: string };
-    if (path === "/api/checkin") setMood(values.status === "rough" ? "caring" : "happy");
+    if (path === "/api/checkin") setMood(values.status === "rough" ? "sad" : "happy");
     if (path === "/api/encourage") setMessageSent(true);
     if (path === "/api/settings") {
       if (values.gentleMascot !== undefined) setGentle(values.gentleMascot);

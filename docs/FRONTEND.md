@@ -12,6 +12,12 @@ Everything you need to build the web frontend and mobile app. The backend is fin
 
 **The app is now Promise Pals**, using the design from `pixel_app_login_flow_mockup.html`, connected to the real backend.
 
+**Your partner moments are in** (from `Partner found, pep talk and sad moments.html`):
+- The finding screen, the "Partner found!" celebration, the pep talk when you tap your character, and "Skip today".
+- "Skip today" sends `POST /api/checkin` with `{ "status": "rough" }`. It keeps the streak safe, and your character's mood becomes `sad`.
+- `GET /api/config` now has `talk: { found, motivation, skip, checkin }`, the lines the character says.
+- `sad` is a new mood, only ever shown for your own character. Partners never see `sad`, `annoyed`, `mad` or `furious`.
+
 **Accounts are in:**
 - `POST /api/auth/signup` and `POST /api/auth/login` take `{ email, password }` and return `{ token, avatar, hasPromise }`.
 - `POST /api/auth/forgot` takes `{ email }`. `POST /api/auth/logout` ends this device's session.

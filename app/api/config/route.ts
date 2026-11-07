@@ -8,6 +8,7 @@ import {
   PRIVACY_LINE,
   REPORT_REASONS,
   SUPPORT_LINKS,
+  TALK,
 } from "@/lib/rules";
 import { SOURCES } from "@/lib/sources";
 
@@ -16,6 +17,7 @@ export const GET = route(async () =>
   ok({
     goalTypes: GOAL_TYPES.map((id) => ({ id, label: GOAL_TYPE_LABELS[id] })),
     messages: MESSAGES,
+    talk: TALK,
     reportReasons: REPORT_REASONS,
     mascotMoods: MASCOT_MOODS,
     support: SUPPORT_LINKS,

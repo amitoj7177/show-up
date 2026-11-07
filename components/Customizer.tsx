@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { CHOICES, encodeAvatar, MOOD_BACKGROUND, parseAvatar, randomAvatar, type ChoiceKey } from "@/lib/avatar";
-import { MASCOT_MOODS, type MascotMood } from "@/lib/rules";
+import { ALL_MOODS, type MascotMood } from "@/lib/rules";
 import { PixelAvatar } from "./PixelAvatar";
 import { SECONDARY_BUTTON } from "./Shared";
 
@@ -26,7 +26,7 @@ export function Customizer({ code, onChange, showMoods = false }: { code: string
 
       {showMoods && (
         <div role="group" aria-label="Preview a mood" className="flex flex-wrap gap-2">
-          {MASCOT_MOODS.map((option) => (
+          {ALL_MOODS.map((option) => (
             <button
               key={option}
               type="button"

@@ -57,6 +57,7 @@ export type Today = {
 export type Config = {
   goalTypes: { id: string; label: string }[];
   messages: { id: string; text: string }[];
+  talk: { found: string[]; motivation: string[]; skip: string[]; checkin: string[] };
   reportReasons: { id: string; text: string }[];
   support: SupportLink[];
   notMedicalCare: string;

@@ -15,13 +15,14 @@ const IC = ["#5b3a29", "#2e6fba", "#2f8f5b", "#8a6a2e", "#6b7280", "#8e44ad"];
 
 // The soft background colour behind each mood.
 export const MOOD_BACKGROUND: Record<MascotMood, string> = {
-  waiting: "#cfe0f5",
+  waiting: "#dfe6f1",
   happy: "#ffe58a",
-  proud: "#ffc98f",
-  caring: "#ffc4dc",
-  annoyed: "#d8d2c2",
-  mad: "#f7a58f",
-  furious: "#ee6c5b",
+  proud: "#ffd54f",
+  caring: "#ffc9dc",
+  sad: "#cfe0f5",
+  annoyed: "#ffd9a8",
+  mad: "#ffb8a8",
+  furious: "#ff9a8f",
 };
 
 export type AvatarChoice = { hair: number; hc: number; skin: number; eyes: number; outfit: number; oc: number; acc: number };
@@ -328,6 +329,12 @@ function face(s: AvatarChoice, m: MascotMood) {
     brow([[10, 14], [11, 14], [11, 15], [12, 15], [12, 16], [13, 16]]);
     R(14, 25, 4, 1, mc); P(13, 26, mc); P(18, 26, mc);
   }
+  if (m === "sad") {
+    eyeBig(10); eyeBig(18);
+    brow([[10, 16], [11, 16], [12, 15], [13, 14]]);
+    P(11, 22, "#7ec8ff"); P(11, 23, "#7ec8ff"); P(20, 22, "#7ec8ff");
+    R(14, 25, 4, 1, mc); P(13, 26, mc); P(18, 26, mc);
+  }
   if (m === "furious") {
     eyeTiny(10); eyeTiny(18);
     brow([[9, 13], [10, 13], [10, 14], [11, 14], [11, 15], [12, 15], [12, 16], [13, 16]]);
@@ -474,6 +481,10 @@ function effects(m: MascotMood) {
   if (m === "mad") for (const [x, y] of [[25, 8], [27, 8], [26, 9], [25, 10], [27, 10]]) P(x, y, "#e53935");
   if (m === "furious") {
     cloud(0, 9); cloud(26, 9);
+  }
+  if (m === "sad") {
+    cloud(25, 3);
+    P(26, 8, "#4aa8ff"); P(28, 9, "#4aa8ff"); P(27, 11, "#4aa8ff");
   }
 }
 
