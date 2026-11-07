@@ -3,10 +3,10 @@
 import { useEffect, useRef, useState } from "react";
 import type { Act, Today } from "@/lib/types";
 import { Customizer } from "./Customizer";
-import { Card } from "./Shared";
+import { Card, SECONDARY_BUTTON } from "./Shared";
 
 // The customize menu inside the app. Your partner sees your changes within a few seconds.
-export function MascotScreen({ today, act }: { today: Today; act: Act }) {
+export function MascotScreen({ today, act, onLogOut }: { today: Today; act: Act; onLogOut?: () => void }) {
   const [code, setCode] = useState(today.me.avatar);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
@@ -20,26 +20,31 @@ export function MascotScreen({ today, act }: { today: Today; act: Act }) {
   }
 
   return (
-    <div className="rise-in space-y-4">
-      <h1 className="font-display text-4xl font-semibold">Your character</h1>
+    <div className="space-y-4">
+      <h1 className="font-display text-base leading-relaxed">Your avatar</h1>
       <p>This is who your partner sees. Changes save by themselves.</p>
       <Card>
-        <Customizer code={code} onChange={change} />
+        <Customizer code={code} onChange={change} showMoods />
       </Card>
-      <Card title="How your character reacts">
+      <Card title="Reactions">
         <label className="flex min-h-12 cursor-pointer items-center gap-3">
           <input
             type="checkbox"
             checked={today.me.gentleMascot}
             onChange={(event) => act("/api/settings", { gentleMascot: event.target.checked })}
-            className="size-6 shrink-0 accent-accent"
+            className="size-6 shrink-0 accent-ink"
           />
           <span>
             <span className="block font-bold">Gentle mode</span>
-            <span className="text-muted">Your character never gets angry with you.</span>
+            <span className="text-muted">Your avatar never gets angry with you.</span>
           </span>
         </label>
       </Card>
+      {onLogOut && (
+        <button type="button" className={SECONDARY_BUTTON} onClick={onLogOut}>
+          Log out
+        </button>
+      )}
     </div>
   );
 }

@@ -14,7 +14,7 @@ type Tab = "today" | "partner" | "mascot";
 const TABS: { id: Tab; label: string }[] = [
   { id: "today", label: "Today" },
   { id: "partner", label: "Partner" },
-  { id: "mascot", label: "Character" },
+  { id: "mascot", label: "Avatar" },
 ];
 
 function partnerStatusText(partner: NonNullable<Today["partner"]>): string {
@@ -32,10 +32,10 @@ function friendlyTime(time: string): string {
 
 // The week at a glance. Every mark also has words, so it never relies on colour.
 const MARKS: Record<DayMark, { symbol: string; words: string; style: string }> = {
-  done: { symbol: "✓", words: "done", style: "bg-accent text-white" },
+  done: { symbol: "✓", words: "done", style: "bg-ink text-white" },
   rough: { symbol: "~", words: "rough day", style: "bg-[#ffc4dc] text-ink" },
   missed: { symbol: "×", words: "missed", style: "bg-[#f7a58f] text-ink" },
-  open: { symbol: "", words: "not yet", style: "bg-paper text-muted" },
+  open: { symbol: "", words: "not yet", style: "bg-white text-muted" },
 };
 
 function WeekGrid({ week }: { week: NonNullable<Today["pair"]>["week"] }) {
@@ -47,7 +47,7 @@ function WeekGrid({ week }: { week: NonNullable<Today["pair"]>["week"] }) {
       </th>
       {week.map((day) => (
         <td key={day.date} className="p-0.5">
-          <span className={`flex aspect-square w-full items-center justify-center rounded-lg font-bold ${MARKS[day[who]].style}`}>
+          <span className={`flex aspect-square w-full items-center justify-center border-2 border-ink font-bold ${MARKS[day[who]].style}`}>
             <span aria-hidden="true">{MARKS[day[who]].symbol}</span>
             <span className="sr-only">{MARKS[day[who]].words}</span>
           </span>
@@ -66,7 +66,7 @@ function WeekGrid({ week }: { week: NonNullable<Today["pair"]>["week"] }) {
         <tr>
           <td />
           {week.map((day) => (
-            <th key={day.date} scope="col" aria-current={day.isToday ? "date" : undefined} className={`pb-1 text-center font-semibold ${day.isToday ? "text-accent-dark underline underline-offset-4" : "text-muted"}`}>
+            <th key={day.date} scope="col" aria-current={day.isToday ? "date" : undefined} className={`pb-1 text-center font-semibold ${day.isToday ? "underline underline-offset-4" : "text-muted"}`}>
               {dayLetter(day.date)}
             </th>
           ))}
@@ -86,6 +86,7 @@ export function TodayScreen({
   config,
   act,
   error,
+  onLogOut,
   demoLabel,
   demoControls,
 }: {
@@ -93,6 +94,7 @@ export function TodayScreen({
   config: Config | null;
   act: Act;
   error: string;
+  onLogOut?: () => void;
   demoLabel?: string;
   demoControls?: ReactNode;
 }) {
@@ -104,18 +106,18 @@ export function TodayScreen({
     <div className="space-y-4 pb-24">
       <header className="flex items-center justify-between">
         <Wordmark />
-        <p className="rounded-full bg-card px-3 py-1 font-semibold shadow-sm">Day {pair.dayOfWeek} of 7</p>
+        <p className="border-[3px] border-ink bg-white px-2 py-1 font-semibold">Day {pair.dayOfWeek} of 7</p>
       </header>
 
       {demoLabel && <DemoLabel text={demoLabel} />}
       {today.notice && <ErrorNote message={today.notice} />}
 
       {tab === "today" && (
-        <div className="rise-in space-y-4">
+        <div className="space-y-4">
           <h1 className="sr-only">Today</h1>
-          <section aria-label="You and your partner" className="overflow-hidden rounded-3xl transition-colors" style={{ background: MOOD_BACKGROUND[mascot.mood] }}>
+          <section aria-label="You and your partner" className="overflow-hidden border-[3px] border-ink shadow-[0_4px_0_var(--color-ink)]" style={{ background: MOOD_BACKGROUND[mascot.mood] }}>
             <div className="p-4 pb-0">
-              <p className="rounded-2xl bg-white p-4 text-xl leading-snug font-bold shadow-sm">{mascot.message}</p>
+              <p className="border-[3px] border-ink bg-white p-3 text-xl leading-snug font-bold">{mascot.message}</p>
             </div>
             <div className="flex items-end justify-around px-2 pt-3 pb-3">
               <figure className="flex flex-col items-center">
@@ -123,7 +125,7 @@ export function TodayScreen({
                 <figcaption className="font-bold">You</figcaption>
               </figure>
               <div className="mb-14 text-center">
-                <p className="font-display text-5xl leading-none font-semibold">{pair.streak}</p>
+                <p className="font-display text-3xl leading-none">{pair.streak}</p>
                 <p className="font-semibold">day streak</p>
               </div>
               <figure className="flex flex-col items-center">
@@ -151,7 +153,7 @@ export function TodayScreen({
               {partnerStatusText(partner)}
             </p>
             {today.messagesReceived.map((message) => (
-              <p key={message.id} className="rounded-2xl bg-accent-soft p-3 font-medium">
+              <p key={message.id} className="border-[3px] border-ink bg-accent-soft p-3 font-medium">
                 “{message.text}”
               </p>
             ))}
@@ -169,14 +171,14 @@ export function TodayScreen({
       )}
 
       {tab === "partner" && <PartnerScreen today={today} config={config} act={act} />}
-      {tab === "mascot" && <MascotScreen today={today} act={act} />}
+      {tab === "mascot" && <MascotScreen today={today} act={act} onLogOut={onLogOut} />}
 
       {error && <ErrorNote message={error} />}
       {demoControls}
 
       <SupportFooter support={today.support} notMedicalCare={today.notMedicalCare} />
 
-      <nav aria-label="Main" className="fixed inset-x-0 bottom-0 z-10 border-t border-line bg-card">
+      <nav aria-label="Main" className="fixed inset-x-0 bottom-0 z-10 border-t-4 border-ink bg-[#ffd54f]">
         <div className="mx-auto flex max-w-md gap-1 p-2">
           {TABS.map((option) => (
             <button
@@ -187,7 +189,7 @@ export function TodayScreen({
                 setTab(option.id);
                 window.scrollTo(0, 0);
               }}
-              className={`min-h-13 flex-1 rounded-2xl font-bold ${tab === option.id ? "bg-accent text-white" : "text-accent-dark"}`}
+              className={`min-h-13 flex-1 border-[3px] border-ink font-bold ${tab === option.id ? "bg-ink text-white" : "bg-white"}`}
             >
               {option.label}
             </button>

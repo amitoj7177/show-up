@@ -1,4 +1,4 @@
-# Show Up: spec (name is a placeholder)
+# Promise Pals: spec
 
 **Prompt 1:** How can we leverage technology to promote health, social connection, and well-being in our communities?
 
@@ -6,7 +6,7 @@
 
 ## 1. The problem
 
-Maya, 24, is a UCalgary student recovering from a knee injury. (Maya is a made-up example. Replace her with a real person the team talks to.) Her physio gave her exercises to do every morning. By week two she skips them, because nobody would know. Her friends are busy, and she feels awkward asking them to check up on her. Step counters don't count her exercises at all. At 8 AM, sitting on the edge of her bed, the easiest choice is to skip again. With Show Up, a stranger working through their own recovery is waiting on her check-in, and she is waiting on theirs.
+Maya, 24, is a UCalgary student recovering from a knee injury. (Maya is a made-up example. Replace her with a real person the team talks to.) Her physio gave her exercises to do every morning. By week two she skips them, because nobody would know. Her friends are busy, and she feels awkward asking them to check up on her. Step counters don't count her exercises at all. At 8 AM, sitting on the edge of her bed, the easiest choice is to skip again. With Promise Pals, a stranger working through their own recovery is waiting on her check-in, and she is waiting on theirs.
 
 ## 2. The 3 screens
 
@@ -42,7 +42,7 @@ These rules live in one short file, `lib/rules.ts`, so the whole team can explai
 
 **Safety rules**
 - No free chat, ever. Only pre-written messages.
-- No real names, photos or location. The app makes up the nickname.
+- Partners never see real names, emails, photos or location. The app makes up the nickname.
 - Goals about weight loss are refused, with a kind suggestion to choose a different goal.
 - Partners only see the goal after it passes the safety check. If the check fails or is unavailable, they see only the goal type.
 - Leave or report in one tap.
@@ -56,8 +56,8 @@ These rules live in one short file, `lib/rules.ts`, so the whole team can explai
 | Gemini, `gemini-3.5-flash-lite` | Goal safety check | Listed as stable in Google's docs, not yet tested | Once per goal | Ask the user to pick a goal type, and show only that to the partner |
 | Google Health API (Fitbit) | Optional "activity confirmed" badge | UNCONFIRMED. The old Fitbit Web API was turned off. New projects may not be accepted | Once per check-in | Normal check-in, which always works |
 
-- **Identity:** a random secret saved in the browser. No login. Clearing the browser loses your pairing.
-- **Stored:** nickname, goal text, goal type, check-in time, check-ins, messages sent and reports.
+- **Identity:** an email and password account through Auth0. Auth0 keeps the email and password, and we store neither.
+- **Stored by us:** Auth0 id, character, nickname, goal text, goal type, check-in time, check-ins, messages sent and reports.
 - **Numbers:** every figure shown or pitched comes from real use tonight or a cited source. Demo data is always labelled.
 - **Time travel for testing:** `?demo=1` includes a labelled "skip to tomorrow" button, so a judge can see a missed day and a new match without waiting.
 
@@ -109,7 +109,7 @@ Each step ends with something visible in the browser.
 
 ## 8. For teammates (paste this)
 
-Hi team, we're building Show Up: you get paired with an anonymous stranger on a similar health goal, so someone is waiting on you each day. Here's what we need right now:
+Hi team, we're building Promise Pals: you get paired with an anonymous stranger on a similar health goal, so someone is waiting on you each day. Here's what we need right now:
 
 **Teammate 1**
 1. **Talk to a real person today.** Find someone doing physio or managing a chronic condition. Ask what makes it hard to keep going, and whether they'd want a stranger as a partner. Get permission before quoting them.

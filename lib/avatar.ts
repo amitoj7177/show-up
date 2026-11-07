@@ -31,7 +31,7 @@ export const DEFAULT_AVATAR = "h0-c0-s1-e0-o1-k0-a0";
 
 // Each choice in the customize menu. The names are also what screen readers announce.
 export const CHOICES: { key: ChoiceKey; letter: string; title: string; kind: "tile" | "swatch"; options: { name: string; colour?: string }[] }[] = [
-  { key: "hair", letter: "h", title: "Hair", kind: "tile", options: ["Short", "Long", "Curly", "Top bun", "Buzz cut"].map((name) => ({ name })) },
+  { key: "hair", letter: "h", title: "Hair", kind: "tile", options: ["Crop", "Long", "Curly", "Bun", "Buzz"].map((name) => ({ name })) },
   {
     key: "hc",
     letter: "c",
@@ -53,7 +53,7 @@ export const CHOICES: { key: ChoiceKey; letter: string; title: string; kind: "ti
     kind: "swatch",
     options: ["Brown", "Blue", "Green", "Hazel", "Grey", "Violet"].map((name, i) => ({ name, colour: IC[i] })),
   },
-  { key: "outfit", letter: "o", title: "Outfit", kind: "tile", options: ["T-shirt", "Hoodie", "Jacket", "Jersey", "Skirt"].map((name) => ({ name })) },
+  { key: "outfit", letter: "o", title: "Outfit", kind: "tile", options: ["Tee", "Hoodie", "Jacket", "Jersey", "Dress"].map((name) => ({ name })) },
   {
     key: "oc",
     letter: "k",
@@ -61,7 +61,7 @@ export const CHOICES: { key: ChoiceKey; letter: string; title: string; kind: "ti
     kind: "swatch",
     options: ["Blue", "Red", "Green", "Orange", "Purple", "Charcoal", "White", "Cyan", "Yellow", "Pink"].map((name, i) => ({ name, colour: OC[i] })),
   },
-  { key: "acc", letter: "a", title: "Extras", kind: "tile", options: ["None", "Glasses", "Sunglasses", "Headphones", "Scarf", "Cap"].map((name) => ({ name })) },
+  { key: "acc", letter: "a", title: "Extras", kind: "tile", options: ["None", "Glasses", "Shades", "Headphones", "Scarf", "Cap"].map((name) => ({ name })) },
 ];
 
 export function parseAvatar(code: string): AvatarChoice {
@@ -366,7 +366,7 @@ function drawHair(s: AvatarChoice) {
   }
 }
 
-function drawAll(s: AvatarChoice, m: MascotMood) {
+function drawAll(s: AvatarChoice, m: MascotMood, wave: number) {
   const skin = SK[s.skin];
   const sk2 = shade(skin, 0.86);
   const sk3 = shade(skin, 0.72);
@@ -377,7 +377,21 @@ function drawAll(s: AvatarChoice, m: MascotMood) {
   if (s.hair === 1) EF(16, 21, 11.2, 13, highlight(hc, 16, 21, 11.2, 13));
   legs(s, skin, sk2, oc, o2);
   torso(s, skin, sk2, oc, o2, o3);
-  E(8.5, 38.4, 1.7, 1.7, skin); E(23.5, 38.4, 1.7, 1.7, skin);
+  if (wave) {
+    // Rub out the arm on the right, so it can be drawn raised instead.
+    for (let y = 31; y < 38; y += 1) for (let x = 22; x < 25; x += 1) px.fill(0, ((y + offsetY) * AVATAR_W + x + offsetX) * 4, ((y + offsetY) * AVATAR_W + x + offsetX) * 4 + 4);
+  }
+  E(8.5, 38.4, 1.7, 1.7, skin);
+  if (!wave) E(23.5, 38.4, 1.7, 1.7, skin);
+  if (wave) {
+    const forearm = s.outfit === 1 || s.outfit === 2 ? oc : skin;
+    R(23, 29, 2, 2, oc);
+    if (wave === 1) {
+      R(25, 27, 2, 2, oc); R(26, 25, 2, 2, forearm); E(27.2, 24, 1.9, 1.9, skin);
+    } else {
+      R(25, 28, 2, 2, oc); R(27, 26, 2, 2, forearm); E(28.4, 25, 1.9, 1.9, skin);
+    }
+  }
   if (s.outfit === 1) E(16, 29.2, 6.8, 2.4, o2);
   R(14, 26, 4, 3, sk2); R(14, 26, 4, 1, sk3);
   E(7.2, 18.6, 1.7, 2.3, skin); E(24.8, 18.6, 1.7, 2.3, skin);
@@ -478,14 +492,15 @@ function stack(under: Pixels, over: Pixels): Pixels {
 }
 
 // Returns the character as raw pixels: 34 wide, 52 tall, with an outline and a shadow.
-export function drawAvatar(code: string, mood: MascotMood): Pixels {
+// Wave is 0 for standing still, or 1 and 2 for the two frames of a raised arm.
+export function drawAvatar(code: string, mood: MascotMood, wave = 0): Pixels {
   const choice = parseAvatar(code);
 
   px = blank();
   offsetX = OX;
   offsetY = OY;
   alpha = 1;
-  drawAll(choice, mood);
+  drawAll(choice, mood, wave);
   const body = px;
 
   const solid = (x: number, y: number) => x >= 0 && x < AVATAR_W && y >= 0 && y < AVATAR_H && body[(y * AVATAR_W + x) * 4 + 3] >= 128;

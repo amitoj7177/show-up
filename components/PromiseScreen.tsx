@@ -1,49 +1,65 @@
 "use client";
 
 import { useEffect, useState, type FormEvent } from "react";
-import { api, ApiError, saveToken } from "@/lib/api";
-import { randomAvatar } from "@/lib/avatar";
+import { api, ApiError, getToken, saveToken } from "@/lib/api";
+import { DEFAULT_AVATAR } from "@/lib/avatar";
+import { PASSWORD_RULE, strongEnough } from "@/lib/rules";
 import type { Config, JoinResult, Today } from "@/lib/types";
 import { Customizer } from "./Customizer";
 import { PixelAvatar } from "./PixelAvatar";
-import { Card, ErrorNote, PRIMARY_BUTTON, QUIET_BUTTON, SupportFooter, WhyPanel, Wordmark } from "./Shared";
+import { PixelScene } from "./PixelScene";
+import { Card, ErrorNote, PRIMARY_BUTTON, QUIET_BUTTON, SECONDARY_BUTTON, SupportFooter, TitleBar, WhyPanel } from "./Shared";
 
-const STEP_TITLES = ["Your goal", "Your character", "Your time"];
+type Screen = "welcome" | "login" | "signup" | "avatar" | "done" | "promise";
+type AuthResult = { token: string; avatar: string; hasPromise: boolean };
 
-// Screen 1: the welcome page, then three short steps.
-export function PromiseScreen({ onJoined }: { onJoined: (today: Today) => void }) {
+const STARTER_AVATAR = "h0-c1-s2-e1-o1-k3-a0"; // the character in the Promise Pals design
+
+// Everything before the main app: welcome, log in, sign up, avatar, then make a promise.
+export function PromiseScreen({ start = "welcome", onJoined, onLoggedIn }: { start?: Screen; onJoined: (today: Today) => void; onLoggedIn: () => void }) {
+  const [screen, setScreen] = useState<Screen>(start);
   const [config, setConfig] = useState<Config | null>(null);
-  const [step, setStep] = useState(0); // 0 is the welcome page
+  const [avatar, setAvatar] = useState(STARTER_AVATAR);
+  const [doneTitle, setDoneTitle] = useState("You're all set");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [goalText, setGoalText] = useState("");
   const [goalType, setGoalType] = useState("recovery");
   const [checkInTime, setCheckInTime] = useState("08:00");
-  const [avatar, setAvatar] = useState("h0-c1-s2-e0-o1-k0-a0");
-  const [partnerPreview] = useState("h3-c3-s1-e2-o0-k9-a0");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [note, setNote] = useState("");
   const [refused, setRefused] = useState<Extract<JoinResult, { allowed: false }> | null>(null);
 
   useEffect(() => {
-    setAvatar(randomAvatar());
     api<Config>("/api/config")
       .then(setConfig)
-      .catch(() => setError("We can't reach Show Up right now. You can still try the demo."));
+      .catch(() => setError("We can't reach Promise Pals right now. You can still try the demo."));
+    if (getToken()) {
+      api<{ avatar: string }>("/api/account", { token: getToken() })
+        .then((account) => {
+          if (account.avatar !== DEFAULT_AVATAR) setAvatar(account.avatar);
+        })
+        .catch(() => undefined);
+    }
   }, []);
 
-  async function join(event: FormEvent) {
-    event.preventDefault();
+  function go(next: Screen) {
+    setError("");
+    setNote("");
+    setPassword("");
+    setShowPassword(false);
+    setScreen(next);
+    window.scrollTo(0, 0);
+  }
+
+  async function run(work: () => Promise<void>) {
     setBusy(true);
     setError("");
-    setRefused(null);
+    setNote("");
     try {
-      const result = await api<JoinResult>("/api/join", { body: { goalText, goalType, checkInTime, avatar } });
-      if (result.allowed) {
-        saveToken(result.token);
-        onJoined(result.today);
-      } else {
-        setRefused(result);
-        setStep(1);
-      }
+      await work();
     } catch (problem) {
       setError(problem instanceof ApiError ? problem.message : "Something went wrong. Please try again.");
     } finally {
@@ -51,196 +67,288 @@ export function PromiseScreen({ onJoined }: { onJoined: (today: Today) => void }
     }
   }
 
-  if (step === 0) {
-    return (
-      <div className="rise-in space-y-6">
-        <Wordmark />
-        <div className="flex items-end justify-center gap-2 rounded-3xl bg-[#ffe58a] px-4 pt-8 pb-4">
-          <PixelAvatar code={avatar} mood="happy" scale={4} animate label="Two pixel characters standing side by side, looking happy." />
-          <PixelAvatar code={partnerPreview} mood="happy" scale={4} animate />
-        </div>
-        <header className="space-y-3">
-          <p className="font-semibold text-accent-dark">For anyone working on a health goal alone</p>
-          <h1 className="font-display text-5xl leading-none font-semibold">Health goals are easier in twos.</h1>
-          <p className="text-xl">
-            Get matched with someone on a similar goal. Check in once a day. Go quiet, and your character lets you know about it.
-          </p>
-        </header>
-        {error && <ErrorNote message={error} />}
-        <button type="button" className={PRIMARY_BUTTON} onClick={() => setStep(1)}>
-          Get started
-        </button>
-        <a href="/?demo=1" className={`${QUIET_BUTTON} block text-center`}>
-          See a demo first
-        </a>
-        <ul className="grid gap-3">
-          <Point title="Anonymous" text="No real names, emails or photos." />
-          <Point title="Any goal counts" text="Physio, sleep, getting outside. It's your call." />
-          <Point title="Rough days are allowed" text="Tap it, and your streak stays safe." />
-        </ul>
-        {config && <SupportFooter support={config.support} notMedicalCare={config.notMedicalCare} />}
-      </div>
-    );
+  function signUp(event: FormEvent) {
+    event.preventDefault();
+    run(async () => {
+      const result = await api<AuthResult>("/api/auth/signup", { body: { email, password } });
+      saveToken(result.token);
+      setDoneTitle("You're all set");
+      go("avatar");
+    });
   }
 
+  function logIn(event: FormEvent) {
+    event.preventDefault();
+    run(async () => {
+      const result = await api<AuthResult>("/api/auth/login", { body: { email, password } });
+      saveToken(result.token);
+      if (result.hasPromise) {
+        onLoggedIn();
+        return;
+      }
+      if (result.avatar !== DEFAULT_AVATAR) setAvatar(result.avatar);
+      setDoneTitle("Welcome back");
+      go("done");
+    });
+  }
+
+  function forgot() {
+    run(async () => {
+      const result = await api<{ message: string }>("/api/auth/forgot", { body: { email } });
+      setNote(result.message);
+    });
+  }
+
+  function saveAvatar() {
+    run(async () => {
+      await api("/api/account", { body: { avatar }, token: getToken() });
+      go("done");
+    });
+  }
+
+  function makePromise(event: FormEvent) {
+    event.preventDefault();
+    setRefused(null);
+    run(async () => {
+      const result = await api<JoinResult>("/api/join", { body: { goalText, goalType, checkInTime, avatar }, token: getToken() });
+      if (result.allowed) {
+        saveToken(result.token);
+        onJoined(result.today);
+      } else {
+        setRefused(result);
+        window.scrollTo(0, 0);
+      }
+    });
+  }
+
+  const passwordField = (id: string, autoComplete: string, placeholder: string) => (
+    <div>
+      <label className="px-label" htmlFor={id}>
+        Password
+      </label>
+      <div className="relative">
+        <input
+          id={id}
+          className="px-input pr-20"
+          type={showPassword ? "text" : "password"}
+          required
+          value={password}
+          onChange={(event) => setPassword(event.target.value)}
+          placeholder={placeholder}
+          autoComplete={autoComplete}
+        />
+        <button type="button" aria-pressed={showPassword} onClick={() => setShowPassword((shown) => !shown)} className="px-link absolute top-1 right-1 min-h-11 px-2">
+          {showPassword ? "Hide" : "Show"}
+        </button>
+      </div>
+    </div>
+  );
+
+  const emailField = (id: string) => (
+    <div>
+      <label className="px-label" htmlFor={id}>
+        Email
+      </label>
+      <input id={id} className="px-input" type="email" required value={email} onChange={(event) => setEmail(event.target.value)} placeholder="name@example.com" autoComplete="email" />
+    </div>
+  );
+
   return (
-    <div className="space-y-5">
-      <div className="flex items-center justify-between">
-        <Wordmark />
-        <p className="font-semibold text-muted">
-          Step {step} of {STEP_TITLES.length}
-        </p>
-      </div>
-      <div className="flex gap-2" aria-hidden="true">
-        {STEP_TITLES.map((title, index) => (
-          <div key={title} className={`h-2 flex-1 rounded-full ${index < step ? "bg-accent" : "bg-line"}`} />
-        ))}
-      </div>
+    <div className="px-card overflow-hidden">
+      {screen === "welcome" && (
+        <>
+          <PixelScene code={avatar} mood="happy" label="A pixel character waving hello in a sunny park." bubble="HI!" />
+          <div className="space-y-4 p-5">
+            <h1 className="font-display text-xl leading-relaxed">Promise Pals</h1>
+            <p>Make a promise. Check in every day. Your partner sees it live.</p>
+            <p className="font-semibold">For anyone working on a health goal alone.</p>
+            {error && <ErrorNote message={error} />}
+            <button type="button" className={PRIMARY_BUTTON} onClick={() => go("signup")}>
+              Sign up
+            </button>
+            <button type="button" className={SECONDARY_BUTTON} onClick={() => go("login")}>
+              Log in
+            </button>
+            <a href="/?demo=1" className={QUIET_BUTTON}>
+              See a demo first
+            </a>
+            {config && <SupportFooter support={config.support} notMedicalCare={config.notMedicalCare} />}
+          </div>
+        </>
+      )}
 
-      {step === 1 && (
-        <form
-          className="rise-in space-y-5"
-          onSubmit={(event) => {
-            event.preventDefault();
-            setStep(2);
-          }}
-        >
-          <h1 className="font-display text-4xl leading-tight font-semibold">What do you want to do each day?</h1>
-          <Card>
-            <label htmlFor="goal" className="block font-bold">
-              Your goal
-            </label>
-            <textarea
-              id="goal"
-              required
-              minLength={3}
-              maxLength={200}
-              rows={3}
-              value={goalText}
-              onChange={(event) => setGoalText(event.target.value)}
-              placeholder="Do my physio exercises every morning"
-              className="w-full rounded-2xl border-2 border-line bg-paper p-3 placeholder:text-muted"
-            />
-            <p className="text-muted">Please leave out names and other personal details.</p>
-          </Card>
-
-          {refused && (
-            <div className="space-y-3">
-              <ErrorNote message={refused.refusalReason} />
-              {refused.showSupportLinks && (
-                <ul className="space-y-1">
-                  {refused.support.map((link) => (
-                    <li key={link.href}>
-                      <a className="font-bold text-accent-dark underline underline-offset-4" href={link.href}>
-                        {link.label}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              )}
-              <WhyPanel why={refused.why} title="Why? See how this was decided" />
+      {screen === "login" && (
+        <>
+          <TitleBar title="Log in" onBack={() => go("welcome")} />
+          <form onSubmit={logIn} className="space-y-4 p-5">
+            <div className="flex items-center gap-4">
+              <div className="shrink-0 border-[3px] border-ink bg-[#ffe58a] p-1">
+                <PixelAvatar code={avatar} mood="happy" scale={2} />
+              </div>
+              <p>Welcome back. Ready to check in?</p>
             </div>
-          )}
+            {emailField("login-email")}
+            {passwordField("login-password", "current-password", "Your password")}
+            {error && <ErrorNote message={error} />}
+            {note && (
+              <p role="status" className="font-medium text-[#1f6b2a]">
+                {note}
+              </p>
+            )}
+            <button type="submit" disabled={busy} className={PRIMARY_BUTTON}>
+              {busy ? "Checking..." : "Log in"}
+            </button>
+            <button type="button" className={QUIET_BUTTON} onClick={forgot}>
+              Forgot password?
+            </button>
+            <p className="text-center">
+              New here?{" "}
+              <button type="button" className="px-link" onClick={() => go("signup")}>
+                Sign up
+              </button>
+            </p>
+          </form>
+        </>
+      )}
 
-          <Card>
-            <fieldset className="space-y-2">
-              <legend className="mb-2 font-bold">What kind of goal is it?</legend>
+      {screen === "signup" && (
+        <>
+          <TitleBar title="Sign up" onBack={() => go("welcome")} />
+          <form onSubmit={signUp} className="space-y-4 p-5">
+            <p>Create an account. Next you will build your avatar.</p>
+            {emailField("signup-email")}
+            {passwordField("signup-password", "new-password", "Make a strong password")}
+            <p id="password-rule" className={password && !strongEnough(password) ? "font-medium" : "text-muted"}>
+              {strongEnough(password) ? "Strong enough ✓" : PASSWORD_RULE}
+            </p>
+            {config && <p className="text-muted">{config.privacyLine}</p>}
+            {error && <ErrorNote message={error} />}
+            <button type="submit" disabled={busy || !strongEnough(password)} className={PRIMARY_BUTTON}>
+              {busy ? "Checking..." : "Create account"}
+            </button>
+            <p className="text-center">
+              Have an account?{" "}
+              <button type="button" className="px-link" onClick={() => go("login")}>
+                Log in
+              </button>
+            </p>
+          </form>
+        </>
+      )}
+
+      {screen === "avatar" && (
+        <>
+          <TitleBar title="Your avatar" />
+          <div className="space-y-4 p-5">
+            <p>This is who your partner sees, instead of you.</p>
+            <Customizer code={avatar} onChange={setAvatar} />
+            {error && <ErrorNote message={error} />}
+            <button type="button" disabled={busy} className={PRIMARY_BUTTON} onClick={saveAvatar}>
+              Looks good
+            </button>
+          </div>
+        </>
+      )}
+
+      {screen === "done" && (
+        <>
+          <PixelScene code={avatar} mood="proud" label="Your character waving proudly in a sunny park." />
+          <div className="space-y-4 p-5 text-center">
+            <h1 className="font-display text-lg leading-relaxed">{doneTitle}</h1>
+            <p>Next: make your first promise and pick a daily check-in time.</p>
+            <button type="button" className={PRIMARY_BUTTON} onClick={() => go("promise")}>
+              Make a promise
+            </button>
+          </div>
+        </>
+      )}
+
+      {screen === "promise" && (
+        <>
+          <TitleBar title="Your promise" />
+          <form onSubmit={makePromise} className="space-y-5 p-5">
+            {refused && (
+              <div className="space-y-3">
+                <ErrorNote message={refused.refusalReason} />
+                {refused.showSupportLinks && (
+                  <ul className="space-y-1">
+                    {refused.support.map((link) => (
+                      <li key={link.href}>
+                        <a className="px-link font-bold" href={link.href}>
+                          {link.label}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                <WhyPanel why={refused.why} title="Why? See how this was decided" />
+              </div>
+            )}
+
+            <div>
+              <label htmlFor="goal" className="px-label">
+                I promise to
+              </label>
+              <textarea
+                id="goal"
+                required
+                minLength={3}
+                maxLength={200}
+                rows={3}
+                value={goalText}
+                onChange={(event) => setGoalText(event.target.value)}
+                placeholder="Do my physio exercises every morning"
+                className="px-input"
+              />
+              <p className="mt-1 text-muted">Please leave out names and other personal details.</p>
+            </div>
+
+            <fieldset>
+              <legend className="px-label">Kind of goal</legend>
               <div className="grid grid-cols-2 gap-2">
                 {(config?.goalTypes ?? []).map((type) => (
                   <label
                     key={type.id}
-                    className="flex min-h-14 cursor-pointer items-center rounded-2xl border-2 border-line p-3 font-medium has-checked:border-accent has-checked:bg-accent-soft has-focus-visible:outline-3 has-focus-visible:outline-offset-2 has-focus-visible:outline-accent"
+                    className="flex min-h-14 cursor-pointer items-center border-[3px] border-ink bg-white p-2 font-medium has-checked:bg-[#fffc00] has-focus-visible:outline-3 has-focus-visible:outline-offset-2 has-focus-visible:outline-[#0b6bcb]"
                   >
-                    <input
-                      type="radio"
-                      name="goalType"
-                      className="sr-only"
-                      checked={goalType === type.id}
-                      onChange={() => setGoalType(type.id)}
-                    />
+                    <input type="radio" name="goalType" className="sr-only" checked={goalType === type.id} onChange={() => setGoalType(type.id)} />
                     {type.label}
                   </label>
                 ))}
               </div>
             </fieldset>
-          </Card>
 
-          <button type="submit" className={PRIMARY_BUTTON}>
-            Next
-          </button>
-          <button type="button" className={QUIET_BUTTON} onClick={() => setStep(0)}>
-            Back
-          </button>
-        </form>
-      )}
+            <div>
+              <label htmlFor="time" className="px-label">
+                Check in each day at
+              </label>
+              <input id="time" type="time" required value={checkInTime} onChange={(event) => setCheckInTime(event.target.value)} className="px-input" />
+              <p className="mt-1 text-muted">Calgary time.</p>
+            </div>
 
-      {step === 2 && (
-        <div className="rise-in space-y-5">
-          <h1 className="font-display text-4xl leading-tight font-semibold">Make your character.</h1>
-          <p>This is who your partner sees, instead of you. It reacts to how your week is going.</p>
-          <Card>
-            <Customizer code={avatar} onChange={setAvatar} />
-          </Card>
-          <button type="button" className={PRIMARY_BUTTON} onClick={() => setStep(3)}>
-            Next
-          </button>
-          <button type="button" className={QUIET_BUTTON} onClick={() => setStep(1)}>
-            Back
-          </button>
-        </div>
-      )}
+            {error && <ErrorNote message={error} />}
+            <button type="submit" disabled={busy} className={PRIMARY_BUTTON}>
+              {busy ? "Checking your goal..." : "Find my partner"}
+            </button>
 
-      {step === 3 && (
-        <form className="rise-in space-y-5" onSubmit={join}>
-          <h1 className="font-display text-4xl leading-tight font-semibold">When will you check in?</h1>
-          <Card>
-            <label htmlFor="time" className="block font-bold">
-              Each day at
-            </label>
-            <input
-              id="time"
-              type="time"
-              required
-              value={checkInTime}
-              onChange={(event) => setCheckInTime(event.target.value)}
-              className="min-h-14 w-full rounded-2xl border-2 border-line bg-paper px-4 text-xl"
-            />
-            <p className="text-muted">Calgary time. Pick a time you'd really be free.</p>
-          </Card>
-          {config && <p className="px-1 text-muted">{config.privacyLine}</p>}
-          {error && <ErrorNote message={error} />}
-          <button type="submit" disabled={busy} className={PRIMARY_BUTTON}>
-            {busy ? "Checking your goal..." : "Find my partner"}
-          </button>
-          <button type="button" className={QUIET_BUTTON} onClick={() => setStep(2)}>
-            Back
-          </button>
-          {config && (
-            <details className="rounded-3xl bg-card p-5 shadow-sm">
-              <summary className="cursor-pointer font-semibold">What this app uses</summary>
-              <ul className="mt-3 space-y-3">
-                {config.sources.map((source) => (
-                  <li key={source.name}>
-                    <a className="font-medium text-accent-dark underline underline-offset-4" href={source.url}>
-                      {source.name}
-                    </a>
-                    <p className="text-muted">{source.usedFor}</p>
-                  </li>
-                ))}
-              </ul>
-            </details>
-          )}
-        </form>
+            {config && (
+              <details className="border-[3px] border-ink bg-white p-3">
+                <summary className="cursor-pointer font-semibold">What this app uses</summary>
+                <ul className="mt-3 space-y-3">
+                  {config.sources.map((source) => (
+                    <li key={source.name}>
+                      <a className="px-link font-medium" href={source.url}>
+                        {source.name}
+                      </a>
+                      <p className="text-muted">{source.usedFor}</p>
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            )}
+          </form>
+        </>
       )}
     </div>
-  );
-}
-
-function Point({ title, text }: { title: string; text: string }) {
-  return (
-    <li className="rounded-2xl bg-card p-4 shadow-sm">
-      <p className="font-bold">{title}</p>
-      <p className="text-muted">{text}</p>
-    </li>
   );
 }

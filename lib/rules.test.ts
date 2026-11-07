@@ -5,6 +5,7 @@ import {
   mascotFor,
   minutesPast,
   partnerMood,
+  strongEnough,
   sharedStreak,
   silentDays,
   summaryDue,
@@ -161,5 +162,13 @@ describe("summaryDue", () => {
     expect(summaryDue(START, "2026-11-07")).toBe(false);
     expect(summaryDue(START, "2026-11-08")).toBe(true);
     expect(summaryDue(START, "2026-11-09")).toBe(false);
+  });
+});
+
+describe("strongEnough", () => {
+  it("matches the Auth0 rule for this app", () => {
+    expect(strongEnough("GoodPassword1")).toBe(false);
+    expect(strongEnough("tulip harbor 42")).toBe(true);
+    expect(strongEnough("x".repeat(73))).toBe(false);
   });
 });

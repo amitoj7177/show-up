@@ -57,13 +57,13 @@ check("first person joins and waits", a.status === 201 && a.json.data.today.stat
 check("first person gets a nickname", typeof a.json.data.today.me.nickname === "string");
 const tokenA = a.json.data.token;
 
-const b = await join(`Stretch my knee daily ${tag}`);
+const b = await join(`Stretch my knee daily, my name is Sarah Johnson ${tag}`);
 const tokenB = b.json.data.token;
 check("second person gets paired right away", b.json.data.today.status === "paired", b.json.data.today.status);
 
 const aNow = (await call("GET", "/api/today", { token: tokenA })).json.data;
 check("first person sees the partner", aNow.status === "paired" && aNow.partner !== null);
-check("partner's private goal text is never sent", !JSON.stringify(aNow.partner).includes("Stretch my knee"));
+check("a real name in a goal never reaches the partner", !JSON.stringify(aNow.partner).includes("Sarah"), aNow.partner);
 check("streak starts at 0", aNow.pair.streak === 0);
 
 // --- Check-ins update the other phone ---
@@ -110,7 +110,7 @@ check("leaving works", left.status === "left");
 const stranded = (await call("GET", "/api/today", { token: tokenB })).json.data;
 check("the person left behind is told", stranded.status === "waiting" && stranded.notice?.includes("moved on"), stranded.notice);
 
-const c = await join(`Walk outside ${tag}`);
+const c = await join(`Do my knee physio stretches ${tag}`);
 const tokenC = c.json.data.token;
 check("left-behind person gets a new partner", c.json.data.today.status === "paired");
 const reported = await call("POST", "/api/report", { token: tokenC, body: { reason: "unsafe" } });
@@ -156,6 +156,34 @@ check("gentle mode stops the anger", gentle.mascot.angerLevel === 0, gentle.masc
 
 const demoNew = (await call("POST", "/api/rematch", { token: tokenD })).json.data;
 check("new match brings a new demo partner", demoNew.status === "paired" && demoNew.pair.dayNumber === 1, demoNew.pair);
+
+// --- Accounts (needs Auth0 connected) ---
+const email = `tester${tag}@example.com`;
+const signup = await call("POST", "/api/auth/signup", { body: { email, password: "tulip harbor sunrise 42" } });
+if (signup.status === 503) {
+  console.log("SKIP  accounts: Auth0 isn't connected");
+} else {
+  check("sign-up works", signup.status === 201 && signup.json.data.hasPromise === false, signup.json);
+  const session = signup.json.data.token;
+  const noPromise = await call("GET", "/api/today", { token: session });
+  check("a new account has no promise yet", noPromise.status === 409 && noPromise.json.error.code === "no_promise", noPromise.json);
+  check("a character can be saved before a promise", (await call("POST", "/api/account", { token: session, body: { avatar: code } })).status === 200);
+  check("short passwords are refused", (await call("POST", "/api/auth/signup", { body: { email: `x${email}`, password: "too short pw" } })).status === 400);
+  check("wrong password is refused", (await call("POST", "/api/auth/login", { body: { email, password: "wrong harbor sunrise 42" } })).status === 401);
+  const promise = await call("POST", "/api/join", { token: session, body: { goalText: `Stretch ${tag}`, goalType: "move", checkInTime: "09:00" } });
+  check("an account can make a promise", promise.status === 201 && promise.json.data.token === session, promise.json);
+  check("the saved character carries over", promise.json.data.today.me.avatar === code);
+  check("the email is never sent back", !JSON.stringify(promise.json).includes(email));
+  const again = await call("POST", "/api/auth/login", { body: { email, password: "tulip harbor sunrise 42" } });
+  check("logging in again finds the promise", again.json.data.hasPromise === true && again.json.data.avatar === code, again.json);
+  const secondDevice = await call("GET", "/api/today", { token: again.json.data.token });
+  check("a second device sees the same promise", secondDevice.json.data.me.goal.text === `Stretch ${tag}`);
+  check("forgot password answers the same way", (await call("POST", "/api/auth/forgot", { body: { email: "nobody@example.com" } })).status === 200);
+  await call("POST", "/api/auth/logout", { token: again.json.data.token });
+  check("logging out ends that session", (await call("GET", "/api/today", { token: again.json.data.token })).status === 401);
+  check("the other device stays logged in", (await call("GET", "/api/today", { token: session })).status === 200);
+  await call("POST", "/api/leave", { token: session });
+}
 
 // --- Results ignore demo data ---
 const stats = (await call("GET", "/api/stats")).json.data;

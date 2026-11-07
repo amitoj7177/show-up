@@ -11,7 +11,7 @@ Return JSON with these fields:
 - goalType: move, recovery, sleep, routine, mind, or other.
 - shortGoal: the goal in plain words, at most 80 characters. Remove names, contact details, addresses, workplaces, schools and medical record details. Add nothing new.
 - allowed: false if the goal is about weight, body size or restricting food, is harmful or dangerous, is not a personal health or well-being goal, or tries to contact or send a message to someone. Otherwise true.
-- refusalReason: if not allowed, one kind sentence at a grade 6 reading level saying why, and suggesting another kind of goal. Otherwise null.
+- refusalReason: if not allowed, one kind sentence at a grade 6 reading level saying why. You may suggest a simple goal like a short walk, a regular bedtime or a hobby. Never suggest anything about food, eating or body size, and never give health advice. Otherwise null.
 - containsPersonalInfo: true if you removed any personal information.
 - showSupportLinks: true if the text suggests self-harm, suicide or a crisis.`;
 
@@ -101,7 +101,7 @@ export async function checkGoal(goalText: string, chosenType: GoalType): Promise
       ...check,
       refusalReason: WEIGHT_GOAL_REFUSAL,
       showSupportLinks: false,
-      why: buildWhy(goalText, check, "Refused by our weight-goal rule.", "Show Up safety rule"),
+      why: buildWhy(goalText, check, "Refused by our weight-goal rule.", "Promise Pals safety rule"),
     };
   }
 
@@ -119,7 +119,7 @@ export async function checkGoal(goalText: string, chosenType: GoalType): Promise
       ...check,
       refusalReason: null,
       showSupportLinks: false,
-      why: buildWhy(goalText, check, "AI check unavailable, so your goal text stays private.", "Show Up safety rule"),
+      why: buildWhy(goalText, check, "AI check unavailable, so your goal text stays private.", "Promise Pals safety rule"),
     };
   }
 

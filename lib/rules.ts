@@ -44,10 +44,17 @@ export const SUPPORT_LINKS = [
   { label: "Alberta Health Link: call 811", href: "tel:811" },
 ];
 
-export const NOT_MEDICAL_CARE = "Show Up is not medical care. In an emergency, call 911.";
+export const NOT_MEDICAL_CARE = "Promise Pals is not medical care. In an emergency, call 911.";
 
 export const PRIVACY_LINE =
-  "We store a made-up nickname, your character, your goal and your check-ins. No names, emails, photos or location.";
+  "Auth0 keeps your email and password. We store a made-up nickname, your character, your goal and your check-ins. Your partner never sees your email.";
+
+// Auth0's password rule for this app: 15 to 72 characters. A short phrase works well.
+export const PASSWORD_RULE = "Use 15 or more characters. A short phrase works, like “tulip harbor 42”.";
+
+export function strongEnough(password: string): boolean {
+  return password.length >= 15 && password.length <= 72;
+}
 
 // --- Dates ---------------------------------------------------------------
 

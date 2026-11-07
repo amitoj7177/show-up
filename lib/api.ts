@@ -47,7 +47,7 @@ export async function api<T>(path: string, options: { body?: object; token?: str
       body: isPost ? JSON.stringify(options.body ?? {}) : undefined,
     });
   } catch {
-    throw new ApiError(0, "We can't reach Show Up right now. Check your connection and try again.");
+    throw new ApiError(0, "We can't reach Promise Pals right now. Check your connection and try again.");
   }
 
   const json = await response.json().catch(() => null);

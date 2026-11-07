@@ -6,100 +6,77 @@ import { MASCOT_MOODS, type MascotMood } from "@/lib/rules";
 import { PixelAvatar } from "./PixelAvatar";
 import { SECONDARY_BUTTON } from "./Shared";
 
-// The customize menu. Every choice is a real radio button, so it works with a keyboard and screen reader.
-export function Customizer({ code, onChange }: { code: string; onChange: (code: string) => void }) {
-  const [section, setSection] = useState<ChoiceKey>("hair");
+// The customize menu from the Promise Pals design: one row per choice, with left and right arrows.
+export function Customizer({ code, onChange, showMoods = false }: { code: string; onChange: (code: string) => void; showMoods?: boolean }) {
   const [mood, setMood] = useState<MascotMood>("happy");
   const choice = parseAvatar(code);
-  const active = CHOICES.find((option) => option.key === section) ?? CHOICES[0];
-  const withOption = (index: number) => encodeAvatar({ ...choice, [section]: index });
+
+  function step(key: ChoiceKey, amount: number, count: number) {
+    onChange(encodeAvatar({ ...choice, [key]: (choice[key] + amount + count) % count }));
+  }
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-center rounded-3xl py-5 transition-colors" style={{ background: MOOD_BACKGROUND[mood] }}>
-        <PixelAvatar code={code} mood={mood} scale={4} animate label={`Your character, looking ${mood}.`} />
+      <div className="relative flex h-72 items-end justify-center overflow-hidden border-[3px] border-ink" style={{ background: MOOD_BACKGROUND[mood] }}>
+        <div aria-hidden="true" className="absolute top-1/2 left-1/2 size-56 -translate-x-1/2 -translate-y-[46%] rounded-full bg-white/50" />
+        <div className="relative mb-1">
+          <PixelAvatar code={code} mood={mood} scale={5} animate label={`Your character, looking ${mood}.`} />
+        </div>
       </div>
 
-      <fieldset>
-        <legend className="mb-2 font-semibold">See every mood</legend>
-        <div className="flex flex-wrap gap-2">
+      {showMoods && (
+        <div role="group" aria-label="Preview a mood" className="flex flex-wrap gap-2">
           {MASCOT_MOODS.map((option) => (
             <button
               key={option}
               type="button"
               aria-pressed={mood === option}
               onClick={() => setMood(option)}
-              className={`min-h-11 rounded-full px-3 font-semibold capitalize ${mood === option ? "bg-ink text-white" : "bg-accent-soft text-accent-dark"}`}
+              className={`min-h-11 border-[3px] border-ink px-3 font-semibold capitalize ${mood === option ? "bg-ink text-white" : "bg-white"}`}
             >
               {option}
             </button>
           ))}
         </div>
-      </fieldset>
+      )}
 
-      <div role="group" aria-label="Choose what to change" className="flex flex-wrap gap-2 border-t border-line pt-4">
-        {CHOICES.map((option) => (
-          <button
-            key={option.key}
-            type="button"
-            aria-pressed={section === option.key}
-            onClick={() => setSection(option.key)}
-            className={`min-h-11 rounded-full px-3 font-semibold ${section === option.key ? "bg-accent text-white" : "bg-accent-soft text-accent-dark"}`}
-          >
-            {option.title}
-          </button>
-        ))}
+      <div className="grid gap-3">
+        {CHOICES.map(({ key, title, options }) => {
+          const current = options[choice[key]];
+          return (
+            <div key={key}>
+              <p id={`label-${key}`} className="px-label">
+                {title}
+              </p>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  aria-label={`Previous ${title}`}
+                  onClick={() => step(key, -1, options.length)}
+                  className="font-display size-12 shrink-0 border-[3px] border-ink bg-white"
+                >
+                  <span aria-hidden="true">&lt;</span>
+                </button>
+                <p aria-live="polite" aria-labelledby={`label-${key}`} className="flex min-w-0 flex-1 items-center justify-center gap-2 text-center font-medium">
+                  {current.colour && <span aria-hidden="true" className="inline-block size-5 shrink-0 border-2 border-ink" style={{ background: current.colour }} />}
+                  {current.name}
+                </p>
+                <button
+                  type="button"
+                  aria-label={`Next ${title}`}
+                  onClick={() => step(key, 1, options.length)}
+                  className="font-display size-12 shrink-0 border-[3px] border-ink bg-white"
+                >
+                  <span aria-hidden="true">&gt;</span>
+                </button>
+              </div>
+            </div>
+          );
+        })}
       </div>
 
-      <fieldset>
-        <legend className="mb-3 font-bold">
-          {active.title}: <span className="font-medium">{active.options[choice[section]].name}</span>
-        </legend>
-
-        {active.kind === "tile" ? (
-          <div className="grid grid-cols-3 gap-2">
-            {active.options.map((option, index) => (
-              <label
-                key={option.name}
-                className="flex cursor-pointer flex-col items-center rounded-2xl border-2 border-line bg-card p-2 has-checked:border-accent has-checked:bg-accent-soft has-focus-visible:outline-3 has-focus-visible:outline-offset-2 has-focus-visible:outline-accent"
-              >
-                <input
-                  type="radio"
-                  name={section}
-                  className="sr-only"
-                  checked={choice[section] === index}
-                  onChange={() => onChange(withOption(index))}
-                />
-                <PixelAvatar code={withOption(index)} mood="waiting" scale={2} />
-                <span className="mt-1 text-center font-medium">{option.name}</span>
-              </label>
-            ))}
-          </div>
-        ) : (
-          <div className="flex flex-wrap gap-3">
-            {active.options.map((option, index) => (
-              <label
-                key={option.name}
-                title={option.name}
-                className="flex size-14 cursor-pointer items-center justify-center rounded-2xl border-2 border-ink/25 has-checked:border-4 has-checked:border-ink has-focus-visible:outline-3 has-focus-visible:outline-offset-2 has-focus-visible:outline-accent"
-                style={{ background: option.colour }}
-              >
-                <input
-                  type="radio"
-                  name={section}
-                  aria-label={option.name}
-                  className="sr-only"
-                  checked={choice[section] === index}
-                  onChange={() => onChange(withOption(index))}
-                />
-              </label>
-            ))}
-          </div>
-        )}
-      </fieldset>
-
       <button type="button" className={SECONDARY_BUTTON} onClick={() => onChange(randomAvatar())}>
-        Surprise me
+        Shuffle
       </button>
     </div>
   );

@@ -2,14 +2,31 @@ import type { ReactNode } from "react";
 import type { SupportLink, Why } from "@/lib/types";
 
 export function Wordmark() {
-  return <p className="font-display text-2xl font-semibold tracking-wide text-accent">Show Up</p>;
+  return <p className="font-display text-base leading-relaxed">Promise Pals</p>;
+}
+
+// The yellow title bar at the top of a screen.
+export function TitleBar({ title, onBack, right }: { title: string; onBack?: () => void; right?: ReactNode }) {
+  return (
+    <div className="flex min-h-16 items-center justify-between gap-2 border-b-4 border-ink bg-[#ffd54f] px-3 py-2">
+      {onBack ? (
+        <button type="button" aria-label="Back" onClick={onBack} className="font-display size-11 shrink-0 border-[3px] border-ink bg-white">
+          <span aria-hidden="true">&lt;</span>
+        </button>
+      ) : (
+        <span className="size-11 shrink-0" />
+      )}
+      <h1 className="font-display text-center text-sm leading-relaxed">{title}</h1>
+      {right ?? <span className="size-11 shrink-0" />}
+    </div>
+  );
 }
 
 export function WhyPanel({ why, title = "Why? See how your goal was checked" }: { why: Why; title?: string }) {
   return (
-    <details className="rounded-3xl bg-card p-5 shadow-sm">
+    <details className="px-card p-4">
       <summary className="cursor-pointer font-semibold">{title}</summary>
-      <dl className="mt-4 space-y-3">
+      <dl className="mt-3 space-y-3">
         <WhyRow label="What we checked" value={why.textChecked} />
         <WhyRow label="Result" value={why.result} />
         <WhyRow label="What your partner sees" value={why.partnerSees} />
@@ -32,12 +49,12 @@ function WhyRow({ label, value }: { label: string; value: string }) {
 
 export function SupportFooter({ support, notMedicalCare }: { support: SupportLink[]; notMedicalCare: string }) {
   return (
-    <footer className="space-y-2 px-1 pt-2 pb-4">
+    <footer className="space-y-2 pt-2 pb-4">
       <p className="font-semibold">Need support right now?</p>
       <ul className="space-y-1">
         {support.map((link) => (
           <li key={link.href}>
-            <a className="text-accent underline underline-offset-4" href={link.href}>
+            <a className="px-link" href={link.href}>
               {link.label}
             </a>
           </li>
@@ -50,8 +67,8 @@ export function SupportFooter({ support, notMedicalCare }: { support: SupportLin
 
 export function Card({ title, children }: { title?: string; children: ReactNode }) {
   return (
-    <section className="space-y-3 rounded-3xl bg-card p-5 shadow-sm">
-      {title && <h2 className="text-xl font-bold">{title}</h2>}
+    <section className="px-card space-y-3 p-4">
+      {title && <h2 className="font-display text-sm leading-relaxed">{title}</h2>}
       {children}
     </section>
   );
@@ -59,17 +76,16 @@ export function Card({ title, children }: { title?: string; children: ReactNode 
 
 export function ErrorNote({ message }: { message: string }) {
   return (
-    <p role="alert" className="rounded-2xl bg-warn-soft p-4 font-medium">
+    <p role="alert" className="border-[3px] border-ink bg-warn-soft p-3 font-medium">
       {message}
     </p>
   );
 }
 
 export function DemoLabel({ text }: { text: string }) {
-  return <p className="rounded-full bg-accent-soft px-4 py-2 text-center font-semibold text-accent-dark">{text}</p>;
+  return <p className="border-[3px] border-ink bg-accent-soft px-3 py-2 text-center font-semibold">{text}</p>;
 }
 
-const BUTTON_BASE = "press min-h-14 w-full rounded-2xl px-5 py-3 text-center font-bold disabled:opacity-60";
-export const PRIMARY_BUTTON = `${BUTTON_BASE} bg-accent text-white shadow-[0_4px_0_var(--color-accent-dark)]`;
-export const SECONDARY_BUTTON = `${BUTTON_BASE} bg-accent-soft text-accent-dark`;
-export const QUIET_BUTTON = "min-h-12 w-full rounded-2xl px-4 py-2 font-semibold text-accent-dark underline underline-offset-4";
+export const PRIMARY_BUTTON = "px-btn px-btn-y";
+export const SECONDARY_BUTTON = "px-btn";
+export const QUIET_BUTTON = "px-link block min-h-12 w-full py-2 text-center";

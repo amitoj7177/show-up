@@ -10,7 +10,15 @@ Everything you need to build the web frontend and mobile app. The backend is fin
 
 **Base URL:** `https://hackathon-gilt-iota.vercel.app` (sign-up won't work until the database is connected, so use `?demo=1` until then.)
 
-**Coming next:** real accounts with email sign-up through Auth0, which will change how sign-in works in this doc.
+**The app is now Promise Pals**, using the design from `pixel_app_login_flow_mockup.html`, connected to the real backend.
+
+**Accounts are in:**
+- `POST /api/auth/signup` and `POST /api/auth/login` take `{ email, password }` and return `{ token, avatar, hasPromise }`.
+- `POST /api/auth/forgot` takes `{ email }`. `POST /api/auth/logout` ends this device's session.
+- `GET` and `POST /api/account` read and save `{ avatar }` before a promise exists.
+- `GET /api/today` returns a 409 with the code `no_promise` for an account with no promise yet.
+- Send the account's token when calling `POST /api/join`.
+- These return a 503 until Auth0 is connected. Auth0 stores the emails and passwords, and we never do.
 
 ## Start right now, with no setup
 
@@ -26,7 +34,7 @@ Until it's deployed, copy the sample response at the bottom of this file into a 
 
 ## The 4 rules
 
-1. **Save the token.** `POST /api/join` returns a `token` exactly once. Save it on the device (`localStorage` on web, secure storage on mobile). It's the person's only identity, and it can't be recovered.
+1. **Save the token.** Sign-up and log-in return a `token`. Save it on the device (`localStorage` on web, secure storage on mobile).
 2. **Send the token on every call:** `Authorization: Bearer <token>`
 3. **Refresh every 3 seconds.** On the main screen, call `GET /api/today` every 3 seconds. This is how a partner's check-in appears live. Pause it when the app is in the background.
 4. **Draw from the latest response.** Every action below returns the same fresh `today` object, so just replace what's on screen.

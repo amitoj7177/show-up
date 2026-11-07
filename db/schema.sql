@@ -67,5 +67,21 @@ CREATE TABLE IF NOT EXISTS reports (
 -- The customizable character, saved as a short code. Partners can see it.
 ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar text NOT NULL DEFAULT 'h0-c0-s1-e0-o1-k0-a0';
 
+-- One row per person with a login. Auth0 keeps the email and password, and we keep neither.
+CREATE TABLE IF NOT EXISTS accounts (
+  id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  auth_id    text NOT NULL UNIQUE,                 -- Auth0's id for this person
+  avatar     text NOT NULL DEFAULT 'h0-c0-s1-e0-o1-k0-a0',
+  user_id    uuid REFERENCES users(id),            -- their current promise
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
+-- One row per logged-in device.
+CREATE TABLE IF NOT EXISTS sessions (
+  token_hash text PRIMARY KEY,
+  account_id uuid NOT NULL REFERENCES accounts(id),
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
 CREATE INDEX IF NOT EXISTS users_waiting ON users (status, waiting_since);
 CREATE INDEX IF NOT EXISTS checkins_pair ON checkins (pair_id, day);

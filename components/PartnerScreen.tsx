@@ -27,11 +27,11 @@ export function PartnerScreen({ today, config, act }: { today: Today; config: Co
   const needsSupport = partner.overdue || partner.checkinToday === "rough" || partner.silentDays > 0;
 
   return (
-    <div className="rise-in space-y-4">
-      <section className="flex items-center gap-4 rounded-3xl p-4" style={{ background: MOOD_BACKGROUND[partner.mood] }}>
+    <div className="space-y-4">
+      <section className="flex items-center gap-4 border-[3px] border-ink p-4 shadow-[0_4px_0_var(--color-ink)]" style={{ background: MOOD_BACKGROUND[partner.mood] }}>
         <PixelAvatar code={partner.avatar} mood={partner.mood} scale={3} label={`Your partner's character, looking ${partner.mood}.`} />
         <div className="min-w-0">
-          <h1 className="font-display text-3xl leading-tight font-semibold break-words">{partner.nickname}</h1>
+          <h1 className="font-display text-sm leading-relaxed break-words">{partner.nickname}</h1>
           <p className="font-medium">{partner.goal ?? partner.goalTypeLabel}</p>
         </div>
       </section>

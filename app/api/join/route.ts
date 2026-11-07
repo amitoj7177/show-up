@@ -1,4 +1,4 @@
-import { hashToken, newToken } from "@/lib/auth";
+import { findAccount, hashToken, newToken, tokenFrom } from "@/lib/auth";
 import { DEFAULT_AVATAR, isAvatarCode } from "@/lib/avatar";
 import { query, type UserRow } from "@/lib/db";
 import { checkGoal } from "@/lib/gemini";
@@ -7,9 +7,10 @@ import { pairWithDemoPartner, tryMatch } from "@/lib/matching";
 import { GOAL_TYPES, makeNickname, SUPPORT_LINKS, type GoalType } from "@/lib/rules";
 import { buildToday } from "@/lib/state";
 
-// Screen 1: make a promise. Nothing is saved unless the goal passes the safety check.
+// Make a promise. Nothing is saved unless the goal passes the safety check.
 export const POST = route(async (request) => {
   const body = await readBody(request);
+  const account = await findAccount(request);
   const goalText = typeof body.goalText === "string" ? body.goalText.trim() : "";
   const checkInTime = typeof body.checkInTime === "string" ? body.checkInTime : "";
   const goalType = (GOAL_TYPES as readonly string[]).includes(body.goalType as string)
@@ -34,13 +35,15 @@ export const POST = route(async (request) => {
     });
   }
 
-  const token = newToken();
+  // People with an account keep their login. Demo people get a token of their own.
+  const token = account ? (tokenFrom(request) as string) : newToken();
   const isDemo = body.demo === true;
+  const avatar = isAvatarCode(body.avatar) ? body.avatar : (account?.avatar ?? DEFAULT_AVATAR);
   const [user] = await query<UserRow>(
     `INSERT INTO users (token_hash, nickname, goal_text, short_goal, goal_type, check_in_time, why, is_demo, avatar)
      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
     [
-      hashToken(token),
+      hashToken(account ? newToken() : token),
       makeNickname(),
       goalText,
       check.shortGoal,
@@ -48,9 +51,10 @@ export const POST = route(async (request) => {
       checkInTime,
       check.why,
       isDemo,
-      isAvatarCode(body.avatar) ? body.avatar : DEFAULT_AVATAR,
+      avatar,
     ],
   );
+  if (account) await query("UPDATE accounts SET user_id = $2 WHERE id = $1", [account.id, user.id]);
 
   if (isDemo) {
     await pairWithDemoPartner(user);

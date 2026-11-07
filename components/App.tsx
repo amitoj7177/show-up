@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { api, ApiError, clearToken, getToken } from "@/lib/api";
 import { DEMO_AVATAR, demoToday } from "@/lib/demo";
 import { MASCOT_MOODS, MESSAGES, NOT_MEDICAL_CARE, PRIVACY_LINE, REPORT_REASONS, SUPPORT_LINKS, type MascotMood } from "@/lib/rules";
@@ -31,25 +31,34 @@ export function App() {
 
 function LiveApp() {
   const [today, setToday] = useState<Today | null>(null);
+  const [needsPromise, setNeedsPromise] = useState(false);
   const [config, setConfig] = useState<Config | null>(null);
   const [checking, setChecking] = useState(true);
   const [error, setError] = useState("");
   const [offlineSince, setOfflineSince] = useState<Date | null>(null);
+  const hasToday = useRef(false);
+  hasToday.current = today !== null;
 
   const refresh = useCallback(async () => {
     const token = getToken();
     if (!token) {
       setToday(null);
+      setNeedsPromise(false);
       setChecking(false);
       return;
     }
     try {
       setToday(await api<Today>("/api/today", { token }));
+      setNeedsPromise(false);
       setOfflineSince(null);
     } catch (problem) {
       if (problem instanceof ApiError && problem.status === 401) {
         clearToken();
         setToday(null);
+      } else if (problem instanceof ApiError && problem.status === 409) {
+        // Logged in, but no promise yet.
+        setToday(null);
+        setNeedsPromise(true);
       } else {
         // Keep showing the last good screen rather than an error page.
         setOfflineSince((since) => since ?? new Date());
@@ -65,7 +74,8 @@ function LiveApp() {
       .catch(() => setConfig(null));
     refresh();
     const timer = setInterval(() => {
-      if (document.visibilityState === "visible") refresh();
+      // While signing up, nothing here needs refreshing, so the form isn't disturbed.
+      if (document.visibilityState === "visible" && hasToday.current) refresh();
     }, REFRESH_EVERY_MS);
     return () => clearInterval(timer);
   }, [refresh]);
@@ -79,8 +89,17 @@ function LiveApp() {
     }
   };
 
+  async function logOut() {
+    await api("/api/auth/logout", { post: true, token: getToken() }).catch(() => undefined);
+    clearToken();
+    setToday(null);
+    setNeedsPromise(false);
+  }
+
   if (checking) return <p role="status">Loading...</p>;
-  if (!today) return <PromiseScreen onJoined={setToday} />;
+  if (!today) {
+    return <PromiseScreen key={needsPromise ? "promise" : "start"} start={needsPromise ? "promise" : "welcome"} onJoined={setToday} onLoggedIn={refresh} />;
+  }
 
   const offlineNote = offlineSince && (
     <ErrorNote message={`We're having trouble connecting. Last updated at ${offlineSince.toLocaleTimeString("en-CA")}.`} />
@@ -88,7 +107,7 @@ function LiveApp() {
 
   if (today.status === "left") {
     return (
-      <div className="rise-in space-y-5">
+      <div className="space-y-5">
         <Wordmark />
         <Card title="You've left">
           <p>Thanks for showing up. Come back whenever you're ready.</p>
@@ -96,11 +115,14 @@ function LiveApp() {
             type="button"
             className={PRIMARY_BUTTON}
             onClick={() => {
-              clearToken();
               setToday(null);
+              setNeedsPromise(true);
             }}
           >
             Make a new promise
+          </button>
+          <button type="button" className={SECONDARY_BUTTON} onClick={logOut}>
+            Log out
           </button>
         </Card>
       </div>
@@ -109,20 +131,20 @@ function LiveApp() {
 
   if (today.status === "waiting") {
     return (
-      <div className="rise-in space-y-5">
+      <div className="space-y-5">
         <Wordmark />
         {offlineNote}
         {today.notice && <ErrorNote message={today.notice} />}
-        <div className="flex justify-center rounded-3xl bg-[#cfe0f5] py-6">
+        <div className="flex justify-center border-[3px] border-ink bg-[#cfe0f5] py-6">
           <PixelAvatar code={today.me.avatar} mood="waiting" scale={5} label={today.mascot.screenReaderText} />
         </div>
-        <h1 aria-live="polite" className="font-display text-4xl font-semibold">
+        <h1 aria-live="polite" className="font-display text-lg leading-relaxed">
           Finding your partner...
         </h1>
         <p>
           You're <strong>{today.me.nickname}</strong>. We look for someone on a similar goal first. It's usually under a minute if someone else is looking.
         </p>
-        <Card title="Your goal">
+        <Card title="Your promise">
           <p>{today.me.goal.text}</p>
         </Card>
         <button type="button" className={QUIET_BUTTON} onClick={() => act("/api/leave")}>
@@ -141,6 +163,7 @@ function LiveApp() {
         config={config}
         act={act}
         error={error}
+        onLogOut={logOut}
         demoLabel={today.isDemo ? "Demo: sample partner" : undefined}
         demoControls={today.isDemo ? <LiveDemoControls act={act} /> : undefined}
       />
@@ -205,14 +228,14 @@ function DemoApp() {
       demoLabel="Demo: sample data, nothing is saved"
       demoControls={
         <Card title="Demo: jump to a mood">
-          <p>Your character gets madder the longer you stay quiet.</p>
+          <p>Your avatar gets madder the longer you stay quiet.</p>
           <div className="grid grid-cols-2 gap-2">
             {MASCOT_MOODS.map((option) => (
               <button
                 key={option}
                 type="button"
                 aria-pressed={mood === option}
-                className={`${mood === option ? PRIMARY_BUTTON : SECONDARY_BUTTON} capitalize`}
+                className={`min-h-12 border-[3px] border-ink font-semibold capitalize ${mood === option ? "bg-[#fffc00]" : "bg-white"}`}
                 onClick={() => {
                   setMood(option);
                   window.scrollTo(0, 0);
@@ -222,7 +245,7 @@ function DemoApp() {
               </button>
             ))}
           </div>
-          <a href="/" className={`${QUIET_BUTTON} block text-center`}>
+          <a href="/" className={QUIET_BUTTON}>
             Leave the demo
           </a>
         </Card>

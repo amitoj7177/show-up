@@ -7,6 +7,12 @@ export const SOURCES = [
     usedFor: "Checking a goal is safe before a partner sees it, and removing personal details.",
   },
   {
+    name: "Auth0",
+    url: "https://auth0.com",
+    licence: "Auth0 terms of service",
+    usedFor: "Keeping emails and passwords safe, and sending password reset emails.",
+  },
+  {
     name: "Tiger Data (Postgres)",
     url: "https://www.tigerdata.com",
     licence: "Tiger Data terms of service",

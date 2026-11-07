@@ -12,6 +12,7 @@ export const POST = route(async (request) => {
   if (avatar !== undefined) {
     if (!isAvatarCode(avatar)) throw new HttpError(400, "bad_avatar", "We couldn't save that character.");
     await query("UPDATE users SET avatar = $2 WHERE id = $1", [user.id, avatar]);
+    await query("UPDATE accounts SET avatar = $2 WHERE user_id = $1", [user.id, avatar]);
   }
   if (gentleMascot !== undefined) {
     if (typeof gentleMascot !== "boolean") throw new HttpError(400, "bad_setting", "That setting isn't valid.");

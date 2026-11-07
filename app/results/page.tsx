@@ -28,24 +28,24 @@ export default function Results() {
 
   return (
     <main className="mx-auto w-full max-w-xl flex-1 space-y-5 px-4 py-6">
-      <h1 className="text-4xl font-bold">Real results</h1>
+      <h1 className="font-display text-xl leading-relaxed">Real results</h1>
       <p>Counted live from real use. Demo data is never included.</p>
       {error && (
-        <p role="alert" className="rounded-2xl bg-warn-soft p-4 font-medium">
+        <p role="alert" className="border-[3px] border-ink bg-warn-soft p-4 font-medium">
           {error}
         </p>
       )}
       {!stats && !error && <p role="status">Loading...</p>}
       <dl className="grid gap-3">
         {rows.map(([label, value]) => (
-          <div key={label} className="flex items-center justify-between gap-4 rounded-2xl border border-line bg-card p-4">
+          <div key={label} className="flex items-center justify-between gap-4 px-card p-4">
             <dt>{label}</dt>
-            <dd className="text-3xl font-bold">{value}</dd>
+            <dd className="font-display text-xl">{value}</dd>
           </div>
         ))}
       </dl>
-      <a href="/" className="text-accent underline underline-offset-4">
-        Back to Show Up
+      <a href="/" className="px-link">
+        Back to Promise Pals
       </a>
     </main>
   );
