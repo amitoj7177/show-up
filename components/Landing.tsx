@@ -67,11 +67,11 @@ function Section({ id, eyebrow, title, children, tint = false }: { id?: string; 
 // The public website, shown before you log in.
 export function Landing({ onStart }: { onStart: (screen: "signup" | "login") => void }) {
   return (
-    <div className="flex-1">
+    <div className="landing flex-1">
       <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-20 focus:bg-white focus:p-2">
         Skip to content
       </a>
-      <header className="border-b border-line bg-card">
+      <header className="site-header border-b border-line bg-card">
         <nav aria-label="Main" className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-8">
           <a href="/" className="flex items-center gap-2 text-xl font-bold">
             <img src="/icon-192.png" alt="" width={32} height={32} className="size-8 rounded-lg" />
@@ -122,7 +122,7 @@ export function Landing({ onStart }: { onStart: (screen: "signup" | "login") => 
           <ul className="mx-auto grid max-w-6xl gap-8 px-4 py-12 sm:px-8 md:grid-cols-3">
             {FINDINGS.map((finding) => (
               <li key={finding.source}>
-                <p className="text-4xl font-bold leading-tight text-white">{finding.figure}</p>
+                <p className="stat-figure text-4xl font-bold leading-tight text-white">{finding.figure}</p>
                 <p className="mt-2 text-lg">{finding.text}</p>
                 <a href={finding.href} className="mt-2 inline-block text-[#cfe0f5] underline underline-offset-4">
                   {finding.source}
@@ -195,7 +195,7 @@ export function Landing({ onStart }: { onStart: (screen: "signup" | "login") => 
           </ul>
         </Section>
 
-        <section className="border-t border-line bg-card">
+        <section className="cta-band border-t border-line bg-card">
           <div className="mx-auto flex max-w-6xl flex-col items-center gap-5 px-4 py-14 text-center sm:px-8">
             <h2 className="text-3xl font-bold leading-tight sm:text-2xl">Ready to make a promise?</h2>
             <div className="w-full max-w-xs">

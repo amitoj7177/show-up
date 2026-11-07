@@ -358,7 +358,7 @@ export function PromiseScreen({
                 {(config?.goalTypes ?? []).map((type) => (
                   <label
                     key={type.id}
-                    className="flex min-h-14 cursor-pointer items-center border border-line rounded-2xl bg-white p-2 font-medium has-checked:bg-accent text-white has-focus-visible:outline-3 has-focus-visible:outline-offset-2 has-focus-visible:outline-[#0b6bcb]"
+                    className="flex min-h-14 cursor-pointer items-center border border-line rounded-2xl bg-white p-2 font-medium has-checked:bg-[#fffc00] has-focus-visible:outline-3 has-focus-visible:outline-offset-2 has-focus-visible:outline-[#0b6bcb]"
                   >
                     <input type="radio" name="goalType" className="sr-only" checked={goalType === type.id} onChange={() => setGoalType(type.id)} />
                     {type.label}

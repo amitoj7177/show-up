@@ -212,7 +212,7 @@ export function TodayScreen({
     <div className="tab-bar-space space-y-4">
       <header className="flex items-center justify-between">
         <Wordmark />
-        <p className="rounded-full bg-card px-3 py-1 font-semibold shadow-sm">Day {pair.dayOfWeek} of 7</p>
+        <p className="border border-line bg-card px-2 py-1 font-semibold">Day {pair.dayOfWeek} of 7</p>
       </header>
       {me.group && <p className="font-semibold">With {me.group}</p>}
 
