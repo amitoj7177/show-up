@@ -21,6 +21,8 @@ export async function pairWithDemoPartner(user: UserRow): Promise<void> {
 // Pairs a waiting person with someone else who is waiting.
 // The longest-waiting person with the same goal type goes first.
 // After 30 seconds of waiting, any goal type is fine, so nobody waits forever.
+// People with a clinic code are only paired with others from the same clinic.
+// Someone in the same part of Calgary comes first, so partners can meet up.
 export async function tryMatch(userId: string): Promise<void> {
   await transaction(async (client) => {
     const { rows: me } = await client.query<UserRow & { waited_seconds: number }>(
@@ -38,16 +40,17 @@ export async function tryMatch(userId: string): Promise<void> {
           AND c.id <> $1
           AND c.is_demo = false
           AND c.last_seen > now() - interval '3 days'
+          AND c.group_id IS NOT DISTINCT FROM $5
           AND (c.goal_type = $2
                OR $3::float >= $4
                OR c.waiting_since < now() - make_interval(secs => $4))
           AND NOT EXISTS (
             SELECT 1 FROM pairs p
              WHERE (p.user_a = $1 AND p.user_b = c.id) OR (p.user_a = c.id AND p.user_b = $1))
-        ORDER BY (c.goal_type = $2) DESC, c.waiting_since ASC
+        ORDER BY (c.area IS NOT DISTINCT FROM $6) DESC, (c.goal_type = $2) DESC, c.waiting_since ASC
         LIMIT 1
         FOR UPDATE SKIP LOCKED`,
-      [userId, me[0].goal_type, me[0].waited_seconds, MATCH_ANY_TYPE_AFTER_SECONDS],
+      [userId, me[0].goal_type, me[0].waited_seconds, MATCH_ANY_TYPE_AFTER_SECONDS, me[0].group_id, me[0].area],
     );
     if (!found[0]) return;
 

@@ -4,7 +4,9 @@ import {
   looksLikeWeightGoal,
   mascotFor,
   minutesPast,
+  historyDays,
   partnerMood,
+  personalStats,
   strongEnough,
   sharedStreak,
   silentDays,
@@ -170,5 +172,16 @@ describe("strongEnough", () => {
     expect(strongEnough("GoodPassword1")).toBe(false);
     expect(strongEnough("tulip harbor 42")).toBe(true);
     expect(strongEnough("x".repeat(73))).toBe(false);
+  });
+});
+
+describe("historyDays and personalStats", () => {
+  it("marks days honestly, and leaves out an empty join day and an unfinished today", () => {
+    const checkins = { "2026-11-02": "done", "2026-11-04": "rough", "2026-11-05": "done" } as const;
+    expect(historyDays(checkins, START, "2026-11-06").map((day) => day.mark)).toEqual(["done", "missed", "skipped", "done"]);
+  });
+
+  it("skipping keeps a run going, missing ends it", () => {
+    expect(personalStats(["done", "skipped", "done", "missed", "done"])).toEqual({ done: 3, total: 5, current: 1, best: 2, percent: 60 });
   });
 });

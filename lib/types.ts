@@ -19,12 +19,18 @@ export type Today = {
   me: {
     nickname: string;
     avatar: string;
+    group: string | null;
+    firstName?: string | null;
+    photoId?: string | null;
+    communityName?: string | null;
+    area?: string | null;
+    whyItMatters?: string | null;
     goal: { text: string; partnerSees: string | null; type: string; typeLabel: string };
     checkInTime: string;
     gentleMascot: boolean;
     why: Why;
   };
-  today: { date: string; myCheckin: CheckinStatus | null; canCheckIn: boolean };
+  today: { date: string; myCheckin: CheckinStatus | null; canCheckIn: boolean; seenByPartnerAt?: string | null; proof?: Proof | null };
   partner: {
     nickname: string;
     avatar: string;
@@ -35,6 +41,15 @@ export type Today = {
     checkinToday: CheckinStatus | null;
     overdue: boolean;
     silentDays: number;
+    firstName?: string | null;
+    photoId?: string | null;
+    communityName?: string | null;
+    area?: string | null;
+    whyItMatters?: string | null;
+    proof?: Proof | null;
+    activeNow?: boolean;
+    lastActiveAt?: string;
+    checkedInAt?: string | null;
   } | null;
   pair: {
     startedOn: string;
@@ -45,6 +60,7 @@ export type Today = {
     week: { date: string; isToday: boolean; me: DayMark; partner: DayMark }[];
     canOfferNewMatch: boolean;
     summaryDue: boolean;
+    meetSpot?: { name: string; type: string; address: string; kmApart: number; mapUrl: string; source: string } | null;
   } | null;
   mascot: { mood: MascotMood; angerLevel: number; message: string; screenReaderText: string };
   messagesReceived: { id: string; text: string; sentAt: string }[];
@@ -57,7 +73,8 @@ export type Today = {
 export type Config = {
   goalTypes: { id: string; label: string }[];
   messages: { id: string; text: string }[];
-  talk: { found: string[]; motivation: string[]; skip: string[]; checkin: string[] };
+  talk: { found: string[]; motivation: string[]; skip: string[]; checkin: string[]; finished: string[] };
+  badges: { id: string; name: string; days: number }[];
   reportReasons: { id: string; text: string }[];
   support: SupportLink[];
   notMedicalCare: string;
@@ -88,3 +105,23 @@ export type Stats = {
 
 // A screen calls this to do something, like checking in. It replaces what's on screen.
 export type Act = (path: string, body?: object) => Promise<void>;
+
+export type History = {
+  promise: string;
+  days: { date: string; mark: "done" | "skipped" | "missed" }[];
+  finished: boolean;
+};
+
+export type Proof = { photoId: string | null; note: string | null; confirmedAt: string | null; fitbitSteps?: number | null };
+
+export type Profile = {
+  avatar: string;
+  firstName: string | null;
+  community: string | null;
+  communityName: string | null;
+  hasPhoto: boolean;
+  photoId: string | null;
+  adult: boolean;
+  hasPromise: boolean;
+  profileComplete: boolean;
+};

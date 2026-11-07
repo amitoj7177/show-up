@@ -1,4 +1,4 @@
-import { startSession, type AccountRow } from "@/lib/auth";
+import { profileComplete, startSession, type AccountRow } from "@/lib/auth";
 import { checkPassword } from "@/lib/auth0";
 import { DEFAULT_AVATAR } from "@/lib/avatar";
 import { query } from "@/lib/db";
@@ -17,5 +17,5 @@ export const POST = route(async (request) => {
      ON CONFLICT (auth_id) DO UPDATE SET auth_id = EXCLUDED.auth_id RETURNING *`,
     [authId, DEFAULT_AVATAR],
   );
-  return ok({ token: await startSession(account.id), avatar: account.avatar, hasPromise: Boolean(account.user_id) });
+  return ok({ token: await startSession(account.id), avatar: account.avatar, hasPromise: Boolean(account.user_id), profileComplete: profileComplete(account) });
 });

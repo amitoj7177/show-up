@@ -1,3 +1,5 @@
+> **Taking over?** Read `docs/HANDOFF.md` first. It holds the full event context, every decision, the code map, setup, and what's left. Where it disagrees with older notes below, HANDOFF.md wins.
+
 ## The situation
 - 24-hour in-person hackathon at UCalgary, run by Code the Change YYC (MLH-supported).
 - STARTS: Saturday Nov 7, 9:00 AM. SUBMISSION DEADLINE: Sunday Nov 8, 11:30 AM Alberta time, on Devpost. Late or incomplete = rejected.

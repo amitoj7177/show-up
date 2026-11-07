@@ -49,9 +49,13 @@ export type UserRow = {
   why: unknown;
   status: "waiting" | "paired" | "inactive" | "left";
   avatar: string;
+  group_id: string | null;
+  why_it_matters: string | null;
+  area: string | null;
   gentle_mascot: boolean;
   notice: string | null;
   is_demo: boolean;
+  last_seen: Date;
 };
 
 export type PairRow = {

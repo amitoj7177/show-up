@@ -17,7 +17,7 @@ export function Customizer({ code, onChange, showMoods = false }: { code: string
 
   return (
     <div className="space-y-4">
-      <div className="relative flex h-72 items-end justify-center overflow-hidden border-[3px] border-ink" style={{ background: MOOD_BACKGROUND[mood] }}>
+      <div className="relative flex h-72 items-end justify-center overflow-hidden border border-line rounded-2xl" style={{ background: MOOD_BACKGROUND[mood] }}>
         <div aria-hidden="true" className="absolute top-1/2 left-1/2 size-56 -translate-x-1/2 -translate-y-[46%] rounded-full bg-white/50" />
         <div className="relative mb-1">
           <PixelAvatar code={code} mood={mood} scale={5} animate label={`Your character, looking ${mood}.`} />
@@ -32,7 +32,7 @@ export function Customizer({ code, onChange, showMoods = false }: { code: string
               type="button"
               aria-pressed={mood === option}
               onClick={() => setMood(option)}
-              className={`min-h-11 border-[3px] border-ink px-3 font-semibold capitalize ${mood === option ? "bg-ink text-white" : "bg-white"}`}
+              className={`min-h-11 border border-line rounded-2xl px-3 font-semibold capitalize ${mood === option ? "bg-accent text-white" : "bg-white"}`}
             >
               {option}
             </button>
@@ -53,19 +53,19 @@ export function Customizer({ code, onChange, showMoods = false }: { code: string
                   type="button"
                   aria-label={`Previous ${title}`}
                   onClick={() => step(key, -1, options.length)}
-                  className="font-display size-12 shrink-0 border-[3px] border-ink bg-white"
+                  className="font-bold size-12 shrink-0 border border-line rounded-2xl bg-white"
                 >
                   <span aria-hidden="true">&lt;</span>
                 </button>
                 <p aria-live="polite" aria-labelledby={`label-${key}`} className="flex min-w-0 flex-1 items-center justify-center gap-2 text-center font-medium">
-                  {current.colour && <span aria-hidden="true" className="inline-block size-5 shrink-0 border-2 border-ink" style={{ background: current.colour }} />}
+                  {current.colour && <span aria-hidden="true" className="inline-block size-5 shrink-0 border border-line rounded-md" style={{ background: current.colour }} />}
                   {current.name}
                 </p>
                 <button
                   type="button"
                   aria-label={`Next ${title}`}
                   onClick={() => step(key, 1, options.length)}
-                  className="font-display size-12 shrink-0 border-[3px] border-ink bg-white"
+                  className="font-bold size-12 shrink-0 border border-line rounded-2xl bg-white"
                 >
                   <span aria-hidden="true">&gt;</span>
                 </button>

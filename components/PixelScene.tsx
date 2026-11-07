@@ -63,10 +63,10 @@ export function PixelScene({ code, mood, label, bubble }: { code: string; mood: 
   }, [code, mood, frame]);
 
   return (
-    <div className="relative border-b-4 border-ink bg-[#bfe6ff]">
+    <div className="relative border-b border-line bg-[#bfe6ff]">
       <canvas ref={canvas} width={SCENE_W} height={SCENE_H} role="img" aria-label={label} className="pixel block h-auto w-full" />
       {bubble && (
-        <p aria-hidden="true" className="font-display absolute top-[8%] left-[58%] border-[3px] border-ink bg-white px-2.5 py-1.5 text-sm leading-none">
+        <p aria-hidden="true" className="absolute top-[8%] left-[58%] border border-line rounded-2xl bg-white px-2.5 py-1.5 text-xl font-bold leading-none">
           {bubble}
         </p>
       )}

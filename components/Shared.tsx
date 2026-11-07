@@ -2,21 +2,28 @@ import type { ReactNode } from "react";
 import type { SupportLink, Why } from "@/lib/types";
 
 export function Wordmark() {
-  return <p className="font-display text-base leading-relaxed">Promise Pals</p>;
+  return (
+    <p className="flex items-center gap-2 text-xl font-bold">
+      <img src="/icon-192.png" alt="" width={32} height={32} className="size-8 rounded-lg" />
+      Promise Pals
+    </p>
+  );
 }
 
-// The yellow title bar at the top of a screen.
+// The bar at the top of a screen, with an optional back button.
 export function TitleBar({ title, onBack, right }: { title: string; onBack?: () => void; right?: ReactNode }) {
   return (
-    <div className="flex min-h-16 items-center justify-between gap-2 border-b-4 border-ink bg-[#ffd54f] px-3 py-2">
+    <div className="flex min-h-16 items-center justify-between gap-2 border-b border-line bg-card px-3 py-2">
       {onBack ? (
-        <button type="button" aria-label="Back" onClick={onBack} className="font-display size-11 shrink-0 border-[3px] border-ink bg-white">
-          <span aria-hidden="true">&lt;</span>
+        <button type="button" aria-label="Back" onClick={onBack} className="flex size-11 shrink-0 items-center justify-center rounded-full hover:bg-paper">
+          <svg aria-hidden="true" viewBox="0 0 24 24" className="size-6" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M15 18l-6-6 6-6" />
+          </svg>
         </button>
       ) : (
         <span className="size-11 shrink-0" />
       )}
-      <h1 className="font-display text-center text-sm leading-relaxed">{title}</h1>
+      <h1 className="text-center text-xl font-bold">{title}</h1>
       {right ?? <span className="size-11 shrink-0" />}
     </div>
   );
@@ -67,8 +74,8 @@ export function SupportFooter({ support, notMedicalCare }: { support: SupportLin
 
 export function Card({ title, children }: { title?: string; children: ReactNode }) {
   return (
-    <section className="px-card space-y-3 p-4">
-      {title && <h2 className="font-display text-sm leading-relaxed">{title}</h2>}
+    <section className="px-card space-y-3 p-5">
+      {title && <h2 className="text-xl font-bold">{title}</h2>}
       {children}
     </section>
   );
@@ -76,14 +83,14 @@ export function Card({ title, children }: { title?: string; children: ReactNode 
 
 export function ErrorNote({ message }: { message: string }) {
   return (
-    <p role="alert" className="border-[3px] border-ink bg-warn-soft p-3 font-medium">
+    <p role="alert" className="rounded-2xl bg-warn-soft p-4 font-medium">
       {message}
     </p>
   );
 }
 
 export function DemoLabel({ text }: { text: string }) {
-  return <p className="border-[3px] border-ink bg-accent-soft px-3 py-2 text-center font-semibold">{text}</p>;
+  return <p className="rounded-full bg-accent-soft px-4 py-2 text-center font-semibold text-accent-dark">{text}</p>;
 }
 
 export const PRIMARY_BUTTON = "px-btn px-btn-y";

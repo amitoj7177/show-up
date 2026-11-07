@@ -1,17 +1,18 @@
 @import "tailwindcss";
 
-/* The Promise Pals look: chunky ink outlines, square corners, hard shadows and a bright yellow. */
+/* A calm, clean app: one blue accent, navy text, soft greys and lots of white space.
+   The team's pixel characters are the only retro touch. */
 @theme inline {
-  --color-paper: #fff8e7;
+  --color-paper: #f5f7fb;
   --color-card: #ffffff;
-  --color-ink: #2d2540;
-  --color-muted: #4f475f;
-  --color-line: #2d2540;
-  --color-accent: #2d2540;
-  --color-accent-dark: #2d2540;
-  --color-accent-soft: #fff3b0;
-  --color-warn-soft: #ffe0d8;
-  --font-display: var(--font-pixel), "Courier New", monospace;
+  --color-ink: #14213d;
+  --color-muted: #556070;
+  --color-line: #e2e6ee;
+  --color-accent: #2457d6;
+  --color-accent-dark: #1a3fa0;
+  --color-accent-soft: #eaf0ff;
+  --color-warn-soft: #fdecea;
+  --font-display: var(--font-sans);
 }
 
 html {
@@ -21,70 +22,101 @@ html {
 body {
   background: var(--color-paper);
   color: var(--color-ink);
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  font-family: var(--font-sans), system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
   font-size: 18px;
-  line-height: 1.5;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3 {
+  letter-spacing: -0.01em;
 }
 
 /* Every keyboard user can always see where they are. */
 :focus-visible {
-  outline: 3px solid #0b6bcb;
+  outline: 3px solid var(--color-accent);
   outline-offset: 2px;
+  border-radius: 10px;
 }
 
 .px-card {
   background: var(--color-card);
-  border: 3px solid var(--color-ink);
-  box-shadow: 0 4px 0 var(--color-ink);
+  border: 1px solid var(--color-line);
+  border-radius: 20px;
+  box-shadow: 0 1px 2px rgb(20 33 61 / 0.04), 0 4px 16px rgb(20 33 61 / 0.04);
 }
 
 .px-btn {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   width: 100%;
-  min-height: 56px;
-  padding: 14px;
-  border: 3px solid var(--color-ink);
+  min-height: 54px;
+  padding: 12px 18px;
+  border: 1px solid var(--color-line);
+  border-radius: 14px;
   background: #ffffff;
   color: var(--color-ink);
-  font: 15px/1.5 var(--font-display);
+  font: 600 18px/1.3 var(--font-sans), system-ui, sans-serif;
   text-align: center;
-  box-shadow: 0 4px 0 var(--color-ink);
   cursor: pointer;
+  transition: background-color 120ms ease, transform 80ms ease;
+}
+.px-btn:hover {
+  background: var(--color-paper);
 }
 .px-btn-y {
-  background: #fffc00;
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #ffffff;
 }
-.px-btn:active {
-  transform: translateY(4px);
-  box-shadow: none;
+.px-btn-y:hover {
+  background: var(--color-accent-dark);
+}
+.px-btn:active:not(:disabled) {
+  transform: scale(0.98);
 }
 .px-btn:disabled {
-  opacity: 0.6;
+  opacity: 0.55;
+  cursor: default;
 }
 
 .px-input {
   width: 100%;
   min-height: 52px;
-  padding: 10px 12px;
-  border: 3px solid var(--color-ink);
+  padding: 12px 14px;
+  border: 1.5px solid var(--color-line);
+  border-radius: 12px;
   background: #ffffff;
   color: var(--color-ink);
   font-size: 18px;
 }
+.px-input:focus {
+  border-color: var(--color-accent);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--color-accent-soft);
+}
 .px-input::placeholder {
-  color: var(--color-muted);
+  color: #6b7586;
 }
 
 .px-label {
   display: block;
   margin-bottom: 6px;
-  font: 14px/1.5 var(--font-display);
+  font-weight: 600;
+  font-size: 18px;
 }
 
 .px-link {
-  color: #174fb0;
+  color: var(--color-accent);
+  font-weight: 600;
   text-decoration: underline;
   text-underline-offset: 3px;
+}
+
+.press:active {
+  transform: scale(0.98);
 }
 
 .pixel {
@@ -110,14 +142,26 @@ body {
 @keyframes slide-in-right { from { transform: translateX(150px); } to { transform: none; } }
 @keyframes pop-in { from { transform: scale(0); } to { transform: scale(1); } }
 @keyframes typing-dots { to { width: 3.2em; } }
+@keyframes confetti-fall { to { transform: translateY(320px); } }
 
 .slide-in-left { animation: slide-in-left 0.6s steps(6) both; }
 .slide-in-right { animation: slide-in-right 0.6s steps(6) both; }
 .pop-in { animation: pop-in 0.4s steps(4) 0.6s both; }
 .typing-dots { display: inline-block; overflow: hidden; vertical-align: bottom; width: 0; animation: typing-dots 1.2s steps(4) infinite; }
+.confetti { animation: confetti-fall 2.4s steps(8) infinite; }
+
+/* Space for the bottom tab bar, plus the phone's home indicator when installed as an app. */
+.tab-bar-space {
+  padding-bottom: calc(96px + env(safe-area-inset-bottom));
+}
+.tab-bar {
+  padding-bottom: env(safe-area-inset-bottom);
+}
 
 /* Turned off for anyone who prefers less motion. */
 @media (prefers-reduced-motion: reduce) {
   .character-happy, .character-mad, .character-furious, .slide-in-left, .slide-in-right, .pop-in { animation: none; }
   .typing-dots { animation: none; width: auto; }
+  .confetti { display: none; }
+  .px-btn, .press { transition: none; }
 }

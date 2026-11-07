@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 // Walks through the whole product using the real API, the way the app would.
 // Run with: npm run smoke (uses http://localhost:3000)
 // Or against the live site: BASE_URL=https://your-site.vercel.app npm run smoke
@@ -71,6 +72,10 @@ check("streak starts at 0", aNow.pair.streak === 0);
 await call("POST", "/api/checkin", { token: tokenA, body: { status: "done" } });
 const bSees = (await call("GET", "/api/today", { token: tokenB })).json.data;
 check("partner sees my check-in", bSees.partner.checkinToday === "done");
+check("partner sees the real time I checked in", typeof bSees.partner.checkedInAt === "string");
+check("partner shows as active now", bSees.partner.activeNow === true, bSees.partner);
+const aSeen = (await call("GET", "/api/today", { token: tokenA })).json.data;
+check("I see that my partner saw my check-in", typeof aSeen.today.seenByPartnerAt === "string", aSeen.today);
 check("mascot stays calm on the day you join", bSees.mascot.angerLevel === 0, bSees.mascot);
 
 const bDone = (await call("POST", "/api/checkin", { token: tokenB, body: { status: "done" } })).json.data;
@@ -169,6 +174,7 @@ if (signup.status === 503) {
   const noPromise = await call("GET", "/api/today", { token: session });
   check("a new account has no promise yet", noPromise.status === 409 && noPromise.json.error.code === "no_promise", noPromise.json);
   check("a character can be saved before a promise", (await call("POST", "/api/account", { token: session, body: { avatar: code } })).status === 200);
+  await call("POST", "/api/account", { token: session, body: { firstName: "Tester", community: "HIL", adult: true } });
   check("short passwords are refused", (await call("POST", "/api/auth/signup", { body: { email: `x${email}`, password: "too short pw" } })).status === 400);
   check("wrong password is refused", (await call("POST", "/api/auth/login", { body: { email, password: "wrong harbor sunrise 42" } })).status === 401);
   const promise = await call("POST", "/api/join", { token: session, body: { goalText: `Stretch ${tag}`, goalType: "move", checkInTime: "09:00" } });
@@ -184,6 +190,78 @@ if (signup.status === 503) {
   check("logging out ends that session", (await call("GET", "/api/today", { token: again.json.data.token })).status === 401);
   check("the other device stays logged in", (await call("GET", "/api/today", { token: session })).status === 200);
   await call("POST", "/api/leave", { token: session });
+}
+
+// --- Real profiles, photo proof and Calgary meet-ups (needs Auth0 and Gemini) ---
+const photo = `data:image/jpeg;base64,${readFileSync(new URL("./fixtures/test-photo.jpg", import.meta.url)).toString("base64")}`;
+async function person(name, community, goal, why) {
+  const made = await call("POST", "/api/auth/signup", { body: { email: `${name.toLowerCase()}${tag}@example.com`, password: "tulip harbor sunrise 42" } });
+  if (made.status !== 201) return null;
+  const token = made.json.data.token;
+  const early = await call("POST", "/api/join", { token, body: { goalText: goal, goalType: "recovery", checkInTime: "07:00" } });
+  check(`${name} can't make a promise before finishing a profile`, early.status === 409, early.json);
+  const saved = await call("POST", "/api/account", { token, body: { firstName: name, community, adult: true } });
+  check(`${name}'s profile is complete`, saved.json.data.profileComplete === true, saved.json);
+  const joined = await call("POST", "/api/join", { token, body: { goalText: goal, goalType: "recovery", checkInTime: "07:00", whyItMatters: why } });
+  return { token, joined };
+}
+const sam = await person("Sam", "HIL", `Do my knee physio stretches ${tag}`, "I want to hike with my family again.");
+if (!sam) {
+  console.log("SKIP  profiles and proof: Auth0 isn't connected");
+} else {
+  check("a last name with numbers is refused", (await call("POST", "/api/account", { token: sam.token, body: { firstName: "Sam123" } })).status === 400);
+  check("a made-up community is refused", (await call("POST", "/api/account", { token: sam.token, body: { community: "NOPE" } })).status === 400);
+  const ana = await person("Ana", "BRD", `Do my physio exercises daily ${tag}`, "Walking clears my head.");
+  const anaView = ana.joined.json.data.today;
+  check("people in the same part of Calgary are paired", anaView.status === "paired", anaView.status);
+  check("partner shows a real first name", anaView.partner?.nickname === "Sam", anaView.partner);
+  check("partner shows their Calgary community", anaView.partner?.communityName === "Hillhurst", anaView.partner);
+  check("partner shows why it matters", typeof anaView.partner?.whyItMatters === "string" && anaView.partner.whyItMatters.length > 0);
+  check("a real Calgary meet-up spot is suggested", typeof anaView.pair?.meetSpot?.name === "string" && anaView.pair.meetSpot.source.includes("Calgary"), anaView.pair?.meetSpot);
+  check("the partner never sees an email", !JSON.stringify(anaView).includes("@example.com"));
+
+  const proofCheckin = await call("POST", "/api/checkin", { token: sam.token, body: { status: "done", photo } });
+  check("checking in with a photo works", proofCheckin.status === 200 && proofCheckin.json.data.today.proof?.photoId, proofCheckin.json);
+  check("Gemini describes the photo", typeof proofCheckin.json.data.today.proof?.note === "string");
+  const anaSees = (await call("GET", "/api/today", { token: ana.token })).json.data;
+  const proofId = anaSees.partner.proof?.photoId;
+  check("partner sees the proof photo", typeof proofId === "string");
+  const image = await fetch(`${BASE}/api/photo?kind=proof&id=${proofId}`, { headers: { Authorization: `Bearer ${ana.token}` } });
+  check("partner can load the photo", image.status === 200 && image.headers.get("content-type") === "image/jpeg");
+  const outsider = await join(`Walk daily ${tag} outsider`);
+  const blocked = await fetch(`${BASE}/api/photo?kind=proof&id=${proofId}`, { headers: { Authorization: `Bearer ${outsider.json.data.token}` } });
+  check("a stranger can't load the photo", blocked.status === 404);
+  check("a bad photo is refused", (await call("POST", "/api/checkin", { token: sam.token, body: { status: "done", photo: "data:image/png;base64,AAAA" } })).status === 400);
+  const confirmed = await call("POST", "/api/confirm", { token: ana.token });
+  check("partner can confirm the check-in", confirmed.status === 200 && confirmed.json.data.partner.proof?.confirmedAt);
+  const samSees = (await call("GET", "/api/today", { token: sam.token })).json.data;
+  check("I see my partner confirmed it", typeof samSees.today.proof?.confirmedAt === "string", samSees.today.proof);
+  check("confirming twice is refused", (await call("POST", "/api/confirm", { token: ana.token })).status === 409);
+  for (const token of [sam.token, ana.token, outsider.json.data.token]) await call("POST", "/api/leave", { token });
+}
+
+// --- Clinic groups (set GROUP_CODE and STAFF_KEY from npm run group:create) ---
+if (process.env.GROUP_CODE && process.env.STAFF_KEY) {
+  const g = (goal) => join(goal, { groupCode: process.env.GROUP_CODE.toLowerCase() });
+  const outsider = await join(`Do my knee physio stretches ${tag} outside`);
+  const first = await g(`Do my knee physio stretches ${tag} clinic one`);
+  check("clinic members aren't paired with outsiders", first.json.data.today.status === "waiting", first.json.data.today.status);
+  check("the clinic name is shown", first.json.data.today.me.group !== null);
+  const second = await g(`Do my physio exercises ${tag} clinic two`);
+  check("two clinic members are paired together", second.json.data.today.status === "paired");
+  check("a wrong clinic code is refused", (await join("Walk daily", { groupCode: "NOPE00" })).status === 400);
+  const few = await call("POST", "/api/clinic", { body: { staffKey: process.env.STAFF_KEY } });
+  check("staff see no totals with under 5 people", few.status === 200 && few.json.data.enoughPeople === false, few.json);
+  const extra = [];
+  for (const n of [3, 4, 5]) extra.push(await g(`Do my physio exercises ${tag} clinic ${n}`));
+  await call("POST", "/api/checkin", { token: second.json.data.token, body: { status: "done" } });
+  const totals = await call("POST", "/api/clinic", { body: { staffKey: process.env.STAFF_KEY } });
+  check("staff see totals once 5 people join", totals.json.data.enoughPeople === true && totals.json.data.week.doneDays >= 1, totals.json);
+  check("staff never see names or goals", !JSON.stringify(totals.json).includes("physio") && !JSON.stringify(totals.json).includes("nickname"));
+  check("a wrong staff key is refused", (await call("POST", "/api/clinic", { body: { staffKey: "wrong" } })).status === 401);
+  for (const person of [outsider, first, second, ...extra]) await call("POST", "/api/leave", { token: person.json.data.token });
+} else {
+  console.log("SKIP  clinic groups: set GROUP_CODE and STAFF_KEY");
 }
 
 // --- Results ignore demo data ---

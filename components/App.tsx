@@ -3,14 +3,20 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api, ApiError, clearToken, getToken } from "@/lib/api";
 import { DEMO_AVATAR, demoToday } from "@/lib/demo";
-import { MASCOT_MOODS, MESSAGES, NOT_MEDICAL_CARE, PRIVACY_LINE, REPORT_REASONS, SUPPORT_LINKS, TALK, type MascotMood } from "@/lib/rules";
+import { BADGES, MASCOT_MOODS, MESSAGES, NOT_MEDICAL_CARE, PRIVACY_LINE, REPORT_REASONS, SUPPORT_LINKS, TALK, type MascotMood } from "@/lib/rules";
 import type { Act, Config, Today } from "@/lib/types";
 import { FindingScreen, PartnerFoundScreen, useLinePicker } from "./Moments";
-import { PromiseScreen } from "./PromiseScreen";
-import { Card, ErrorNote, PRIMARY_BUTTON, QUIET_BUTTON, SECONDARY_BUTTON, SupportFooter, Wordmark } from "./Shared";
+import { Landing } from "./Landing";
+import { PromiseScreen, type PromiseStart } from "./PromiseScreen";
+import { Card, ErrorNote, PRIMARY_BUTTON, QUIET_BUTTON, SECONDARY_BUTTON, Wordmark } from "./Shared";
 import { TodayScreen } from "./TodayScreen";
 
 const REFRESH_EVERY_MS = 3000;
+
+// The app itself is phone-shaped, even on a laptop. The public website uses the full width.
+function Phone({ children }: { children: React.ReactNode }) {
+  return <main className="mx-auto w-full max-w-md flex-1 px-4 py-5">{children}</main>;
+}
 
 // Decides which screen to show. ?demo=1 always shows labelled sample data, with no internet needed.
 export function App() {
@@ -21,11 +27,11 @@ export function App() {
   }, []);
 
   return (
-    <main className="mx-auto w-full max-w-md flex-1 px-4 py-5">
-      {mode === "demo" && <DemoApp />}
+    <>
+      {mode === "demo" && <Phone><DemoApp /></Phone>}
       {mode === "live" && <LiveApp />}
-      {mode === "loading" && <p role="status">Loading...</p>}
-    </main>
+      {mode === "loading" && <Phone><p role="status">Loading...</p></Phone>}
+    </>
   );
 }
 
@@ -39,6 +45,7 @@ function LiveApp() {
   const hasToday = useRef(false);
   hasToday.current = today !== null;
   const [celebrating, setCelebrating] = useState(false);
+  const [authStart, setAuthStart] = useState<PromiseStart | null>(null);
   const wasPaired = useRef<boolean | null>(null);
   const pick = useLinePicker();
   const [foundLine, setFoundLine] = useState("");
@@ -108,20 +115,25 @@ function LiveApp() {
     clearToken();
     setToday(null);
     setNeedsPromise(false);
+    setAuthStart(null);
   }
 
-  if (checking) return <p role="status">Loading...</p>;
+  if (checking) return <Phone><p role="status">Loading...</p></Phone>;
+  if (!today && !needsPromise && !authStart) return <Landing onStart={setAuthStart} />;
   if (!today) {
     return (
+      <Phone>
       <PromiseScreen
         key={needsPromise ? "promise" : "start"}
-        start={needsPromise ? "promise" : "welcome"}
+        start={needsPromise ? "promise" : (authStart ?? "welcome")}
         onJoined={(joined) => {
           wasPaired.current = false;
           setToday(joined);
         }}
         onLoggedIn={refresh}
+        onExit={() => setAuthStart(null)}
       />
+      </Phone>
     );
   }
 
@@ -131,6 +143,7 @@ function LiveApp() {
 
   if (today.status === "left") {
     return (
+      <Phone>
       <div className="space-y-5">
         <Wordmark />
         <Card title="You've left">
@@ -150,25 +163,31 @@ function LiveApp() {
           </button>
         </Card>
       </div>
+      </Phone>
     );
   }
 
   if (today.status === "waiting") {
     return (
-      <div className="space-y-4">
-        {offlineNote}
-        <FindingScreen today={today} onCancel={() => act("/api/leave")} />
-        <SupportFooter support={today.support} notMedicalCare={today.notMedicalCare} />
-      </div>
+      <Phone>
+        <div className="space-y-4">
+          {offlineNote}
+          <FindingScreen today={today} onCancel={() => act("/api/leave")} />
+        </div>
+      </Phone>
     );
   }
 
   if (celebrating) {
-    return <PartnerFoundScreen today={today} line={foundLine} onContinue={() => setCelebrating(false)} />;
+    return (
+      <Phone>
+        <PartnerFoundScreen today={today} line={foundLine} onContinue={() => setCelebrating(false)} />
+      </Phone>
+    );
   }
 
   return (
-    <>
+    <Phone>
       {offlineNote}
       <TodayScreen
         today={today}
@@ -179,7 +198,7 @@ function LiveApp() {
         demoLabel={today.isDemo ? "Demo: sample partner" : undefined}
         demoControls={today.isDemo ? <LiveDemoControls act={act} /> : undefined}
       />
-    </>
+    </Phone>
   );
 }
 
@@ -196,6 +215,16 @@ function LiveDemoControls({ act }: { act: Act }) {
     </Card>
   );
 }
+
+// Labelled sample progress for the demo, from the team's home screen design.
+const DEMO_HISTORY = {
+  promise: "Do my physio exercises every morning",
+  days: [..."ddsddddmdddddsddddddddmddddd"].map((key, index) => ({
+    date: `sample-${index}`,
+    mark: key === "d" ? ("done" as const) : key === "s" ? ("skipped" as const) : ("missed" as const),
+  })),
+  finished: true,
+};
 
 // The ?demo=1 tour. Everything happens on the phone, so it works even with no internet.
 function DemoApp() {
@@ -215,6 +244,7 @@ function DemoApp() {
     goalTypes: [],
     messages: MESSAGES,
     talk: TALK,
+    badges: BADGES,
     reportReasons: REPORT_REASONS,
     support: SUPPORT_LINKS,
     notMedicalCare: NOT_MEDICAL_CARE,
@@ -239,6 +269,7 @@ function DemoApp() {
       act={act}
       error=""
       demoLabel="Demo: sample data, nothing is saved"
+      sampleHistory={DEMO_HISTORY}
       demoControls={
         <Card title="Demo: jump to a mood">
           <p>Your avatar gets madder the longer you stay quiet.</p>
@@ -248,7 +279,7 @@ function DemoApp() {
                 key={option}
                 type="button"
                 aria-pressed={mood === option}
-                className={`min-h-12 border-[3px] border-ink font-semibold capitalize ${mood === option ? "bg-[#fffc00]" : "bg-white"}`}
+                className={`min-h-12 border border-line rounded-2xl font-semibold capitalize ${mood === option ? "bg-accent text-white" : "bg-white"}`}
                 onClick={() => {
                   setMood(option);
                   window.scrollTo(0, 0);

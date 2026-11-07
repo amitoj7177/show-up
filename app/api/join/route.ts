@@ -1,7 +1,10 @@
-import { findAccount, hashToken, newToken, tokenFrom } from "@/lib/auth";
+import { findAccount, hashToken, newToken, profileComplete, tokenFrom } from "@/lib/auth";
 import { DEFAULT_AVATAR, isAvatarCode } from "@/lib/avatar";
 import { query, type UserRow } from "@/lib/db";
 import { checkGoal } from "@/lib/gemini";
+import { findCommunity } from "@/lib/calgary";
+import { findGroupByCode } from "@/lib/groups";
+import { checkWhy } from "@/lib/moderation";
 import { HttpError, ok, readBody, route } from "@/lib/http";
 import { pairWithDemoPartner, tryMatch } from "@/lib/matching";
 import { GOAL_TYPES, makeNickname, SUPPORT_LINKS, type GoalType } from "@/lib/rules";
@@ -24,6 +27,20 @@ export const POST = route(async (request) => {
     throw new HttpError(400, "bad_time", "Please pick a check-in time.");
   }
 
+  // An optional clinic or campus code. A wrong code is an error, so nobody joins the wrong group by mistake.
+  const groupCode = typeof body.groupCode === "string" ? body.groupCode.trim().toUpperCase() : "";
+  const group = groupCode ? await findGroupByCode(groupCode) : undefined;
+  if (groupCode && !group) {
+    throw new HttpError(400, "bad_code", "We don't recognize that code. Check it with your clinic, or leave it empty.");
+  }
+
+  if (account && !profileComplete(account)) {
+    throw new HttpError(409, "profile_needed", "Please finish your profile first: your first name, Calgary community, and confirming you're 18 or older.");
+  }
+  const whyText = typeof body.whyItMatters === "string" ? body.whyItMatters.trim() : "";
+  if (whyText.length > 140) throw new HttpError(400, "why_too_long", "Please keep why it matters to 140 characters.");
+  const whyItMatters = whyText ? await checkWhy(whyText) : null;
+
   const check = await checkGoal(goalText, goalType);
   if (!check.allowed) {
     return ok({
@@ -40,8 +57,8 @@ export const POST = route(async (request) => {
   const isDemo = body.demo === true;
   const avatar = isAvatarCode(body.avatar) ? body.avatar : (account?.avatar ?? DEFAULT_AVATAR);
   const [user] = await query<UserRow>(
-    `INSERT INTO users (token_hash, nickname, goal_text, short_goal, goal_type, check_in_time, why, is_demo, avatar)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
+    `INSERT INTO users (token_hash, nickname, goal_text, short_goal, goal_type, check_in_time, why, is_demo, avatar, group_id, why_it_matters, area)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *`,
     [
       hashToken(account ? newToken() : token),
       makeNickname(),
@@ -52,6 +69,9 @@ export const POST = route(async (request) => {
       check.why,
       isDemo,
       avatar,
+      group?.id ?? null,
+      whyItMatters,
+      findCommunity(account?.community)?.area ?? null,
     ],
   );
   if (account) await query("UPDATE accounts SET user_id = $2 WHERE id = $1", [account.id, user.id]);

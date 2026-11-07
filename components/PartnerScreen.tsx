@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { MOOD_BACKGROUND } from "@/lib/avatar";
 import { api, getToken } from "@/lib/api";
 import type { Act, Config, Summary, Today } from "@/lib/types";
-import { PixelAvatar } from "./PixelAvatar";
+import { presenceText } from "./Moments";
+import { PartnerCard } from "./PartnerCard";
 import { Card, PRIMARY_BUTTON, QUIET_BUTTON, SECONDARY_BUTTON } from "./Shared";
 
 // Screen 3: show up for your partner.
@@ -28,12 +28,13 @@ export function PartnerScreen({ today, config, act }: { today: Today; config: Co
 
   return (
     <div className="space-y-4">
-      <section className="flex items-center gap-4 border-[3px] border-ink p-4 shadow-[0_4px_0_var(--color-ink)]" style={{ background: MOOD_BACKGROUND[partner.mood] }}>
-        <PixelAvatar code={partner.avatar} mood={partner.mood} scale={3} label={`Your partner's character, looking ${partner.mood}.`} />
-        <div className="min-w-0">
-          <h1 className="font-display text-sm leading-relaxed break-words">{partner.nickname}</h1>
-          <p className="font-medium">{partner.goal ?? partner.goalTypeLabel}</p>
-        </div>
+      <section className="px-card space-y-3 p-4">
+        <h1 className="sr-only">Your partner</h1>
+        <PartnerCard partner={partner} />
+        <p className="flex items-center gap-1.5 font-semibold">
+          <span aria-hidden="true" className={`inline-block size-3 border border-line rounded-md ${partner.activeNow ? "bg-[#43a047]" : "bg-white"}`} />
+          {presenceText(partner)}
+        </p>
       </section>
 
       <Card title={needsSupport ? "Your partner could use a little support" : "Send some encouragement"}>

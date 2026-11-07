@@ -9,6 +9,7 @@ import {
   REPORT_REASONS,
   SUPPORT_LINKS,
   TALK,
+  BADGES,
 } from "@/lib/rules";
 import { SOURCES } from "@/lib/sources";
 
@@ -18,6 +19,7 @@ export const GET = route(async () =>
     goalTypes: GOAL_TYPES.map((id) => ({ id, label: GOAL_TYPE_LABELS[id] })),
     messages: MESSAGES,
     talk: TALK,
+    badges: BADGES,
     reportReasons: REPORT_REASONS,
     mascotMoods: MASCOT_MOODS,
     support: SUPPORT_LINKS,

@@ -44,7 +44,21 @@ export const TALK = {
   ],
   skip: ["That’s okay. Rest is part of the plan.", "Hard day? Tomorrow is a fresh start.", "No stress. I’m right here."],
   checkin: ["Nice! Your partner just got the news.", "Done! Look at you go."],
+  finished: ["You did it! Look how far you\u2019ve come.", "A whole week of showing up. That\u2019s huge."],
 };
+
+// Badges for your longest run of check-ins. Skipped days don't break a run, and missed days do.
+export const BADGES = [
+  { id: "first", name: "First step", days: 1 },
+  { id: "three", name: "3 in a row", days: 3 },
+  { id: "week", name: "One week", days: 7 },
+  { id: "two-weeks", name: "Two weeks", days: 14 },
+  { id: "habit", name: "21 days", days: 21 },
+  { id: "month", name: "30 days", days: 30 },
+];
+
+// A promise counts as finished after a full week.
+export const PROMISE_DAYS = 7;
 
 export const REPORT_REASONS = [
   { id: "goal", text: "Their goal made me uncomfortable" },
@@ -61,7 +75,7 @@ export const SUPPORT_LINKS = [
 export const NOT_MEDICAL_CARE = "Promise Pals is not medical care. In an emergency, call 911.";
 
 export const PRIVACY_LINE =
-  "Auth0 keeps your email and password. We store a made-up nickname, your character, your goal and your check-ins. Your partner never sees your email.";
+  "Your partner sees your first name, photo, Calgary community, goal and check-ins. Never your email, last name or exact address. Auth0 keeps your email and password.";
 
 // Auth0's password rule for this app: 15 to 72 characters. A short phrase works well.
 export const PASSWORD_RULE = "Use 15 or more characters. A short phrase works, like “tulip harbor 42”.";
@@ -152,6 +166,32 @@ export function weekStrip(mine: DayCheckins, theirs: DayCheckins, startedOn: str
     const date = addDays(weekStart, index);
     return { date, isToday: date === today, me: mark(mine, date), partner: mark(theirs, date) };
   });
+}
+
+export type HistoryDay = "done" | "skipped" | "missed";
+
+// Your own days since you made your promise, oldest first, for the progress screen.
+// The day you joined only counts if you checked in. Today only counts once you've checked in.
+export function historyDays(checkins: DayCheckins, firstDay: string, today: string): { date: string; mark: HistoryDay }[] {
+  const days: { date: string; mark: HistoryDay }[] = [];
+  for (let day = firstDay; day <= today; day = addDays(day, 1)) {
+    const status = checkins[day];
+    if (status) days.push({ date: day, mark: status === "done" ? "done" : "skipped" });
+    else if (day !== firstDay && day !== today) days.push({ date: day, mark: "missed" });
+  }
+  return days;
+}
+
+// Current run, best run and how many days were done. Skipped days keep a run going without adding to it.
+export function personalStats(days: HistoryDay[]) {
+  let run = 0;
+  let best = 0;
+  for (const day of days) {
+    if (day === "done") best = Math.max(best, (run += 1));
+    else if (day === "missed") run = 0;
+  }
+  const done = days.filter((day) => day === "done").length;
+  return { done, total: days.length, current: run, best, percent: days.length ? Math.round((done / days.length) * 100) : 0 };
 }
 
 // --- The mascot ----------------------------------------------------------

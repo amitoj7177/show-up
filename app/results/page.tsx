@@ -28,10 +28,10 @@ export default function Results() {
 
   return (
     <main className="mx-auto w-full max-w-xl flex-1 space-y-5 px-4 py-6">
-      <h1 className="font-display text-xl leading-relaxed">Real results</h1>
+      <h1 className="text-3xl font-bold leading-tight">Real results</h1>
       <p>Counted live from real use. Demo data is never included.</p>
       {error && (
-        <p role="alert" className="border-[3px] border-ink bg-warn-soft p-4 font-medium">
+        <p role="alert" className="border border-line rounded-2xl bg-warn-soft p-4 font-medium">
           {error}
         </p>
       )}
@@ -40,7 +40,7 @@ export default function Results() {
         {rows.map(([label, value]) => (
           <div key={label} className="flex items-center justify-between gap-4 px-card p-4">
             <dt>{label}</dt>
-            <dd className="font-display text-xl">{value}</dd>
+            <dd className="text-3xl font-bold">{value}</dd>
           </div>
         ))}
       </dl>

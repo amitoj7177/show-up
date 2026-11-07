@@ -1,5 +1,6 @@
 import { query, type PairRow, type UserRow } from "./db";
 import { HttpError } from "./http";
+import { findCommunity, meetSpot } from "./calgary";
 import { tryMatch } from "./matching";
 import {
   addDays,
@@ -21,6 +22,22 @@ import {
   type DayCheckins,
   type GoalType,
 } from "./rules";
+
+// Proof for one check-in: the photo's id, what Gemini saw in it, and when the partner confirmed it.
+function proofOf(
+  row: { id: string; has_photo: boolean; photo_note: string | null; confirmed_at: Date | null; fitbit_steps: number | null } | undefined,
+) {
+  if (!row) return null;
+  return {
+    fitbitSteps: row.fitbit_steps,
+    photoId: row.has_photo ? row.id : null,
+    note: row.photo_note,
+    confirmedAt: row.confirmed_at ? new Date(row.confirmed_at).toISOString() : null,
+  };
+}
+
+// Someone counts as "active now" if they opened the app in the last few minutes.
+const ACTIVE_NOW_MS = 3 * 60_000;
 
 export async function findActivePair(userId: string): Promise<PairRow | undefined> {
   const [pair] = await query<PairRow>(
@@ -60,9 +77,32 @@ async function checkinsFor(pairId: string): Promise<Record<string, DayCheckins>>
   return byUser;
 }
 
-function describeMe(user: UserRow) {
+type Profile = { id: string; first_name: string | null; community: string | null; has_photo: boolean };
+
+// The real-person side of someone: first name, photo and Calgary community. Demo users have none.
+async function profileOf(userId: string): Promise<Profile | undefined> {
+  const [profile] = await query<Profile>(
+    "SELECT id, first_name, community, photo IS NOT NULL AS has_photo FROM accounts WHERE user_id = $1",
+    [userId],
+  );
+  return profile;
+}
+
+function describeProfile(profile: Profile | undefined) {
   return {
-    nickname: user.nickname,
+    firstName: profile?.first_name ?? null,
+    photoId: profile?.has_photo ? profile.id : null,
+    communityName: findCommunity(profile?.community)?.name ?? null,
+    area: findCommunity(profile?.community)?.area ?? null,
+  };
+}
+
+function describeMe(user: UserRow & { group_name?: string | null }, profile?: Profile) {
+  return {
+    group: user.group_name ?? null,
+    ...describeProfile(profile),
+    whyItMatters: user.why_it_matters,
+    nickname: profile?.first_name ?? user.nickname,
     avatar: user.avatar,
     goal: {
       text: user.goal_text,
@@ -78,7 +118,7 @@ function describeMe(user: UserRow) {
 
 // Everything the main screen needs, in one response. Screens ask for this every 3 seconds.
 export async function buildToday(startingUser: UserRow, now = new Date()) {
-  let user = startingUser;
+  let user: UserRow & { group_name?: string | null } = startingUser;
 
   // Someone returning after going silent goes back in the line for a partner.
   if (user.status === "inactive") {
@@ -88,14 +128,19 @@ export async function buildToday(startingUser: UserRow, now = new Date()) {
     await tryMatch(user.id);
     [user] = await query<UserRow>("SELECT * FROM users WHERE id = $1", [user.id]);
   }
+  if (user.group_id) {
+    const [group] = await query<{ name: string }>("SELECT name FROM groups WHERE id = $1", [user.group_id]);
+    user = { ...user, group_name: group?.name ?? null };
+  }
 
   const pair = user.status === "paired" ? await findActivePair(user.id) : undefined;
+  const myProfile = await profileOf(user.id);
 
   if (!pair) {
     return {
       status: user.status === "left" ? ("left" as const) : ("waiting" as const),
       isDemo: user.is_demo,
-      me: describeMe(user),
+      me: describeMe(user, myProfile),
       today: { date: todayIn(now), myCheckin: null, canCheckIn: false },
       partner: null,
       pair: null,
@@ -115,12 +160,38 @@ export async function buildToday(startingUser: UserRow, now = new Date()) {
 
   const partnerId = partnerIdOf(pair, user.id);
   const [partner] = await query<UserRow>("SELECT * FROM users WHERE id = $1", [partnerId]);
+  const partnerProfile = await profileOf(partnerId);
   const today = pairToday(pair, now);
   const checkins = await checkinsFor(pair.id);
   const mine = checkins[user.id] ?? {};
   const theirs = checkins[partnerId] ?? {};
   const streak = sharedStreak(mine, theirs, pair.started_on, today);
   const dayNumber = daysBetween(pair.started_on, today) + 1;
+
+  // Real signs of a real person: when they last opened the app, when they checked in, and whether they saw yours.
+  const todayRows = await query<{
+    id: string;
+    user_id: string;
+    created_at: Date;
+    seen_at: Date | null;
+    has_photo: boolean;
+    photo_note: string | null;
+    confirmed_at: Date | null;
+    fitbit_steps: number | null;
+  }>(
+    `SELECT id, user_id, created_at, seen_at, photo IS NOT NULL AS has_photo, photo_note, confirmed_at, fitbit_steps
+       FROM checkins WHERE pair_id = $1 AND day = $2`,
+    [pair.id, today],
+  );
+  const theirRow = todayRows.find((row) => row.user_id === partnerId);
+  const myRow = todayRows.find((row) => row.user_id === user.id);
+  if (theirRow && !theirRow.seen_at) {
+    await query("UPDATE checkins SET seen_at = now() WHERE pair_id = $1 AND user_id = $2 AND day = $3 AND seen_at IS NULL", [
+      pair.id,
+      partnerId,
+      today,
+    ]);
+  }
 
   const sentToday = await query<{ from_user: string; message_id: string; created_at: Date }>(
     "SELECT from_user, message_id, created_at FROM encouragements WHERE pair_id = $1 AND day = $2",
@@ -130,10 +201,19 @@ export async function buildToday(startingUser: UserRow, now = new Date()) {
   return {
     status: "paired" as const,
     isDemo: pair.is_demo,
-    me: describeMe(user),
-    today: { date: today, myCheckin: mine[today] ?? null, canCheckIn: true },
+    me: describeMe(user, myProfile),
+    today: {
+      date: today,
+      myCheckin: mine[today] ?? null,
+      canCheckIn: true,
+      seenByPartnerAt: myRow?.seen_at ? new Date(myRow.seen_at).toISOString() : null,
+      proof: proofOf(myRow),
+    },
     partner: {
-      nickname: partner.nickname,
+      ...describeProfile(partnerProfile),
+      nickname: partnerProfile?.first_name ?? partner.nickname,
+      whyItMatters: partner.why_it_matters,
+      proof: proofOf(theirRow),
       avatar: partner.avatar,
       mood: partnerMood(theirs[today] ?? null),
       goal: partner.short_goal,
@@ -142,6 +222,9 @@ export async function buildToday(startingUser: UserRow, now = new Date()) {
       checkinToday: theirs[today] ?? null,
       overdue: !theirs[today] && today !== pair.started_on && minutesPast(partner.check_in_time, now) >= 0,
       silentDays: silentDays(theirs, pair.started_on, today),
+      activeNow: now.getTime() - new Date(partner.last_seen).getTime() < ACTIVE_NOW_MS,
+      lastActiveAt: new Date(partner.last_seen).toISOString(),
+      checkedInAt: theirRow ? new Date(theirRow.created_at).toISOString() : null,
     },
     pair: {
       startedOn: pair.started_on,
@@ -152,6 +235,7 @@ export async function buildToday(startingUser: UserRow, now = new Date()) {
       week: weekStrip(mine, theirs, pair.started_on, today),
       canOfferNewMatch: canOfferNewMatch(theirs, pair.started_on, today),
       summaryDue: summaryDue(pair.started_on, today),
+      meetSpot: meetSpot(myProfile?.community ?? null, partnerProfile?.community ?? null),
     },
     mascot: mascotFor({
       myStatusToday: mine[today],

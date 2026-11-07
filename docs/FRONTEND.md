@@ -12,6 +12,12 @@ Everything you need to build the web frontend and mobile app. The backend is fin
 
 **The app is now Promise Pals**, using the design from `pixel_app_login_flow_mockup.html`, connected to the real backend.
 
+**Clinic codes are in:**
+- Make a promise accepts an optional `groupCode`. People with a code are only paired with others from the same clinic.
+- `me.group` holds the clinic's name, or `null`.
+- Clinic staff use `/clinic` with their staff key, or `/clinic?demo=1` for labelled sample numbers. Staff only see totals, and only once 5 people have joined.
+- Create a clinic with `npm run group:create -- "Clinic name"`, which prints the join code and staff key once.
+
 **Your partner moments are in** (from `Partner found, pep talk and sad moments.html`):
 - The finding screen, the "Partner found!" celebration, the pep talk when you tap your character, and "Skip today".
 - "Skip today" sends `POST /api/checkin` with `{ "status": "rough" }`. It keeps the streak safe, and your character's mood becomes `sad`.

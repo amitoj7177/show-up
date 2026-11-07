@@ -16,13 +16,29 @@ export function tokenFrom(request: Request): string | undefined {
   return request.headers.get("authorization")?.replace(/^Bearer\s+/i, "") || undefined;
 }
 
-export type AccountRow = { id: string; auth_id: string; avatar: string; user_id: string | null };
+export type AccountRow = {
+  id: string;
+  auth_id: string;
+  avatar: string;
+  user_id: string | null;
+  first_name: string | null;
+  photo: string | null;
+  community: string | null;
+  adult: boolean;
+};
+
+// Everything needed before you can be matched with someone.
+export function profileComplete(account: AccountRow): boolean {
+  return Boolean(account.first_name && account.community && account.adult);
+}
 
 export async function findAccount(request: Request): Promise<AccountRow | undefined> {
   const token = tokenFrom(request);
   if (!token) return undefined;
   const [account] = await query<AccountRow>(
-    `SELECT a.* FROM accounts a JOIN sessions s ON s.account_id = a.id WHERE s.token_hash = $1`,
+    // Every column except the photo, which is large and only sent by /api/photo.
+    `SELECT a.id, a.auth_id, a.avatar, a.user_id, a.first_name, a.community, a.adult, NULL AS photo
+       FROM accounts a JOIN sessions s ON s.account_id = a.id WHERE s.token_hash = $1`,
     [hashToken(token)],
   );
   return account;

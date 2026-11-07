@@ -1,21 +1,23 @@
 import type { Metadata, Viewport } from "next";
-import { Press_Start_2P } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 
-const pixel = Press_Start_2P({ weight: "400", subsets: ["latin"], variable: "--font-pixel" });
+const sans = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
 export const metadata: Metadata = {
   title: "Promise Pals",
-  description: "Make a promise. Check in every day. Your partner sees it live.",
+  description: "Keep your health promises with a real partner in Calgary. Check in with a photo every day.",
+  appleWebApp: { capable: true, title: "Promise Pals", statusBarStyle: "default" },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#fff8e7",
+  themeColor: "#ffffff",
+  viewportFit: "cover",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${pixel.variable} h-full antialiased`}>
+    <html lang="en" className={`${sans.variable} h-full`}>
       <body className="flex min-h-full flex-col">{children}</body>
     </html>
   );

@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import type { Act, Today } from "@/lib/types";
 import { Customizer } from "./Customizer";
+import { FitbitCard } from "./FitbitCard";
+import { ProfileForm } from "./ProfileForm";
 import { Card, SECONDARY_BUTTON } from "./Shared";
 
 // The customize menu inside the app. Your partner sees your changes within a few seconds.
@@ -21,7 +23,14 @@ export function MascotScreen({ today, act, onLogOut }: { today: Today; act: Act;
 
   return (
     <div className="space-y-4">
-      <h1 className="font-display text-base leading-relaxed">Your avatar</h1>
+      <h1 className="text-xl font-bold">You</h1>
+      {!today.isDemo && (
+        <Card title="Your profile">
+          <ProfileForm submitLabel="Save profile" onSaved={() => undefined} />
+        </Card>
+      )}
+      {!today.isDemo && <FitbitCard />}
+      <h2 className="text-xl font-bold">Your character</h2>
       <p>This is who your partner sees. Changes save by themselves.</p>
       <Card>
         <Customizer code={code} onChange={change} showMoods />

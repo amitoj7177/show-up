@@ -1,4 +1,4 @@
-import { GoogleGenAI } from "@google/genai";
+import { askGeminiJson } from "./moderation";
 import { GOAL_TYPES, looksLikeWeightGoal, WEIGHT_GOAL_REFUSAL, type GoalType } from "./rules";
 
 // Gemini has one job: check a goal before a stranger can see it.
@@ -66,25 +66,8 @@ function buildWhy(
 }
 
 async function askGemini(goalText: string) {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) return null;
-
-  const ai = new GoogleGenAI({ apiKey });
-  const request = ai.models.generateContent({
-    model: process.env.GEMINI_MODEL ?? "gemini-3.5-flash-lite",
-    contents: `<goal>${goalText}</goal>`,
-    config: {
-      systemInstruction: INSTRUCTIONS,
-      temperature: 0.1,
-      responseMimeType: "application/json",
-      responseJsonSchema: RESPONSE_SCHEMA,
-    },
-  });
-  const timeout = new Promise<never>((_, reject) =>
-    setTimeout(() => reject(new Error("Gemini took too long")), 8000),
-  );
-  const response = await Promise.race([request, timeout]);
-  const parsed = JSON.parse(response.text ?? "");
+  const parsed = await askGeminiJson(`<goal>${goalText}</goal>`, INSTRUCTIONS, RESPONSE_SCHEMA, 8000);
+  if (!parsed) return null;
 
   // Never trust the shape of an AI answer: anything odd counts as a failed check.
   const validType = GOAL_TYPES.includes(parsed.goalType);

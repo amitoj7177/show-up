@@ -1,3 +1,4 @@
+import { findCommunity, meetSpot } from "./calgary";
 import {
   GOAL_TYPE_LABELS,
   MASCOT_MOODS,
@@ -26,6 +27,10 @@ const MOOD_INPUTS: Record<MascotMood, Parameters<typeof mascotFor>[0]> = {
   furious: { mySilentDays: 2, minutesPastCheckIn: 15, partnerCheckedInToday: true, streak: 0, gentle: false },
 };
 
+// Two real Calgary communities, so the sample meet-up spot is a real place.
+const DEMO_ME_COMMUNITY = "HIL";
+const DEMO_PARTNER_COMMUNITY = "BRD";
+
 export const DEMO_AVATAR = "h2-c5-s3-e1-o1-k7-a1";
 const DEMO_PARTNER_AVATAR = "h3-c3-s1-e2-o0-k9-a0";
 
@@ -51,7 +56,13 @@ export function demoToday(requestedMood: string | null, now = new Date()) {
     status: "paired" as const,
     isDemo: true,
     me: {
-      nickname: "Demo Otter 42",
+      nickname: "Alex",
+      firstName: "Alex",
+      photoId: null,
+      communityName: findCommunity(DEMO_ME_COMMUNITY)?.name ?? null,
+      area: findCommunity(DEMO_ME_COMMUNITY)?.area ?? null,
+      whyItMatters: "I want my knee strong enough to hike with my family again.",
+      group: null,
       avatar: DEMO_AVATAR,
       goal: {
         text: "Do my physio exercises every morning",
@@ -71,9 +82,21 @@ export function demoToday(requestedMood: string | null, now = new Date()) {
         checkedAt: now.toISOString(),
       },
     },
-    today: { date: today, myCheckin: input.myStatusToday ?? null, canCheckIn: true },
+    today: {
+      date: today,
+      myCheckin: input.myStatusToday ?? null,
+      canCheckIn: true,
+      seenByPartnerAt: input.myStatusToday ? new Date(now.getTime() - 5 * 60_000).toISOString() : null,
+      proof: input.myStatusToday === "done" ? { photoId: null, note: null, confirmedAt: null } : null,
+    },
     partner: {
-      nickname: "Demo Heron 17",
+      nickname: "Sam",
+      firstName: "Sam",
+      photoId: null,
+      communityName: findCommunity(DEMO_PARTNER_COMMUNITY)?.name ?? null,
+      area: findCommunity(DEMO_PARTNER_COMMUNITY)?.area ?? null,
+      whyItMatters: "Walking clears my head after long shifts.",
+      proof: { photoId: null, note: "A walk along the river path", confirmedAt: null },
       avatar: DEMO_PARTNER_AVATAR,
       mood: partnerMood(partnerStatus),
       goal: "Take a 10-minute walk after lunch",
@@ -82,6 +105,9 @@ export function demoToday(requestedMood: string | null, now = new Date()) {
       checkinToday: partnerStatus,
       overdue: false,
       silentDays: 0,
+      activeNow: true,
+      lastActiveAt: now.toISOString(),
+      checkedInAt: new Date(now.getTime() - 47 * 60_000).toISOString(),
     },
     pair: {
       startedOn,
@@ -92,6 +118,7 @@ export function demoToday(requestedMood: string | null, now = new Date()) {
       week: weekStrip(mine, theirs, startedOn, today),
       canOfferNewMatch: false,
       summaryDue: false,
+      meetSpot: meetSpot(DEMO_ME_COMMUNITY, DEMO_PARTNER_COMMUNITY),
     },
     mascot: mascotFor(input),
     messagesReceived: [{ id: "thinking", text: "Thinking of you today.", sentAt: now.toISOString() }],

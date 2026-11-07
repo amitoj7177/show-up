@@ -8,7 +8,10 @@
     "start": "next start",
     "test": "vitest run",
     "db:setup": "node --env-file=.env.local scripts/setup-db.mjs",
-    "smoke": "node scripts/smoke-test.mjs"
+    "smoke": "node scripts/smoke-test.mjs",
+    "group:create": "node --env-file=.env.local scripts/create-group.mjs",
+    "test:db": "node scripts/test-db.mjs",
+    "calgary:fetch": "node scripts/fetch-calgary.mjs"
   },
   "dependencies": {
     "@google/genai": "^3.0.0",
@@ -18,6 +21,8 @@
     "react-dom": "19.3.0"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.15",
+    "@electric-sql/pglite-socket": "^0.2.18",
     "@tailwindcss/turbopack": "^4",
     "@types/node": "^20",
     "@types/pg": "^8.23.1",
