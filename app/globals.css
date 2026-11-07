@@ -1,0 +1,76 @@
+@import "tailwindcss";
+
+/* Colours are taken from the character's own palette, so the app and the art feel like one thing. */
+@theme inline {
+  --color-paper: #f5f2fb;
+  --color-card: #ffffff;
+  --color-ink: #2d2540;
+  --color-muted: #5f5873;
+  --color-line: #e2dcef;
+  --color-accent: #5b3fd6;
+  --color-accent-dark: #3f2aa3;
+  --color-accent-soft: #ece8fd;
+  --color-warn-soft: #fde8e2;
+  --font-display: var(--font-pixel), ui-monospace, monospace;
+}
+
+html {
+  background: var(--color-paper);
+}
+
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-body), system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  font-size: 18px;
+  line-height: 1.5;
+}
+
+/* Every keyboard user can always see where they are. */
+:focus-visible {
+  outline: 3px solid var(--color-accent);
+  outline-offset: 3px;
+  border-radius: 8px;
+}
+
+/* A button that presses in like a real one. */
+.press {
+  transition: transform 80ms ease, box-shadow 80ms ease;
+}
+.press:active {
+  transform: translateY(3px);
+  box-shadow: none !important;
+}
+
+.pixel {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  image-rendering: pixelated;
+}
+
+@keyframes character-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes character-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-3px); }
+  75% { transform: translateX(3px); }
+}
+
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.character-happy { animation: character-bob 1.6s ease-in-out infinite; }
+.character-mad { animation: character-shake 0.45s linear infinite; }
+.character-furious { animation: character-shake 0.2s linear infinite; }
+.rise-in { animation: rise-in 240ms ease-out; }
+
+/* Turned off for anyone who prefers less motion. */
+@media (prefers-reduced-motion: reduce) {
+  .character-happy, .character-mad, .character-furious, .rise-in { animation: none; }
+  .press { transition: none; }
+}
