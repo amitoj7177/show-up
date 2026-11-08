@@ -47,13 +47,6 @@ const ACCESSIBLE = [
   "Screen readers, keyboard, big text, strong contrast, less motion",
 ];
 
-const TRUST = [
-  "First names only. Never your email, address or exact location",
-  "Every goal and photo checked by AI first, with a \u201cWhy?\u201d panel",
-  "No chat. Kind, pre-written messages. Report or leave in one tap",
-  "Real Calgary open data. 18+ only. Delete everything any time",
-];
-
 // The hero: two characters walk in from each side and team up, over and over.
 function MatchScene() {
   return (
@@ -249,10 +242,6 @@ export function Landing({ onStart }: { onStart: (screen: "signup" | "login") => 
           </div>
         </Section>
 
-        <Section id="trust" eyebrow="Privacy and safety" title="Real people, kept safe.">
-          <TickList items={TRUST} />
-        </Section>
-
         <section className="cta-band border-t border-line bg-card">
           <div className="mx-auto flex max-w-6xl flex-col items-center gap-5 px-4 py-12 text-center">
             <h2 className="leading-tight">Ready to team up?</h2>
@@ -265,18 +254,6 @@ export function Landing({ onStart }: { onStart: (screen: "signup" | "login") => 
         </section>
       </main>
 
-      <footer className="border-t border-line">
-        <div className="mx-auto grid max-w-6xl gap-6 px-4 py-10">
-          <div>
-            <p className="text-xl font-bold">Promise Pals</p>
-            <p className="mt-2 text-muted">Made at Hack the Change 2026, Calgary.</p>
-          </div>
-          <p className="text-muted">Promise Pals is not medical care. In an emergency, call 911.</p>
-          <a href="/privacy" className="px-link">
-            Privacy: what we keep and who sees it
-          </a>
-        </div>
-      </footer>
     </div>
   );
 }
