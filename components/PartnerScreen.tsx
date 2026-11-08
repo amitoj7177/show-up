@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { WeekGrid } from "./WeekGrid";
 import { api, getToken } from "@/lib/api";
 import type { Act, Config, Summary, Today } from "@/lib/types";
 import { presenceText } from "./Moments";
@@ -36,6 +37,12 @@ export function PartnerScreen({ today, config, act }: { today: Today; config: Co
           {presenceText(partner)}
         </p>
       </section>
+
+      {today.pair && (
+        <Card title="This week, together">
+          <WeekGrid week={today.pair.week} />
+        </Card>
+      )}
 
       <Card title={needsSupport ? "Your partner could use a little support" : "Send some encouragement"}>
         {today.canSendMessage ? (

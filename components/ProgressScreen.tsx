@@ -7,7 +7,7 @@ import { BADGES, personalStats, TALK } from "@/lib/rules";
 import type { Act, Config, History, Today } from "@/lib/types";
 import { useLinePicker } from "./Moments";
 import { PixelAvatar } from "./PixelAvatar";
-import { Card, ErrorNote, PRIMARY_BUTTON, QUIET_BUTTON, SECONDARY_BUTTON } from "./Shared";
+import { Card, ErrorNote, PRIMARY_BUTTON, QUIET_BUTTON, SECONDARY_BUTTON, WhyPanel } from "./Shared";
 
 // Tiny pixel icons from the Promise Pals design. Each row of x's is one row of pixels.
 const ICONS = {
@@ -130,6 +130,8 @@ export function ProgressScreen({ today, config, act, sample }: { today: Today; c
           ))}
         </dl>
       </Card>
+
+      <WhyPanel why={today.me.why} />
 
       <Card title="Progress">
         <div role="img" aria-label={`${stats.percent}% of days done`} className="grid grid-cols-10 gap-1">

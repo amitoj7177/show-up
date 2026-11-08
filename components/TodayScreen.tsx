@@ -5,7 +5,6 @@ import { wantsLessMotion } from "@/lib/reading";
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { MOOD_BACKGROUND } from "@/lib/avatar";
-import type { DayMark } from "@/lib/rules";
 import type { Act, Config, History, Today } from "@/lib/types";
 import { MascotScreen } from "./MascotScreen";
 import { clockTime, presenceText, useLinePicker } from "./Moments";
@@ -16,7 +15,7 @@ import { PhotoButton, PrivatePhoto } from "./Photos";
 import { PartnerScreen } from "./PartnerScreen";
 import { ProgressScreen } from "./ProgressScreen";
 import { PixelAvatar } from "./PixelAvatar";
-import { Card, DemoLabel, ErrorNote, PRIMARY_BUTTON, QUIET_BUTTON, SECONDARY_BUTTON, WhyPanel, Wordmark } from "./Shared";
+import { Card, DemoLabel, ErrorNote, PRIMARY_BUTTON, QUIET_BUTTON, SECONDARY_BUTTON, Wordmark } from "./Shared";
 
 type Tab = "today" | "partner" | "progress" | "mascot";
 
@@ -49,55 +48,6 @@ function friendlyTime(time: string): string {
   return `${hour % 12 || 12}:${String(minute).padStart(2, "0")} ${hour < 12 ? "AM" : "PM"}`;
 }
 
-// The week at a glance. Every mark also has words, so it never relies on colour.
-const MARKS: Record<DayMark, { symbol: string; words: string; style: string }> = {
-  done: { symbol: "✓", words: "done", style: "bg-accent text-white" },
-  rough: { symbol: "~", words: "skipped", style: "bg-[#cfe0f5] text-ink" },
-  missed: { symbol: "×", words: "missed", style: "bg-[#f7a58f] text-ink" },
-  open: { symbol: "", words: "not yet", style: "bg-white text-muted" },
-};
-
-function WeekGrid({ week }: { week: NonNullable<Today["pair"]>["week"] }) {
-  const dayLetter = (date: string) => new Date(`${date}T12:00:00Z`).toLocaleDateString("en-CA", { weekday: "narrow", timeZone: "UTC" });
-  const row = (label: string, who: "me" | "partner") => (
-    <tr>
-      <th scope="row" className="pr-2 text-left font-semibold">
-        {label}
-      </th>
-      {week.map((day) => (
-        <td key={day.date} className="p-0.5">
-          <span className={`flex aspect-square w-full items-center justify-center border border-line rounded-md font-bold ${MARKS[day[who]].style}`}>
-            <span aria-hidden="true">{MARKS[day[who]].symbol}</span>
-            <span className="sr-only">{MARKS[day[who]].words}</span>
-          </span>
-        </td>
-      ))}
-    </tr>
-  );
-
-  return (
-    <table className="w-full table-fixed border-separate border-spacing-0">
-      <caption className="sr-only">This week's check-ins</caption>
-      <colgroup>
-        <col className="w-20" />
-      </colgroup>
-      <thead>
-        <tr>
-          <td />
-          {week.map((day) => (
-            <th key={day.date} scope="col" aria-current={day.isToday ? "date" : undefined} className={`pb-1 text-center font-semibold ${day.isToday ? "underline underline-offset-4" : "text-muted"}`}>
-              {dayLetter(day.date)}
-            </th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        {row("You", "me")}
-        {row("Partner", "partner")}
-      </tbody>
-    </table>
-  );
-}
 
 // Your proof for today, and whether your partner has confirmed it.
 function MyProof({ today, partnerName }: { today: Today; partnerName: string }) {
@@ -263,7 +213,14 @@ export function TodayScreen({
               </figure>
             </div>
             <p className="border-t border-line bg-white px-3 py-2 text-center font-semibold">
-              <span className="font-bold">{pair.streak}</span> day streak together · Tap yourself for a pep talk
+              {pair.streak > 0 ? (
+                <>
+                  <span className="font-bold">{pair.streak}</span>-day streak together
+                </>
+              ) : (
+                "Check in today to start your streak"
+              )}
+              <span className="block text-base font-normal text-muted">Tap your character for a pep talk</span>
             </p>
           </section>
 
@@ -279,7 +236,6 @@ export function TodayScreen({
                   disabled={checkingPhoto}
                   onPhoto={(photo) => checkIn(photo)}
                 />
-                <p className="text-muted">A photo of what you did is your proof. {partner.nickname} will confirm it.</p>
                 {!today.isDemo && <FitbitNudge onOpen={() => setTab("mascot")} />}
                 <button type="button" className={SECONDARY_BUTTON} disabled={checkingPhoto} onClick={() => checkIn()}>
                   Check in without a photo
@@ -292,7 +248,9 @@ export function TodayScreen({
               </>
             )}
             <p className="text-muted">
-              {skipped ? "Skipped today. Your streak is safe." : `Check in by ${friendlyTime(me.checkInTime)}. Skipping keeps your streak safe.`}
+              {skipped
+                ? "Skipped today. Your streak is safe."
+                : `Check in by ${friendlyTime(me.checkInTime)}. ${partner.nickname} confirms your photo. Skipping keeps your streak safe.`}
             </p>
             {today.today.myCheckin && (
               <p className="font-semibold">
@@ -334,11 +292,6 @@ export function TodayScreen({
             </Card>
           )}
 
-          <Card title="This week">
-            <WeekGrid week={pair.week} />
-          </Card>
-
-          <WhyPanel why={me.why} />
         </div>
       )}
 
