@@ -234,7 +234,7 @@ export function Landing({ onStart }: { onStart: (screen: "signup" | "login") => 
 
         <MoodStory />
 
-        <Section id="accessible" eyebrow="Accessible by design" title="Built for people step counters leave out." tint>
+        <Section id="accessible" eyebrow="Accessible by design" title="We built this for the people most apps leave out." tint>
           <TickList items={ACCESSIBLE} />
           <div className="px-card mt-4 p-5">
             <h3 className="mb-3 text-lg font-bold">Try it: easy reading</h3>
