@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "Promise Pals",
     short_name: "Promise Pals",
-    description: "Keep your health promises with a real partner in Calgary.",
+    description: "Pairs Calgarians doing physio at home with a nearby partner. Built for people step counters leave out.",
     start_url: "/",
     display: "standalone",
     background_color: "#fff8e7",

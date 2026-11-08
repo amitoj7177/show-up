@@ -1,5 +1,7 @@
 "use client";
 
+import { scrollPhoneToTop } from "./PhoneFrame";
+
 import { useEffect, useState, type FormEvent } from "react";
 import { api, ApiError, getToken, saveToken } from "@/lib/api";
 import { DEFAULT_AVATAR } from "@/lib/avatar";
@@ -69,7 +71,7 @@ export function PromiseScreen({
     setPassword("");
     setShowPassword(false);
     setScreen(next);
-    window.scrollTo(0, 0);
+    scrollPhoneToTop();
   }
 
   async function run(work: () => Promise<void>) {
@@ -139,7 +141,7 @@ export function PromiseScreen({
         onJoined(result.today);
       } else {
         setRefused(result);
-        window.scrollTo(0, 0);
+        scrollPhoneToTop();
       }
     });
   }
@@ -184,7 +186,7 @@ export function PromiseScreen({
           <div className="space-y-4 p-5">
             <h1 className="text-3xl font-bold leading-tight">Promise Pals</h1>
             <p>Make a promise. Check in every day. Your partner sees it live.</p>
-            <p className="font-semibold">For anyone working on a health goal alone.</p>
+            <p className="font-semibold">For Calgarians doing physio at home. Built for people step counters leave out.</p>
             {error && <ErrorNote message={error} />}
             <button type="button" className={PRIMARY_BUTTON} onClick={() => go("signup")}>
               Sign up

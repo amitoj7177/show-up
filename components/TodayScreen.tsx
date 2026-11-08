@@ -1,11 +1,14 @@
 "use client";
 
+import { scrollPhoneToTop } from "./PhoneFrame";
+
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { MOOD_BACKGROUND } from "@/lib/avatar";
 import type { DayMark } from "@/lib/rules";
 import type { Act, Config, History, Today } from "@/lib/types";
 import { MascotScreen } from "./MascotScreen";
 import { clockTime, presenceText, useLinePicker } from "./Moments";
+import { FitbitNudge } from "./FitbitCard";
 import { PartnerCard } from "./PartnerCard";
 import { PhotoButton, PrivatePhoto } from "./Photos";
 import { PartnerScreen } from "./PartnerScreen";
@@ -260,6 +263,7 @@ export function TodayScreen({
                   onPhoto={(photo) => checkIn(photo)}
                 />
                 <p className="text-muted">A photo of what you did is your proof. {partner.nickname} will confirm it.</p>
+                {!today.isDemo && <FitbitNudge onOpen={() => setTab("mascot")} />}
                 <button type="button" className={SECONDARY_BUTTON} disabled={checkingPhoto} onClick={() => checkIn()}>
                   Check in without a photo
                 </button>
@@ -329,7 +333,7 @@ export function TodayScreen({
       {demoControls}
 
 
-      <nav aria-label="Main" className="tab-bar fixed inset-x-0 bottom-0 z-10 border-t border-line bg-card/95 backdrop-blur">
+      <nav aria-label="Main" className="tab-bar fixed inset-x-0 bottom-0 z-10 w-full border-t border-line bg-card/95 backdrop-blur">
         <div className="mx-auto flex max-w-md">
           {TABS.map((option) => (
             <button
@@ -338,7 +342,7 @@ export function TodayScreen({
               aria-current={tab === option.id ? "page" : undefined}
               onClick={() => {
                 setTab(option.id);
-                window.scrollTo(0, 0);
+                scrollPhoneToTop();
               }}
               className={`flex min-h-16 flex-1 flex-col items-center justify-center gap-0.5 font-semibold ${tab === option.id ? "text-accent" : "text-muted"}`}
             >

@@ -20,6 +20,12 @@ Amitoj decided the app should **not be anonymous**. It's now built around real, 
 
 **These override the older "anonymous" notes below**, in sections 3 and 4.
 
+## Pitch decisions (Sat 6:45 PM)
+- **Who it's for:** Calgarians doing physio or rehab exercises at home. Physio clinics pay, through clinic codes.
+- **One sentence:** "Promise Pals pairs Calgarians doing physio at home with a nearby partner, and proves every check-in with a photo or their Fitbit."
+- **Accessibility headline:** "Built for people step counters leave out." Any goal counts, rough days are allowed, proof is optional, it works with screen readers, and it has big plain text and reduced motion.
+- **The physical piece:** a Fitbit Air, with steps as automatic proof.
+
 ## 1. Status in 30 seconds
 
 - **Live site:** https://hackathon-gilt-iota.vercel.app (demo: `/?demo=1`, clinic staff screen: `/clinic`)

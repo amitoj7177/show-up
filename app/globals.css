@@ -205,6 +205,128 @@ h2 {
 .typing-dots { display: inline-block; overflow: hidden; vertical-align: bottom; width: 0; animation: typing-dots 1.2s steps(4) infinite; }
 .confetti { animation: confetti-fall 2.4s steps(8) infinite; }
 
+/* The phone. On a real phone (narrow screens) none of this shows and the app is full screen. */
+.phone-status,
+.phone-home {
+  display: none;
+}
+.phone-scroll {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+@media (min-width: 520px) {
+  body {
+    background: #2d2540;
+    background-image: radial-gradient(#3d3456 1px, transparent 1px);
+    background-size: 18px 18px;
+    overflow: hidden;
+  }
+  .phone-stage {
+    height: 100dvh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  /* The phone body: an iPhone 15 Pro Max screen (430 x 932) with a thin black bezel. */
+  .phone-device {
+    position: relative;
+    flex-shrink: 0;
+    width: 458px;
+    height: 960px;
+    padding: 14px;
+    border-radius: 68px;
+    background: #121016;
+    box-shadow: 0 0 0 2px #3a3446, 0 40px 90px rgb(0 0 0 / 0.5);
+    transform: scale(var(--phone-scale, 1));
+  }
+  /* Side buttons. */
+  .phone-device::before,
+  .phone-device::after {
+    content: "";
+    position: absolute;
+    width: 4px;
+    border-radius: 2px;
+    background: #2a2533;
+  }
+  .phone-device::before {
+    left: -4px;
+    top: 190px;
+    height: 120px;
+    box-shadow: 0 -70px 0 -24px #2a2533;
+  }
+  .phone-device::after {
+    right: -4px;
+    top: 260px;
+    height: 110px;
+  }
+  .phone-frame {
+    /* A transform makes fixed elements, like the tab bar, stick to the screen instead of the window. */
+    transform: translateZ(0);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: 430px;
+    height: 932px;
+    border-radius: 54px;
+    overflow: hidden;
+    background: var(--color-paper);
+  }
+  .phone-status {
+    position: relative;
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: space-between;
+    height: 54px;
+    padding: 6px 30px 0 44px;
+    background: var(--color-paper);
+    color: var(--color-ink);
+    font: 600 17px/1 system-ui, -apple-system, sans-serif;
+  }
+  .phone-icons {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .phone-island {
+    position: absolute;
+    top: 11px;
+    left: 50%;
+    width: 126px;
+    height: 37px;
+    border-radius: 20px;
+    background: #000;
+    transform: translateX(-50%);
+  }
+  .phone-scroll {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    scrollbar-width: none;
+  }
+  .phone-scroll::-webkit-scrollbar {
+    display: none;
+  }
+  .phone-home {
+    display: block;
+    position: absolute;
+    bottom: 8px;
+    left: 50%;
+    z-index: 30;
+    width: 140px;
+    height: 5px;
+    border-radius: 3px;
+    background: var(--color-ink);
+    transform: translateX(-50%);
+  }
+  /* Leave room for the home indicator under the tab bar. */
+  .phone-frame .tab-bar {
+    padding-bottom: 22px;
+  }
+}
+
 /* Space for the bottom tab bar, plus the phone's home indicator when installed as an app. */
 .tab-bar-space {
   padding-bottom: calc(96px + env(safe-area-inset-bottom));
@@ -213,9 +335,49 @@ h2 {
   padding-bottom: env(safe-area-inset-bottom);
 }
 
+/* Scroll effects for the landing page. */
+.reveal {
+  opacity: 0;
+  transform: translateY(32px);
+  transition: opacity 0.7s ease, transform 0.8s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.reveal.is-seen {
+  opacity: 1;
+  transform: none;
+}
+.reading-bar {
+  height: 4px;
+  background: var(--color-ink);
+  transform-origin: left;
+}
+.mood-story {
+  height: 2600px;
+}
+.mood-story-pin {
+  position: sticky;
+  top: 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 640px;
+  padding: 32px 20px;
+  text-align: center;
+  transition: background-color 0.5s ease;
+}
+.mood-story-stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 290px;
+  animation: pop-in 0.35s steps(4) both;
+}
+
 /* Turned off for anyone who prefers less motion. */
 @media (prefers-reduced-motion: reduce) {
   .character-happy, .character-mad, .character-furious, .slide-in-left, .slide-in-right, .pop-in { animation: none; }
   .typing-dots { animation: none; width: auto; }
   .confetti { display: none; }
+  .reveal { opacity: 1; transform: none; transition: none; }
+  .mood-story { height: auto; }
+  .mood-story-pin { position: static; }
 }

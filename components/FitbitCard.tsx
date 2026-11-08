@@ -8,7 +8,7 @@ type Status = { available: boolean; connected: boolean; stepsToday: number | nul
 
 const RESULT_MESSAGES: Record<string, string> = {
   connected: "Fitbit connected. Your steps now count as proof when you check in.",
-  declined: "Fitbit wasn't connected. You can try again any time.",
+  declined: "Fitbit wasn't connected. If Google said \"Access blocked\", your Google account hasn't been invited yet. Ask the Promise Pals team to add it.",
   failed: "We couldn't connect your Fitbit. Please try again.",
 };
 
@@ -77,10 +77,29 @@ export function FitbitCard() {
           <button type="button" className={PRIMARY_BUTTON} onClick={connect}>
             Connect Fitbit
           </button>
-          <p className="text-muted">You&apos;ll need the Google Health app signed in with your Fitbit account.</p>
+          <p className="text-muted">
+            You&apos;ll need the Google Health app signed in with your Fitbit account. While Fitbit is in testing, only invited Google accounts can
+            connect.
+          </p>
         </>
       )}
       {error && <ErrorNote message={error} />}
     </Card>
+  );
+}
+
+// A small prompt on the Today screen, for people who haven't connected a Fitbit yet.
+export function FitbitNudge({ onOpen }: { onOpen: () => void }) {
+  const [show, setShow] = useState(false);
+  useEffect(() => {
+    api<Status>("/api/fitbit/status", { token: getToken() })
+      .then((status) => setShow(status.available && !status.connected))
+      .catch(() => setShow(false));
+  }, []);
+  if (!show) return null;
+  return (
+    <button type="button" className={QUIET_BUTTON} onClick={onOpen}>
+      Have a Fitbit? Connect it for automatic proof
+    </button>
   );
 }

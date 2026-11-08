@@ -24,12 +24,12 @@ export function MascotScreen({ today, act, onLogOut }: { today: Today; act: Act;
   return (
     <div className="space-y-4">
       <h1 className="text-xl font-bold">You</h1>
+      {!today.isDemo && <FitbitCard />}
       {!today.isDemo && (
         <Card title="Your profile">
           <ProfileForm submitLabel="Save profile" onSaved={() => undefined} />
         </Card>
       )}
-      {!today.isDemo && <FitbitCard />}
       <h2 className="text-xl font-bold">Your character</h2>
       <p>This is who your partner sees. Changes save by themselves.</p>
       <Card>

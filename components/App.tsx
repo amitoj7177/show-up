@@ -1,10 +1,13 @@
 "use client";
 
+import { scrollPhoneToTop } from "./PhoneFrame";
+
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api, ApiError, clearToken, getToken } from "@/lib/api";
 import { DEMO_AVATAR, demoToday } from "@/lib/demo";
 import { BADGES, MASCOT_MOODS, MESSAGES, NOT_MEDICAL_CARE, PRIVACY_LINE, REPORT_REASONS, SUPPORT_LINKS, TALK, type MascotMood } from "@/lib/rules";
 import type { Act, Config, Today } from "@/lib/types";
+import { FitbitCard } from "./FitbitCard";
 import { FindingScreen, PartnerFoundScreen, useLinePicker } from "./Moments";
 import { Landing } from "./Landing";
 import { PromiseScreen, type PromiseStart } from "./PromiseScreen";
@@ -173,6 +176,7 @@ function LiveApp() {
         <div className="space-y-4">
           {offlineNote}
           <FindingScreen today={today} onCancel={() => act("/api/leave")} />
+          {!today.isDemo && <FitbitCard />}
         </div>
       </Phone>
     );
@@ -282,7 +286,7 @@ function DemoApp() {
                 className={`min-h-12 border border-line rounded-2xl font-semibold capitalize ${mood === option ? "bg-accent text-white" : "bg-white"}`}
                 onClick={() => {
                   setMood(option);
-                  window.scrollTo(0, 0);
+                  scrollPhoneToTop();
                 }}
               >
                 {option}

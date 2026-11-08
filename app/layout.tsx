@@ -1,12 +1,13 @@
 import type { Metadata, Viewport } from "next";
 import { Press_Start_2P } from "next/font/google";
+import { PhoneFrame } from "@/components/PhoneFrame";
 import "./globals.css";
 
 const pixel = Press_Start_2P({ weight: "400", subsets: ["latin"], variable: "--font-pixel" });
 
 export const metadata: Metadata = {
   title: "Promise Pals",
-  description: "Keep your health promises with a real partner in Calgary. Check in with a photo every day.",
+  description: "Promise Pals pairs Calgarians doing physio at home with a nearby partner, and proves every check-in with a photo or their Fitbit. Built for people step counters leave out.",
   appleWebApp: { capable: true, title: "Promise Pals", statusBarStyle: "default" },
 };
 
@@ -18,7 +19,9 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${pixel.variable} h-full antialiased`}>
-      <body className="flex min-h-full flex-col">{children}</body>
+      <body>
+        <PhoneFrame>{children}</PhoneFrame>
+      </body>
     </html>
   );
 }
