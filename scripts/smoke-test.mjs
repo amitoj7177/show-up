@@ -237,7 +237,14 @@ if (!sam) {
   const samSees = (await call("GET", "/api/today", { token: sam.token })).json.data;
   check("I see my partner confirmed it", typeof samSees.today.proof?.confirmedAt === "string", samSees.today.proof);
   check("confirming twice is refused", (await call("POST", "/api/confirm", { token: ana.token })).status === 409);
-  for (const token of [sam.token, ana.token, outsider.json.data.token]) await call("POST", "/api/leave", { token });
+  const deleted = await call("POST", "/api/account/delete", { token: sam.token });
+  check("deleting an account works", deleted.status === 200);
+  check("a deleted account can't log in to the app any more", (await call("GET", "/api/account", { token: sam.token })).status === 401);
+  const anaAfter = (await call("GET", "/api/today", { token: ana.token })).json.data;
+  check("the partner is sent to find someone new", anaAfter.status === "waiting", anaAfter.status);
+  const goneImage = await fetch(`${BASE}/api/photo?kind=proof&id=${proofId}`, { headers: { Authorization: `Bearer ${ana.token}` } });
+  check("the deleted person's photo is gone", goneImage.status === 404);
+  for (const token of [ana.token, outsider.json.data.token]) await call("POST", "/api/leave", { token });
 }
 
 // --- Clinic groups (set GROUP_CODE and STAFF_KEY from npm run group:create) ---

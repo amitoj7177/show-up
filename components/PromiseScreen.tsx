@@ -245,7 +245,14 @@ export function PromiseScreen({
             <p id="password-rule" className={password && !strongEnough(password) ? "font-medium" : "text-muted"}>
               {strongEnough(password) ? "Strong enough ✓" : PASSWORD_RULE}
             </p>
-            {config && <p className="text-muted">{config.privacyLine}</p>}
+            {config && (
+              <p className="text-muted">
+                {config.privacyLine}{" "}
+                <a href="/privacy" className="px-link">
+                  Read more
+                </a>
+              </p>
+            )}
             {error && <ErrorNote message={error} />}
             <button type="submit" disabled={busy || !strongEnough(password)} className={PRIMARY_BUTTON}>
               {busy ? "Checking..." : "Create account"}

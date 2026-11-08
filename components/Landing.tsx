@@ -289,6 +289,9 @@ export function Landing({ onStart }: { onStart: (screen: "signup" | "login") => 
             <p className="mt-2 text-muted">Made at Hack the Change 2026, Calgary.</p>
           </div>
           <p className="text-muted">Promise Pals is not medical care. In an emergency, call 911.</p>
+          <a href="/privacy" className="px-link">
+            Privacy: what we keep and who sees it
+          </a>
         </div>
       </footer>
     </div>
