@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /* The Promise Pals look, from the team's design: chunky ink outlines, square corners,
-   hard shadows, a bright yellow, and a pixel font for headings. */
+   thick outlines, a bright yellow, and a pixel font for headings. */
 @theme inline {
   --color-paper: #fff8e7;
   --color-card: #ffffff;
@@ -65,7 +65,7 @@ h2 {
   border: 2px solid var(--color-ink);
 }
 
-/* Square corners, thick outlines and hard shadows everywhere, except true circles. */
+/* Square corners and thick outlines everywhere, except true circles. No shadows. */
 .rounded-md, .rounded-lg, .rounded-xl, .rounded-2xl, .rounded-3xl {
   border-radius: 0;
 }
@@ -79,7 +79,7 @@ h2 {
   border-top-width: 4px;
 }
 .shadow-sm {
-  box-shadow: 0 4px 0 var(--color-ink);
+  box-shadow: none;
 }
 
 /* Every keyboard user can always see where they are. */
@@ -91,7 +91,6 @@ h2 {
 .px-card {
   background: var(--color-card);
   border: 3px solid var(--color-ink);
-  box-shadow: 0 4px 0 var(--color-ink);
 }
 
 .px-btn {
@@ -106,15 +105,13 @@ h2 {
   color: var(--color-ink);
   font: 15px/1.5 var(--font-display);
   text-align: center;
-  box-shadow: 0 4px 0 var(--color-ink);
   cursor: pointer;
 }
 .px-btn-y {
   background: #fffc00;
 }
 .px-btn:active:not(:disabled) {
-  transform: translateY(4px);
-  box-shadow: none;
+  transform: translateY(2px);
 }
 .px-btn:disabled {
   opacity: 0.6;
