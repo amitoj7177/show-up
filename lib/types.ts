@@ -17,6 +17,7 @@ export type Today = {
   status: "waiting" | "paired" | "left";
   isDemo: boolean;
   me: {
+    points: number;
     nickname: string;
     avatar: string;
     group: string | null;

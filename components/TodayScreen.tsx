@@ -9,6 +9,7 @@ import type { Act, Config, History, Today } from "@/lib/types";
 import { MascotScreen } from "./MascotScreen";
 import { clockTime, presenceText, useLinePicker } from "./Moments";
 import { FitbitNudge } from "./FitbitCard";
+import { POINTS } from "@/lib/rules";
 import { PartnerCard } from "./PartnerCard";
 import { PhotoButton, PrivatePhoto } from "./Photos";
 import { PartnerScreen } from "./PartnerScreen";
@@ -107,7 +108,12 @@ function MyProof({ today, partnerName }: { today: Today; partnerName: string }) 
         <PrivatePhoto kind="proof" id={proof.photoId} alt={proof.note ? `Your proof photo: ${proof.note}` : "Your proof photo"} className="aspect-[4/3] w-full border border-line rounded-2xl" />
       )}
       {proof?.note && <p className="text-muted">Photo checked: {proof.note}</p>}
-      {typeof proof?.fitbitSteps === "number" && <p className="font-semibold">Fitbit: {proof.fitbitSteps.toLocaleString("en-CA")} steps today</p>}
+      {typeof proof?.fitbitSteps === "number" && (
+        <p className="font-semibold">
+          Fitbit: {proof.fitbitSteps.toLocaleString("en-CA")} steps today
+          {proof.fitbitSteps > 0 && ` \u00b7 verified, +${POINTS.fitbit} bonus points`}
+        </p>
+      )}
       <p className="font-semibold">
         {proof?.confirmedAt
           ? `\u2705 ${partnerName} confirmed it at ${clockTime(proof.confirmedAt)}`

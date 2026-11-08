@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   canOfferNewMatch,
+  checkinPoints,
+  extraLocked,
   looksLikeWeightGoal,
   mascotFor,
   minutesPast,
@@ -183,5 +185,28 @@ describe("historyDays and personalStats", () => {
 
   it("skipping keeps a run going, missing ends it", () => {
     expect(personalStats(["done", "skipped", "done", "missed", "done"])).toEqual({ done: 3, total: 5, current: 1, best: 2, percent: 60 });
+  });
+});
+
+describe("points", () => {
+  it("gives a Fitbit-proven day the most points", () => {
+    const plain = checkinPoints({ status: "done", confirmed: false, fitbitSteps: null });
+    const fitbit = checkinPoints({ status: "done", confirmed: false, fitbitSteps: 4200 });
+    expect(plain).toBe(10);
+    expect(fitbit).toBe(30);
+  });
+  it("adds a bonus when your partner confirms", () => {
+    expect(checkinPoints({ status: "done", confirmed: true, fitbitSteps: null })).toBe(15);
+  });
+  it("gives no Fitbit bonus for zero steps", () => {
+    expect(checkinPoints({ status: "done", confirmed: false, fitbitSteps: 0 })).toBe(10);
+  });
+  it("still gives a few points for an honest rough day", () => {
+    expect(checkinPoints({ status: "rough", confirmed: false, fitbitSteps: null })).toBe(5);
+  });
+  it("locks extras until you have enough points", () => {
+    expect(extraLocked(5, 99)).toBe(true);
+    expect(extraLocked(5, 100)).toBe(false);
+    expect(extraLocked(1, 0)).toBe(false);
   });
 });

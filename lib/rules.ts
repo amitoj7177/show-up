@@ -57,6 +57,21 @@ export const BADGES = [
   { id: "month", name: "30 days", days: 30 },
 ];
 
+// Points for checking in. Stronger proof earns more, so a Fitbit-proven day is worth the most.
+export const POINTS = { done: 10, rough: 5, confirmed: 5, fitbit: 20 };
+
+export function checkinPoints(checkin: { status: string; confirmed: boolean; fitbitSteps: number | null }): number {
+  if (checkin.status !== "done") return POINTS.rough;
+  return POINTS.done + (checkin.confirmed ? POINTS.confirmed : 0) + ((checkin.fitbitSteps ?? 0) > 0 ? POINTS.fitbit : 0);
+}
+
+// Character extras you unlock with points. The number is the "Extras" option in lib/avatar.ts.
+export const EXTRA_UNLOCKS: Record<number, number> = { 3: 30, 4: 60, 5: 100 };
+
+export function extraLocked(extra: number, points: number): boolean {
+  return points < (EXTRA_UNLOCKS[extra] ?? 0);
+}
+
 // A promise counts as finished after a full week.
 export const PROMISE_DAYS = 7;
 

@@ -2,8 +2,12 @@ import { query, type PairRow, type UserRow } from "./db";
 import { HttpError } from "./http";
 import { findCommunity, meetSpot } from "./calgary";
 import { tryMatch } from "./matching";
+import { parseAvatar } from "./avatar";
 import {
   addDays,
+  checkinPoints,
+  EXTRA_UNLOCKS,
+  extraLocked,
   canOfferNewMatch,
   daysBetween,
   GOAL_TYPE_LABELS,
@@ -97,8 +101,26 @@ function describeProfile(profile: Profile | undefined) {
   };
 }
 
-function describeMe(user: UserRow & { group_name?: string | null }, profile?: Profile) {
+// Points for every check-in on this promise.
+export async function pointsFor(userId: string): Promise<number> {
+  const rows = await query<{ status: string; confirmed: boolean; fitbit_steps: number | null }>(
+    "SELECT status, confirmed_at IS NOT NULL AS confirmed, fitbit_steps FROM checkins WHERE user_id = $1",
+    [userId],
+  );
+  return rows.reduce((sum, row) => sum + checkinPoints({ status: row.status, confirmed: row.confirmed, fitbitSteps: row.fitbit_steps }), 0);
+}
+
+// Stops someone saving an extra they haven't earned yet. An extra they already wear is fine.
+export async function requireUnlocked(code: string, currentCode: string, userId: string | null): Promise<void> {
+  const extra = parseAvatar(code).acc;
+  if (extra === parseAvatar(currentCode).acc) return;
+  const points = userId ? await pointsFor(userId) : 0;
+  if (extraLocked(extra, points)) throw new HttpError(403, "locked", `That extra unlocks at ${EXTRA_UNLOCKS[extra]} points.`);
+}
+
+function describeMe(user: UserRow & { group_name?: string | null }, profile: Profile | undefined, points: number) {
   return {
+    points,
     group: user.group_name ?? null,
     ...describeProfile(profile),
     whyItMatters: user.why_it_matters,
@@ -140,7 +162,7 @@ export async function buildToday(startingUser: UserRow, now = new Date()) {
     return {
       status: user.status === "left" ? ("left" as const) : ("waiting" as const),
       isDemo: user.is_demo,
-      me: describeMe(user, myProfile),
+      me: describeMe(user, myProfile, await pointsFor(user.id)),
       today: { date: todayIn(now), myCheckin: null, canCheckIn: false },
       partner: null,
       pair: null,
@@ -201,7 +223,7 @@ export async function buildToday(startingUser: UserRow, now = new Date()) {
   return {
     status: "paired" as const,
     isDemo: pair.is_demo,
-    me: describeMe(user, myProfile),
+    me: describeMe(user, myProfile, await pointsFor(user.id)),
     today: {
       date: today,
       myCheckin: mine[today] ?? null,

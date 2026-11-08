@@ -1,5 +1,5 @@
 import { findAccount, hashToken, newToken, profileComplete, tokenFrom } from "@/lib/auth";
-import { DEFAULT_AVATAR, isAvatarCode } from "@/lib/avatar";
+import { DEFAULT_AVATAR, encodeAvatar, isAvatarCode, parseAvatar } from "@/lib/avatar";
 import { query, type UserRow } from "@/lib/db";
 import { checkGoal } from "@/lib/gemini";
 import { findCommunity } from "@/lib/calgary";
@@ -7,7 +7,7 @@ import { findGroupByCode } from "@/lib/groups";
 import { checkWhy } from "@/lib/moderation";
 import { HttpError, ok, readBody, route } from "@/lib/http";
 import { pairWithDemoPartner, tryMatch } from "@/lib/matching";
-import { GOAL_TYPES, makeNickname, SUPPORT_LINKS, type GoalType } from "@/lib/rules";
+import { extraLocked, GOAL_TYPES, makeNickname, SUPPORT_LINKS, type GoalType } from "@/lib/rules";
 import { buildToday } from "@/lib/state";
 
 // Make a promise. Nothing is saved unless the goal passes the safety check.
@@ -55,7 +55,9 @@ export const POST = route(async (request) => {
   // People with an account keep their login. Demo people get a token of their own.
   const token = account ? (tokenFrom(request) as string) : newToken();
   const isDemo = body.demo === true;
-  const avatar = isAvatarCode(body.avatar) ? body.avatar : (account?.avatar ?? DEFAULT_AVATAR);
+  let avatar = isAvatarCode(body.avatar) ? body.avatar : (account?.avatar ?? DEFAULT_AVATAR);
+  const extra = parseAvatar(avatar).acc;
+  if (extraLocked(extra, 0) && extra !== parseAvatar(account?.avatar ?? DEFAULT_AVATAR).acc) avatar = encodeAvatar({ ...parseAvatar(avatar), acc: 0 });
   const [user] = await query<UserRow>(
     `INSERT INTO users (token_hash, nickname, goal_text, short_goal, goal_type, check_in_time, why, is_demo, avatar, group_id, why_it_matters, area)
      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *`,

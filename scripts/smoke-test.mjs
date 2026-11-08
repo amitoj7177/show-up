@@ -92,6 +92,9 @@ check("partner sees my character", bSeesAvatar.partner.avatar === code, bSeesAva
 check("partner's character never shows anger", ["waiting", "happy", "caring"].includes(bSeesAvatar.partner.mood));
 const badAvatar = await call("POST", "/api/settings", { token: tokenA, body: { avatar: "h99-c0-s0-e0-o0-k0-a0" } });
 check("a made-up character code is rejected", badAvatar.status === 400);
+check("checking in earns points", typeof saved.me.points === "number" && saved.me.points >= 10, saved.me.points);
+const lockedExtra = await call("POST", "/api/settings", { token: tokenA, body: { avatar: "h2-c5-s3-e1-o4-k8-a5" } });
+check("an extra you haven't earned yet is refused", lockedExtra.status === 403, lockedExtra.status);
 check("the week grid has 7 days", bSeesAvatar.pair.week.length === 7);
 
 // --- Messages ---

@@ -6,6 +6,7 @@ import { Customizer } from "./Customizer";
 import { FitbitCard } from "./FitbitCard";
 import { ProfileForm } from "./ProfileForm";
 import { api, ApiError, getToken } from "@/lib/api";
+import { POINTS } from "@/lib/rules";
 import { Card, ErrorNote, PRIMARY_BUTTON, SECONDARY_BUTTON } from "./Shared";
 
 // The customize menu inside the app. Your partner sees your changes within a few seconds.
@@ -33,8 +34,9 @@ export function MascotScreen({ today, act, onLogOut }: { today: Today; act: Act;
       )}
       <h2 className="text-xl font-bold">Your character</h2>
       <p>This is who your partner sees. Changes save by themselves.</p>
+      <PointsCard points={today.me.points} />
       <Card>
-        <Customizer code={code} onChange={change} showMoods />
+        <Customizer code={code} onChange={change} showMoods points={today.me.points} />
       </Card>
       <Card title="Reactions">
         <label className="flex min-h-12 cursor-pointer items-center gap-3">
@@ -98,6 +100,21 @@ function DeleteAccount({ onDeleted }: { onDeleted: () => void }) {
       <button type="button" className={SECONDARY_BUTTON} onClick={() => setConfirming(false)}>
         Keep my account
       </button>
+    </Card>
+  );
+}
+
+// How points work. Stronger proof earns more.
+function PointsCard({ points }: { points: number }) {
+  return (
+    <Card title={`${points} points`}>
+      <ul className="space-y-1">
+        <li>Check in: +{POINTS.done}</li>
+        <li>Partner confirms your photo: +{POINTS.confirmed}</li>
+        <li>Fitbit proves your steps: +{POINTS.fitbit}</li>
+        <li>Rough day, honestly told: +{POINTS.rough}</li>
+      </ul>
+      <p className="text-muted">Points unlock new extras for your character.</p>
     </Card>
   );
 }

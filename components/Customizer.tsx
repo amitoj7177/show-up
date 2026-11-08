@@ -1,19 +1,43 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { CHOICES, encodeAvatar, MOOD_BACKGROUND, parseAvatar, randomAvatar, type ChoiceKey } from "@/lib/avatar";
-import { ALL_MOODS, type MascotMood } from "@/lib/rules";
+import { ALL_MOODS, EXTRA_UNLOCKS, extraLocked, type MascotMood } from "@/lib/rules";
 import { PixelAvatar } from "./PixelAvatar";
 import { SECONDARY_BUTTON } from "./Shared";
 
 // The customize menu from the Promise Pals design: one row per choice, with left and right arrows.
-export function Customizer({ code, onChange, showMoods = false }: { code: string; onChange: (code: string) => void; showMoods?: boolean }) {
+// Some extras unlock with points. The arrows skip the locked ones, unless you already wear it.
+export function Customizer({
+  code,
+  onChange,
+  showMoods = false,
+  points = 0,
+}: {
+  code: string;
+  onChange: (code: string) => void;
+  showMoods?: boolean;
+  points?: number;
+}) {
   const [mood, setMood] = useState<MascotMood>("happy");
+  const worn = useRef(parseAvatar(code).acc);
   const choice = parseAvatar(code);
+  const available = (key: ChoiceKey, option: number) => key !== "acc" || option === worn.current || !extraLocked(option, points);
 
   function step(key: ChoiceKey, amount: number, count: number) {
-    onChange(encodeAvatar({ ...choice, [key]: (choice[key] + amount + count) % count }));
+    let next = choice[key];
+    do next = (next + amount + count) % count;
+    while (!available(key, next));
+    onChange(encodeAvatar({ ...choice, [key]: next }));
   }
+
+  function shuffle() {
+    const next = parseAvatar(randomAvatar());
+    if (!available("acc", next.acc)) next.acc = 0;
+    onChange(encodeAvatar(next));
+  }
+
+  const locked = Object.entries(EXTRA_UNLOCKS).filter(([extra]) => !available("acc", Number(extra)));
 
   return (
     <div className="space-y-4">
@@ -70,12 +94,17 @@ export function Customizer({ code, onChange, showMoods = false }: { code: string
                   <span aria-hidden="true">&gt;</span>
                 </button>
               </div>
+              {key === "acc" && locked.length > 0 && (
+                <p className="mt-1 text-muted">
+                  {"\u{1F512}"} Earn points to unlock: {locked.map(([extra, needed]) => `${options[Number(extra)].name} (${needed})`).join(", ")}. You have {points}.
+                </p>
+              )}
             </div>
           );
         })}
       </div>
 
-      <button type="button" className={SECONDARY_BUTTON} onClick={() => onChange(randomAvatar())}>
+      <button type="button" className={SECONDARY_BUTTON} onClick={shuffle}>
         Shuffle
       </button>
     </div>

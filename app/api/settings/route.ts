@@ -2,7 +2,7 @@ import { requireUser } from "@/lib/auth";
 import { isAvatarCode } from "@/lib/avatar";
 import { query, type UserRow } from "@/lib/db";
 import { HttpError, ok, readBody, route } from "@/lib/http";
-import { buildToday } from "@/lib/state";
+import { buildToday, requireUnlocked } from "@/lib/state";
 
 // Change your character or check-in time, or turn on gentle mode, where it never gets angry.
 export const POST = route(async (request) => {
@@ -11,6 +11,7 @@ export const POST = route(async (request) => {
 
   if (avatar !== undefined) {
     if (!isAvatarCode(avatar)) throw new HttpError(400, "bad_avatar", "We couldn't save that character.");
+    await requireUnlocked(avatar, user.avatar, user.id);
     await query("UPDATE users SET avatar = $2 WHERE id = $1", [user.id, avatar]);
     await query("UPDATE accounts SET avatar = $2 WHERE user_id = $1", [user.id, avatar]);
   }

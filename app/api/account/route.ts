@@ -4,6 +4,7 @@ import { findCommunity } from "@/lib/calgary";
 import { query } from "@/lib/db";
 import { HttpError, ok, readBody, route } from "@/lib/http";
 import { checkProfilePhoto, cleanFirstName, photoData } from "@/lib/moderation";
+import { requireUnlocked } from "@/lib/state";
 
 type Profile = { avatar: string; first_name: string | null; community: string | null; adult: boolean; has_photo: boolean; user_id: string | null; id: string };
 
@@ -38,6 +39,7 @@ export const POST = route(async (request) => {
 
   if (body.avatar !== undefined) {
     if (!isAvatarCode(body.avatar)) throw new HttpError(400, "bad_avatar", "We couldn't save that character.");
+    await requireUnlocked(body.avatar, account.avatar, account.user_id);
     await query("UPDATE accounts SET avatar = $2 WHERE id = $1", [account.id, body.avatar]);
     if (account.user_id) await query("UPDATE users SET avatar = $2 WHERE id = $1", [account.user_id, body.avatar]);
   }
