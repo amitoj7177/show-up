@@ -1,127 +1,69 @@
 # Promise Pals: demo video script
 
-**Length:** about 4 minutes 30 seconds. Devpost allows 2 to 5 minutes, so you have a little room.
-**Read at a calm pace.** Each part has a time budget. Words in **bold** are what you say. Lines starting with 🎬 are what's on screen.
+**Length:** about 3 minutes 15 seconds (Devpost allows 2 to 5). Read calmly.
+**Bold** = what you say. 🎬 = what's on screen.
 
-**Before you record:**
-- Use a phone screen recording (iPhone: Control Centre → Record) or the laptop with the phone frame.
-- Log in on two phones as two different accounts, both on the Nearby board (no partner yet). If you can't get two phones, use **See a demo** for Part 2. It does the same flow with labelled sample people.
-- Your Fitbit Air is connected and synced (open the Fitbit app once right before).
-- Turn **Do Not Disturb** on.
+**Before you record:** two logged-in phones (sign up the first phone LAST, so it doesn't wait 30 seconds and get a practice partner), Fitbit synced, Do Not Disturb on. No second phone? Use **See a demo**: same flow with labelled sample people.
 
 ---
 
-## Part 1. The problem (0:00 to 0:30)
+## 1. The problem (0:00 to 0:35)
 
-🎬 The landing page, the two characters walking in and saying "Team up!"
+🎬 Landing page: the two characters walking in, "Team up!"
 
 **"Hi, we're [team name], and this is Promise Pals.**
 
-**Lots of Calgarians want to stick to a health goal: their physio exercises, a daily walk, getting outside. But most people give up. Up to half of people don't keep up their home exercises.**
+**Lots of people want a partner to keep them on track with a health goal, like their physio exercises or a daily walk. But there aren't many ways to find one. Your friends have different goals, and most apps just give you a step counter and leave you on your own.**
 
-**What helps is another person. Research across 148 studies shows strong social ties make a real difference to health. But finding someone is hard. People are out there looking, and there's no easy way to find each other.**
+**And it matters. Up to half of people don't keep up their home exercises. Research across 148 studies shows strong social ties are linked to 50% better survival odds, and across 138 studies, tracking progress works better when you report it to someone else. People do better with a partner. They just can't find one."**
 
-**Promise Pals fixes that. You find a health partner near you in under a minute, you check in every day, and you prove it."**
+## 2. Finding a partner (0:35 to 1:15)
 
----
+🎬 Sign up, then the profile: first name, community list, **How do you move?**
 
-## Part 2. Finding a partner (0:30 to 1:20)
+**"Promise Pals fixes that. You sign up, pick your Calgary community from the City of Calgary's open data, and, if you want, tell us how you move: walking, a wheelchair, a walker, or chronic pain."**
 
-🎬 Tap **Get started**. Show sign-up quickly: email and password, then the profile.
+🎬 Make a promise, then the **Nearby board**.
 
-**"You sign up with an email and a password. Then a short profile: your first name, a photo if you want, and your Calgary community. The list of communities is real City of Calgary open data."**
+**"Then you see real people near you who are looking right now: their first name, their community, how far away they are, and their goal. People who move like you show up first."**
 
-🎬 Point at **How do you move?** on the profile. Pick an option.
+🎬 Tap **Ask … to team up**. The second phone shows the request. Tap **Team up**. Both phones say **"You're a team!"**
 
-**"This question is optional. If you use a wheelchair, a walker, or live with chronic pain, you can say so, and you'll see people who move like you first."**
+**"I ask someone to team up, their phone gets it within seconds, they say yes, and we're partners. If nobody's around, you can invite a friend with a link, and a labelled practice partner steps in so you're never stuck waiting."**
 
-🎬 Type a promise. Tap **Find my partner**.
+## 3. Real proof (1:15 to 1:55)
 
-**"Then you make a promise. Any health goal counts."**
+🎬 Today screen, then **Check in with a photo**, then the partner confirming on the second phone.
 
-🎬 The **Nearby board**. Point at a card: name, community, distance, goal.
+**"Every day you check in, with real proof. A photo of what you did, checked by AI before your partner sees it, and your partner confirms it."**
 
-**"This is the Nearby board. These are real people near you who are looking right now. You see their first name, their community, how far away they are, and what they're working on. Never their exact address."**
+🎬 **Check in with Fitbit**: steps, workout and active minutes appear.
 
-🎬 Tap **Ask [name] to team up**. Show the second phone: **"[name] wants to team up"** pops up. Tap **Team up**. Both phones show **"You're a team!"**
+**"Or your Fitbit. We read your real data through Google's Health API: your steps, workouts your Fitbit spots on its own, and active minutes from your heart rate, so a wheelchair workout counts as much as a walk. If your Fitbit shows nothing, the check-in doesn't count."**
 
-**"I ask someone to team up. Their phone gets the request within three seconds. They say yes, and we're a team. No awkward chat, no waiting in the dark."**
+## 4. Accountability (1:55 to 2:15)
 
-**"If nobody's right for you, you can invite someone you know with a link, and you're paired the moment they join. And if nobody's around yet, a clearly labelled practice partner steps in after 30 seconds, so you're never stuck waiting."**
+🎬 Demo mood buttons: Annoyed, Mad, Furious, then Sad. Then Progress: badges.
 
----
+**"Let your partner down, and your character notices: annoyed, then mad, then furious. But rough days are allowed and never break your streak. Keep going and you earn badges and unlock new looks."**
 
-## Part 3. Checking in, with real proof (1:20 to 2:15)
+## 5. Accessibility (2:15 to 2:45)
 
-🎬 The **Today** screen: both characters side by side.
+🎬 Landing page, accessibility section: flip **Bigger text**, **Stronger contrast**, **Less motion** live.
 
-**"Every day, you check in. There are two ways, and both are real proof."**
+**"We built this for the people most apps leave out. Find someone who moves like you. Proof from heart rate, not just steps. These switches change the whole app instantly: bigger text, stronger contrast, less motion. It works with screen readers and a keyboard, every character's mood is described in words, text is at least 18 pixels, colours meet the WCAG AA standard, and every screen passes automated accessibility checks with zero issues."**
 
-🎬 Tap **Check in with a photo**. Take a photo of your exercise mat or shoes.
+## 6. How it's built (2:45 to 3:10)
 
-**"One: a photo of what you did. Before my partner sees it, AI checks that it's safe and describes it, and my partner can confirm it."**
+🎬 The GitHub repo or the code.
 
-🎬 On the second phone, show the partner's proof and tap **Confirm**.
+**"It's a Next.js web app on Vercel, so it works on any phone with nothing to download. Auth0 handles logins, so we never store a password. Our data lives in Postgres on Tiger Data. Fitbit data comes from Google's Health API, communities from the City of Calgary's open data, and Google Gemini checks every goal and photo, with a 'Why?' panel showing how it decided. We wrote the code with Claude Code, and our team designed it, made every decision, and tested it."**
 
-🎬 Then show **Check in with Fitbit** on your phone, and the proof that appears: steps, workouts, active minutes.
+## 7. Close (3:10 to 3:15)
 
-**"Two: my Fitbit. Promise Pals reads my real Fitbit data through Google's Health API. Today it found my steps, and the workouts my Fitbit spotted on its own, like strength training. And it reads active minutes from heart rate, so a wheelchair workout or seated exercises count just as much as a walk. You can't fake a Fitbit check-in: if your Fitbit shows nothing today, it says so."**
+🎬 Both phones on Today.
 
-🎬 Tap your character for a pep talk. Then go to **Progress**: streak, badges.
-
-**"Your character cheers you on. Keep it up and you earn badges and points that unlock new things for your character."**
-
----
-
-## Part 4. Accountability (2:15 to 2:45)
-
-🎬 Use **See a demo** → **Skip to the Today screen** → the **Demo: jump to a mood** buttons. Tap **Annoyed**, **Mad**, **Furious**, then **Sad**.
-
-**"If you let your partner down, your character notices. Late, it taps its foot. Miss a day, it gets mad. Go quiet for days, it's furious.**
-
-**But rough days happen. If you tell your partner you're skipping, your streak stays safe and your character is just a bit sad, never angry. There's a gentle mode that turns the anger off completely. And if a partner goes quiet for two days, you can get a new one, so nobody is stuck."**
-
----
-
-## Part 5. Accessibility (2:45 to 3:30)
-
-🎬 Back on the landing page, scroll to **Accessible by design**. Flip **Bigger text**, **Stronger contrast** and **Less motion** on, live.
-
-**"We built Promise Pals for the people step counters leave out.**
-
-**You can tell us how you move, and find someone who moves like you. Fitbit proof comes from heart rate, not only steps.**
-
-**These easy reading switches change the whole app instantly: bigger text, stronger contrast, and less motion. If your phone is already set to reduce motion, every animation stops by itself.**
-
-**It works with screen readers. Every button has a real label, every character's mood is described in words, and nothing relies on colour alone. It works with just a keyboard, all body text is at least 18 pixels, and colours meet the WCAG AA contrast standard. We test every screen with automated accessibility checks, and every screen passes with zero issues."**
-
----
-
-## Part 6. Trust and privacy (3:30 to 3:55)
-
-🎬 Open **/privacy** (link at the bottom of the landing page), then show **Me → Delete my account and data**.
-
-**"Your partner is a real person, so safety matters. Partners only see your first name, photo and community. There's no free chat, only kind pre-written messages, and you can report or leave in one tap. Every goal and photo is checked by AI first, and a Why panel shows exactly how the AI decided. You must be 18 or older. Our privacy page says in plain words what we keep and who sees it, and you can delete everything at any time."**
-
----
-
-## Part 7. How it's built (3:55 to 4:25)
-
-🎬 Show the GitHub repo, or the code in your editor, scrolling slowly.
-
-**"Under the hood: it's a Next.js web app written in TypeScript, hosted on Vercel, so it works on any phone with no download.**
-
-**Logins use Auth0, so we never store a password. Data lives in a Postgres database on Tiger Data. Fitbit data comes from Google's Health API. Calgary communities come from the City of Calgary's open data. And Google Gemini checks goals and photos.**
-
-**We wrote the code with Claude Code, an AI coding tool. Our team designed the product, made every decision, drew the characters, and tested it. We have 120 automated server checks and accessibility tests that run on every change."**
-
----
-
-## Part 8. Close (4:25 to 4:40)
-
-🎬 Both phones side by side on Today. Or the landing page hero.
-
-**"Promise Pals: find a health partner near you, and keep each other going. Thanks for watching."**
+**"Promise Pals: find a health partner near you, and keep each other going. Thank you."**
 
 ---
 ---
