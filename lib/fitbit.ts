@@ -159,7 +159,7 @@ export async function fitbitToday(accountId: string, now = new Date()): Promise<
   if (!token) return { steps: null, workout: null, activeMinutes: null };
 
   const start = calgaryMidnight(now).toISOString();
-  const [steps, workouts, zones] = await Promise.all([
+  const [steps, zones, workouts] = await Promise.all([
     readData(token, "steps", `steps.interval.start_time >= "${start}" AND steps.interval.start_time < "${now.toISOString()}"`),
     readData(
       token,
