@@ -6,6 +6,12 @@ If you're Claude: this file is the single source of truth for the event, the pro
 
 ---
 
+## Newest changes (Sat evening)
+- **Fitbit works for real.** Amitoj's Fitbit Air is connected through Google Health (project 817, Google Health API enabled, Amitoj added as a test user). On check-in we save today's steps (`checkins.fitbit_steps`) and today's workouts in words, like "Strength training 13 min" (`checkins.fitbit_workout`, from the `exercise` data type, filtered with `exercise.interval.civil_start_time`). So goals like "bench press every day" get Fitbit proof too. Verified against real data: 6,816 steps; Walk, Strength training, Racket sports.
+- **Points** (`POINTS`, `checkinPoints` in lib/rules.ts): check in +10, partner confirms +5, Fitbit proof +20, honest rough day +5. Points unlock character extras: Headphones 30, Scarf 60, Cap 100 (`EXTRA_UNLOCKS`). The server refuses locked extras (`requireUnlocked` in lib/state.ts).
+- **Privacy page** at /privacy and **Delete my account and data** on the Me tab (`POST /api/account/delete`). The Auth0 login itself isn't deleted yet.
+- **Fitbit access list:** people request access in the app; the team copies emails at /admin (needs ADMIN_KEY) into Google's Test users.
+
 ## 0. Latest change (Sat 3:45 PM): real people, real Calgary, real proof
 
 Amitoj decided the app should **not be anonymous**. It's now built around real, local people:
