@@ -126,6 +126,18 @@ ALTER TABLE accounts ADD COLUMN IF NOT EXISTS phone_steps_day date;
 ALTER TABLE accounts ADD COLUMN IF NOT EXISTS phone_steps_at timestamptz;
 ALTER TABLE checkins ADD COLUMN IF NOT EXISTS phone_steps int;
 
+-- The Nearby board: "Ask to team up" requests, and invite links for someone you know.
+CREATE TABLE IF NOT EXISTS team_requests (
+  id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  from_user   uuid NOT NULL REFERENCES users(id),
+  to_user     uuid NOT NULL REFERENCES users(id),
+  created_at  timestamptz NOT NULL DEFAULT now(),
+  answered_at timestamptz,
+  accepted    boolean
+);
+CREATE INDEX IF NOT EXISTS team_requests_to ON team_requests (to_user, answered_at);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS invite_code text UNIQUE;
+
 -- People asking to be added as Fitbit testers. Deleted once they connect.
 CREATE TABLE IF NOT EXISTS fitbit_requests (
   account_id   uuid PRIMARY KEY REFERENCES accounts(id),

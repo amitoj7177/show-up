@@ -197,7 +197,7 @@ if (signup.status === 503) {
 
 // --- Real profiles, photo proof and Calgary meet-ups (needs Auth0 and Gemini) ---
 const photo = `data:image/jpeg;base64,${readFileSync(new URL("./fixtures/test-photo.jpg", import.meta.url)).toString("base64")}`;
-async function person(name, community, goal, why) {
+async function person(name, community, goal, why, extra = {}) {
   const made = await call("POST", "/api/auth/signup", { body: { email: `${name.toLowerCase()}${tag}@example.com`, password: "tulip harbor sunrise 42" } });
   if (made.status !== 201) return null;
   const token = made.json.data.token;
@@ -205,7 +205,7 @@ async function person(name, community, goal, why) {
   check(`${name} can't make a promise before finishing a profile`, early.status === 409, early.json);
   const saved = await call("POST", "/api/account", { token, body: { firstName: name, community, adult: true } });
   check(`${name}'s profile is complete`, saved.json.data.profileComplete === true, saved.json);
-  const joined = await call("POST", "/api/join", { token, body: { goalText: goal, goalType: "recovery", checkInTime: "07:00", whyItMatters: why } });
+  const joined = await call("POST", "/api/join", { token, body: { goalText: goal, goalType: "recovery", checkInTime: "07:00", whyItMatters: why, ...extra } });
   return { token, joined };
 }
 const sam = await person("Sam", "HIL", `Do my knee physio stretches ${tag}`, "I want to hike with my family again.");
@@ -215,8 +215,23 @@ if (!sam) {
   check("a last name with numbers is refused", (await call("POST", "/api/account", { token: sam.token, body: { firstName: "Sam123" } })).status === 400);
   check("a made-up community is refused", (await call("POST", "/api/account", { token: sam.token, body: { community: "NOPE" } })).status === 400);
   const ana = await person("Ana", "BRD", `Do my physio exercises daily ${tag}`, "Walking clears my head.");
-  const anaView = ana.joined.json.data.today;
-  check("people in the same part of Calgary are paired", anaView.status === "paired", anaView.status);
+  // The Nearby board: real people see each other and choose, instead of being paired blind.
+  const anaBoard = ana.joined.json.data.today;
+  check("real people pick a partner on the Nearby board", anaBoard.status === "waiting" && Array.isArray(anaBoard.nearby?.people), anaBoard.status);
+  const samCard = anaBoard.nearby?.people.find((p) => p.firstName === "Sam");
+  check("Sam shows on Ana's board", Boolean(samCard), anaBoard.nearby);
+  check("the board shows community and distance", samCard?.communityName === "Hillhurst" && typeof samCard?.km === "number", samCard);
+  check("the board never shows an email", !JSON.stringify(anaBoard).includes("@example.com"));
+  const asked = await call("POST", "/api/team-up", { token: ana.token, body: { userId: samCard?.userId } });
+  check("asking to team up works", asked.status === 200 && asked.json.data.nearby?.people.find((p) => p.userId === samCard?.userId)?.askedByMe === true, asked.json);
+  const samBoard = (await call("GET", "/api/today", { token: sam.token })).json.data;
+  const request = samBoard.nearby?.requests[0];
+  check("Sam sees Ana's request", request?.from.firstName === "Ana", samBoard.nearby);
+  const accepted = await call("POST", "/api/team-up/answer", { token: sam.token, body: { requestId: request?.requestId, accept: true } });
+  check("saying yes pairs them", accepted.json.data?.status === "paired", accepted.json);
+  check("an answered request can't be answered again", (await call("POST", "/api/team-up/answer", { token: sam.token, body: { requestId: request?.requestId, accept: true } })).status === 404);
+  const anaView = (await call("GET", "/api/today", { token: ana.token })).json.data;
+  check("Ana is paired too", anaView.status === "paired", anaView.status);
   check("partner shows a real first name", anaView.partner?.nickname === "Sam", anaView.partner);
   check("partner shows their Calgary community", anaView.partner?.communityName === "Hillhurst", anaView.partner);
   check("partner shows why it matters", typeof anaView.partner?.whyItMatters === "string" && anaView.partner.whyItMatters.length > 0);
@@ -257,7 +272,15 @@ if (!sam) {
   check("the partner is sent to find someone new", anaAfter.status === "waiting", anaAfter.status);
   const goneImage = await fetch(`${BASE}/api/photo?kind=proof&id=${proofId}`, { headers: { Authorization: `Bearer ${ana.token}` } });
   check("the deleted person's photo is gone", goneImage.status === 404);
-  for (const token of [ana.token, outsider.json.data.token]) await call("POST", "/api/leave", { token });
+
+  // Invite links: whoever makes a promise through Ana's link is paired with her straight away.
+  const invite = await call("POST", "/api/invite", { token: ana.token });
+  const code = invite.json.data?.link?.split("invite=")[1];
+  check("Ana gets an invite link", typeof code === "string", invite.json);
+  check("the invite says who sent it", (await call("GET", `/api/invite?code=${code}`)).json.data.firstName === "Ana");
+  const lee = await person("Lee", "SNA", `Walk to the river every day ${tag}`, "My doctor asked me to move more.", { invite: code });
+  check("joining through an invite pairs you straight away", lee?.joined.json.data.today.status === "paired" && lee.joined.json.data.today.partner?.nickname === "Ana", lee?.joined.json.data.today.status);
+  for (const token of [ana.token, lee?.token, outsider.json.data.token]) await call("POST", "/api/leave", { token });
 }
 
 // --- Clinic groups (set GROUP_CODE and STAFF_KEY from npm run group:create) ---

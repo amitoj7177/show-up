@@ -1,6 +1,7 @@
 import { hashToken, newToken } from "./auth";
 import { randomAvatar } from "./avatar";
 import { query, transaction, type UserRow } from "./db";
+import { makePair } from "./nearby";
 import { makeNickname, MATCH_ANY_TYPE_AFTER_SECONDS, todayIn } from "./rules";
 
 // A labelled sample partner, so the demo never depends on anyone else joining.
@@ -18,6 +19,8 @@ export async function pairWithDemoPartner(user: UserRow): Promise<void> {
   await query("UPDATE users SET status = 'paired', notice = NULL WHERE id = $1", [user.id]);
 }
 
+// Automatic matching, for people without a real profile (tests and old links).
+// People with a profile choose their partner on the Nearby board instead (lib/nearby.ts).
 // Pairs a waiting person with someone else who is waiting.
 // The longest-waiting person with the same goal type goes first.
 // After 30 seconds of waiting, any goal type is fine, so nobody waits forever.
@@ -31,6 +34,8 @@ export async function tryMatch(userId: string): Promise<void> {
       [userId],
     );
     if (me[0]?.status !== "waiting" || me[0].is_demo) return;
+    const { rows: hasProfile } = await client.query("SELECT 1 FROM accounts WHERE user_id = $1", [userId]);
+    if (hasProfile[0]) return;
 
     // SKIP LOCKED: if two people match at the same moment, nobody gets paired twice.
     // The NOT EXISTS part means you never get the same partner again.
@@ -39,6 +44,7 @@ export async function tryMatch(userId: string): Promise<void> {
         WHERE c.status = 'waiting'
           AND c.id <> $1
           AND c.is_demo = false
+          AND NOT EXISTS (SELECT 1 FROM accounts a WHERE a.user_id = c.id)
           AND c.last_seen > now() - interval '3 days'
           AND c.group_id IS NOT DISTINCT FROM $5
           AND (c.goal_type = $2
@@ -54,13 +60,6 @@ export async function tryMatch(userId: string): Promise<void> {
     );
     if (!found[0]) return;
 
-    await client.query("INSERT INTO pairs (user_a, user_b, started_on) VALUES ($1, $2, $3)", [
-      userId,
-      found[0].id,
-      todayIn(new Date()),
-    ]);
-    await client.query("UPDATE users SET status = 'paired', notice = NULL WHERE id = ANY($1::uuid[])", [
-      [userId, found[0].id],
-    ]);
+    await makePair(client, userId, found[0].id);
   });
 }

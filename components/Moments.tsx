@@ -1,11 +1,14 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
+import { api, ApiError, getToken } from "@/lib/api";
+import type { NearbyPerson } from "@/lib/nearby";
 import type { MascotMood } from "@/lib/rules";
-import type { Today } from "@/lib/types";
+import type { Act, Today } from "@/lib/types";
 import { PixelAvatar } from "./PixelAvatar";
 import { PartnerCard } from "./PartnerCard";
-import { ErrorNote, PRIMARY_BUTTON, QUIET_BUTTON, TitleBar } from "./Shared";
+import { PrivatePhoto } from "./Photos";
+import { Card, ErrorNote, PRIMARY_BUTTON, QUIET_BUTTON, SECONDARY_BUTTON, TitleBar } from "./Shared";
 
 // "7:42 AM", in Calgary time.
 export function clockTime(iso: string): string {
@@ -47,8 +50,142 @@ function Character({ code, mood, name, label, className = "" }: { code: string; 
   );
 }
 
-// While we look for a partner: you, and a mystery box.
-export function FindingScreen({ today, onCancel }: { today: Today; onCancel: () => void }) {
+// While we look for a partner. Real people get the Nearby board; without a profile, it's a simple wait.
+export function FindingScreen({ today, act, onCancel }: { today: Today; act: Act; onCancel: () => void }) {
+  if (!today.nearby) return <BlindWait today={today} onCancel={onCancel} />;
+  const { people, requests } = today.nearby;
+  return (
+    <div className="space-y-4">
+      <div aria-live="polite" className="space-y-4">
+        {requests.map((request) => (
+          <div key={request.requestId} className="px-card overflow-hidden">
+            <TitleBar title={`${request.from.firstName} wants to team up`} />
+            <div className="space-y-3 p-5">
+              <NearbyCard person={request.from} />
+              <button type="button" className={PRIMARY_BUTTON} onClick={() => act("/api/team-up/answer", { requestId: request.requestId, accept: true })}>
+                Team up with {request.from.firstName}
+              </button>
+              <button type="button" className={QUIET_BUTTON} onClick={() => act("/api/team-up/answer", { requestId: request.requestId, accept: false })}>
+                Not now
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="px-card overflow-hidden">
+        <TitleBar title="Find a partner" />
+        <div className="space-y-4 p-5">
+          <h1 className="text-2xl font-bold leading-tight">People near you, looking now</h1>
+          <p>Pick someone to keep each other going. They see your request straight away.</p>
+          {today.notice && <ErrorNote message={today.notice} />}
+          {people.length === 0 ? (
+            <p className="text-muted">Nobody near you is looking right now. Invite someone you know below, or check back soon.</p>
+          ) : (
+            <ul className="space-y-3">
+              {people.map((person) => (
+                <li key={person.userId} className="space-y-3 border border-line rounded-2xl bg-white p-3">
+                  <NearbyCard person={person} />
+                  {person.askedByMe ? (
+                    <p className="font-semibold" role="status">
+                      {"\u2713"} Asked. Waiting for {person.firstName} to answer.
+                    </p>
+                  ) : (
+                    <button type="button" className={PRIMARY_BUTTON} onClick={() => act("/api/team-up", { userId: person.userId })}>
+                      Ask {person.firstName} to team up
+                    </button>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+          <p className="text-muted">While you&apos;re looking, other people looking can see your first name, photo, community and goal.</p>
+        </div>
+      </div>
+
+      <InviteCard />
+      <button type="button" className={QUIET_BUTTON} onClick={onCancel}>
+        Stop looking
+      </button>
+    </div>
+  );
+}
+
+// One person on the board: who they are, how far, and what they're working on.
+function NearbyCard({ person }: { person: NearbyPerson }) {
+  const distance = person.km === null ? "" : person.km < 1 ? " \u00b7 under 1 km away" : ` \u00b7 ${Math.round(person.km)} km away`;
+  return (
+    <div className="flex items-start gap-3">
+      {person.photoId ? (
+        <PrivatePhoto kind="profile" id={person.photoId} alt={`${person.firstName}'s photo`} className="size-16 shrink-0 border border-line rounded-2xl" />
+      ) : (
+        <div className="shrink-0 border border-line rounded-2xl bg-[#bfe6ff]">
+          <PixelAvatar code={person.avatar} mood="happy" scale={2} />
+        </div>
+      )}
+      <div className="min-w-0">
+        <p className="text-xl font-bold">
+          {person.firstName}
+          {person.activeNow && <span className="ml-2 text-base font-semibold text-[#1d7a46]">{"\u25cf"} Active now</span>}
+        </p>
+        {person.communityName && (
+          <p className="text-muted">
+            {person.communityName}
+            {distance}
+          </p>
+        )}
+        <p className="font-medium">{person.goal}</p>
+        {person.whyItMatters && <p className="mt-1 italic">&ldquo;{person.whyItMatters}&rdquo;</p>}
+      </div>
+    </div>
+  );
+}
+
+// "Invite someone you know": a link that pairs them with you as soon as they make their promise.
+function InviteCard() {
+  const [link, setLink] = useState("");
+  const [copied, setCopied] = useState(false);
+  const [error, setError] = useState("");
+
+  async function invite() {
+    setError("");
+    try {
+      const made = (await api<{ link: string }>("/api/invite", { post: true, token: getToken() })).link;
+      setLink(made);
+      const text = "Want to keep each other going? Make a health promise with me on Promise Pals.";
+      if (navigator.share) await navigator.share({ title: "Promise Pals", text, url: made }).catch(() => undefined);
+    } catch (problem) {
+      setError(problem instanceof ApiError ? problem.message : "Something went wrong. Please try again.");
+    }
+  }
+
+  async function copy() {
+    await navigator.clipboard.writeText(link);
+    setCopied(true);
+  }
+
+  return (
+    <Card title="Invite someone you know">
+      <p>A friend, neighbour or family member. When they make their promise through your link, you&apos;re paired straight away.</p>
+      {error && <ErrorNote message={error} />}
+      {link ? (
+        <>
+          <p className="px-input break-all select-all">{link}</p>
+          <button type="button" className={SECONDARY_BUTTON} onClick={copy}>
+            {copied ? "Copied \u2713" : "Copy invite link"}
+          </button>
+        </>
+      ) : (
+        <button type="button" className={SECONDARY_BUTTON} onClick={invite}>
+          Invite someone
+        </button>
+      )}
+    </Card>
+  );
+}
+
+// No profile (tests, old links): you, a mystery box, and automatic matching.
+function BlindWait({ today, onCancel }: { today: Today; onCancel: () => void }) {
   return (
     <div className="px-card overflow-hidden">
       <TitleBar title="Find a partner" />

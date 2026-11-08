@@ -25,7 +25,7 @@ export const POST = route(async (request) => {
     await query("DELETE FROM encouragements WHERE from_user = ANY($1::uuid[])", [ids]);
     await query(
       `UPDATE users SET goal_text = '', short_goal = NULL, why_it_matters = NULL, why = '{}', nickname = 'Deleted account',
-              avatar = 'h0-c0-s1-e0-o1-k0-a0', status = 'left', area = NULL, group_id = NULL, token_hash = md5(random()::text)
+              avatar = 'h0-c0-s1-e0-o1-k0-a0', status = 'left', area = NULL, group_id = NULL, invite_code = NULL, token_hash = md5(random()::text)
         WHERE id = ANY($1::uuid[])`,
       [ids],
     );

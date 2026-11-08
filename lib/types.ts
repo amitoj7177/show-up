@@ -1,4 +1,5 @@
 // The shapes the API sends back. docs/FRONTEND.md explains each field.
+import type { NearbyPerson, TeamRequest } from "./nearby";
 import type { CheckinStatus, DayMark, MascotMood } from "./rules";
 
 export type Why = {
@@ -67,6 +68,7 @@ export type Today = {
   messagesReceived: { id: string; text: string; sentAt: string }[];
   canSendMessage: boolean;
   notice: string | null;
+  nearby?: { people: NearbyPerson[]; requests: TeamRequest[] } | null;
   support: SupportLink[];
   notMedicalCare: string;
 };

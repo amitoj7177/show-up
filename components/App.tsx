@@ -7,7 +7,6 @@ import { api, ApiError, clearToken, getToken } from "@/lib/api";
 import { DEMO_AVATAR, demoToday } from "@/lib/demo";
 import { BADGES, MASCOT_MOODS, MESSAGES, NOT_MEDICAL_CARE, PRIVACY_LINE, REPORT_REASONS, SUPPORT_LINKS, TALK, type MascotMood } from "@/lib/rules";
 import type { Act, Config, Today } from "@/lib/types";
-import { FitbitCard } from "./FitbitCard";
 import { FindingScreen, PartnerFoundScreen, useLinePicker } from "./Moments";
 import { Landing } from "./Landing";
 import { PromiseScreen, type PromiseStart } from "./PromiseScreen";
@@ -26,7 +25,17 @@ export function App() {
   const [mode, setMode] = useState<"loading" | "demo" | "live">("loading");
 
   useEffect(() => {
-    setMode(new URLSearchParams(window.location.search).get("demo") === "1" ? "demo" : "live");
+    const params = new URLSearchParams(window.location.search);
+    setMode(params.get("demo") === "1" ? "demo" : "live");
+    // Opened an invite link: remember it until they make their promise.
+    const invite = params.get("invite");
+    if (invite) {
+      try {
+        sessionStorage.setItem("invite", invite);
+      } catch {
+        // Private browsing: the invite just won't apply.
+      }
+    }
   }, []);
 
   return (
@@ -122,7 +131,7 @@ function LiveApp() {
   }
 
   if (checking) return <Phone><p role="status">Loading...</p></Phone>;
-  if (!today && !needsPromise && !authStart) return <Landing onStart={setAuthStart} />;
+  if (!today && !needsPromise && !authStart && !invited()) return <Landing onStart={setAuthStart} />;
   if (!today) {
     return (
       <Phone>
@@ -175,8 +184,8 @@ function LiveApp() {
       <Phone>
         <div className="space-y-4">
           {offlineNote}
-          <FindingScreen today={today} onCancel={() => act("/api/leave")} />
-          {!today.isDemo && <FitbitCard />}
+          {error && <ErrorNote message={error} />}
+          <FindingScreen today={today} act={act} onCancel={() => act("/api/leave")} />
         </div>
       </Phone>
     );
@@ -300,4 +309,13 @@ function DemoApp() {
       }
     />
   );
+}
+
+// Someone who opened an invite link goes straight to sign-up, not the landing page.
+function invited(): boolean {
+  try {
+    return Boolean(sessionStorage.getItem("invite"));
+  } catch {
+    return false;
+  }
 }

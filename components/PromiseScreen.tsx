@@ -47,6 +47,7 @@ export function PromiseScreen({
   const [error, setError] = useState("");
   const [note, setNote] = useState("");
   const [refused, setRefused] = useState<Extract<JoinResult, { allowed: false }> | null>(null);
+  const invite = useInvite();
 
   useEffect(() => {
     api<Config>("/api/config")
@@ -135,8 +136,12 @@ export function PromiseScreen({
     event.preventDefault();
     setRefused(null);
     run(async () => {
-      const result = await api<JoinResult>("/api/join", { body: { goalText, goalType, checkInTime, avatar, groupCode, whyItMatters }, token: getToken() });
+      const result = await api<JoinResult>("/api/join", {
+        body: { goalText, goalType, checkInTime, avatar, groupCode, whyItMatters, invite: invite?.code },
+        token: getToken(),
+      });
       if (result.allowed) {
+        invite?.forget();
         saveToken(result.token);
         onJoined(result.today);
       } else {
@@ -185,6 +190,7 @@ export function PromiseScreen({
           <PixelScene code={avatar} mood="happy" label="A pixel character waving hello in a sunny park." bubble="HI!" />
           <div className="space-y-4 p-5">
             <h1 className="text-3xl font-bold leading-tight">Promise Pals</h1>
+            {invite?.firstName && <p className="px-card bg-[#fffc00] p-3 font-bold">{invite.firstName} invited you to be their partner.</p>}
             <p>Make a promise. Check in every day. Your partner sees it live.</p>
             <p className="font-semibold">For Calgarians who struggle to stick to their health goals. Built for people step counters leave out.</p>
             {error && <ErrorNote message={error} />}
@@ -309,6 +315,7 @@ export function PromiseScreen({
         <>
           <TitleBar title="Your promise" />
           <form onSubmit={makePromise} className="space-y-5 p-5">
+            {invite?.firstName && <p className="font-bold">You&apos;ll be paired with {invite.firstName} as soon as you make your promise.</p>}
             {refused && (
               <div className="space-y-3">
                 <ErrorNote message={refused.refusalReason} />
@@ -425,4 +432,33 @@ export function PromiseScreen({
       )}
     </div>
   );
+}
+
+// An invite link someone opened: the code, and who sent it (if they're still looking for a partner).
+function useInvite() {
+  const [invite, setInvite] = useState<{ code: string; firstName: string | null } | null>(null);
+  useEffect(() => {
+    let code: string | null = null;
+    try {
+      code = sessionStorage.getItem("invite");
+    } catch {
+      return;
+    }
+    if (!code) return;
+    const saved = code;
+    api<{ firstName: string | null }>(`/api/invite?code=${encodeURIComponent(saved)}`)
+      .then(({ firstName }) => setInvite({ code: saved, firstName }))
+      .catch(() => undefined);
+  }, []);
+  if (!invite) return null;
+  return {
+    ...invite,
+    forget() {
+      try {
+        sessionStorage.removeItem("invite");
+      } catch {
+        // Nothing to forget.
+      }
+    },
+  };
 }

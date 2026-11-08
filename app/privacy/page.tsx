@@ -4,7 +4,7 @@ export const metadata = { title: "Privacy - Promise Pals" };
 
 const ROWS: { what: string; where: string; who: string }[] = [
   { what: "Email and password", where: "Auth0 (Canada region)", who: "Only Auth0. We never see your password, and we don't keep your email." },
-  { what: "First name, photo, Calgary community", where: "Our database (Tiger Data)", who: "You and your current partner." },
+  { what: "First name, photo, Calgary community", where: "Our database (Tiger Data)", who: "You and your partner. While you're looking for a partner, also other people who are looking (with your goal). Never your exact location: distance is between community centres." },
   { what: "Your goal and why it matters", where: "Our database (Tiger Data)", who: "You. Your partner sees the checked, cleaned-up version." },
   { what: "Check-ins and proof photos", where: "Our database (Tiger Data)", who: "You and your current partner." },
   { what: "Fitbit steps and workouts (only if you connect)", where: "Read from Google Health when you check in", who: "You and your partner see today's steps and workout names, like \"Walk 15 min\". Nothing else is read." },

@@ -2,6 +2,7 @@ import { query, type PairRow, type UserRow } from "./db";
 import { HttpError } from "./http";
 import { findCommunity, meetSpot } from "./calgary";
 import { tryMatch } from "./matching";
+import { nearbyFor } from "./nearby";
 import { parseAvatar } from "./avatar";
 import {
   addDays,
@@ -177,6 +178,8 @@ export async function buildToday(startingUser: UserRow, now = new Date()) {
       messagesReceived: [],
       canSendMessage: false,
       notice: user.notice,
+      // Real people choose a partner on the Nearby board.
+      nearby: myProfile && user.status === "waiting" ? await nearbyFor(user) : null,
       support: SUPPORT_LINKS,
       notMedicalCare: NOT_MEDICAL_CARE,
     };

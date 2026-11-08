@@ -4,6 +4,7 @@ import { query, type UserRow } from "@/lib/db";
 import { checkGoal } from "@/lib/gemini";
 import { findCommunity } from "@/lib/calgary";
 import { findGroupByCode } from "@/lib/groups";
+import { joinByInvite } from "@/lib/nearby";
 import { checkWhy } from "@/lib/moderation";
 import { HttpError, ok, readBody, route } from "@/lib/http";
 import { pairWithDemoPartner, tryMatch } from "@/lib/matching";
@@ -80,6 +81,8 @@ export const POST = route(async (request) => {
 
   if (isDemo) {
     await pairWithDemoPartner(user);
+  } else if (typeof body.invite === "string" && account) {
+    await joinByInvite(user.id, body.invite);
   } else {
     await tryMatch(user.id);
   }
