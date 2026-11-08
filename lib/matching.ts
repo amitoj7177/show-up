@@ -19,6 +19,24 @@ export async function pairWithDemoPartner(user: UserRow): Promise<void> {
   await query("UPDATE users SET status = 'paired', notice = NULL WHERE id = $1", [user.id]);
 }
 
+const PRACTICE_NAMES = ["Robin", "Casey", "Riley", "Avery", "Quinn", "Morgan", "Jamie", "Rowan"];
+
+// Nobody near you after 30 seconds? You're paired with a practice partner so you're never stuck waiting.
+// It's always labelled "(practice partner)" on screen, so nobody mistakes it for a real person.
+export async function pairWithPracticePartner(userId: string): Promise<void> {
+  await transaction(async (client) => {
+    const { rows } = await client.query<UserRow>("SELECT * FROM users WHERE id = $1 FOR UPDATE", [userId]);
+    if (rows[0]?.status !== "waiting") return;
+    const name = PRACTICE_NAMES[Math.floor(Math.random() * PRACTICE_NAMES.length)];
+    const { rows: made } = await client.query<UserRow>(
+      `INSERT INTO users (token_hash, nickname, goal_text, short_goal, goal_type, check_in_time, why, status, is_demo, avatar)
+       VALUES ($1, $2, 'Practice goal', 'Take a 10-minute walk every day', $3, '09:00', '{}', 'waiting', true, $4) RETURNING *`,
+      [hashToken(newToken()), `${name} (practice partner)`, rows[0].goal_type, randomAvatar()],
+    );
+    await makePair(client, userId, made[0].id);
+  });
+}
+
 // Automatic matching, for people without a real profile (tests and old links).
 // People with a profile choose their partner on the Nearby board instead (lib/nearby.ts).
 // Pairs a waiting person with someone else who is waiting.

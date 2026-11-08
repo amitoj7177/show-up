@@ -8,24 +8,12 @@ export const GOAL_TYPES = ["move", "recovery", "sleep", "routine", "mind", "othe
 export type GoalType = (typeof GOAL_TYPES)[number];
 
 // How someone moves, only if they choose to say. People who move the same way see each other first,
-// and the promise form suggests goals that fit. Walking gets no tag; it's the default people assume.
+// Walking gets no tag; it's the default people assume.
 export const MOVES = {
-  walking: { label: "I walk", tag: null, ideas: ["Walk 20 minutes after dinner", "Do my physio exercises every morning", "Take the stairs at work"] },
-  wheelchair: {
-    label: "I use a wheelchair",
-    tag: "Wheelchair user",
-    ideas: ["Wheel 15 minutes around my block", "Do 10 minutes of seated arm exercises", "Go to an adaptive fitness class"],
-  },
-  aid: {
-    label: "I use a walker, cane or crutches",
-    tag: "Uses a walking aid",
-    ideas: ["Walk to the end of my street and back", "Do my physio exercises every morning", "Do 10 minutes of seated stretches"],
-  },
-  energy: {
-    label: "I have limited energy or chronic pain",
-    tag: "Limited energy or chronic pain",
-    ideas: ["Do 5 minutes of gentle stretching", "Sit outside for 10 minutes", "Take my medication on time"],
-  },
+  walking: { label: "I walk", tag: null },
+  wheelchair: { label: "I use a wheelchair", tag: "Wheelchair user" },
+  aid: { label: "I use a walker, cane or crutches", tag: "Uses a walking aid" },
+  energy: { label: "I have limited energy or chronic pain", tag: "Limited energy or chronic pain" },
 } as const;
 export type Moves = keyof typeof MOVES;
 

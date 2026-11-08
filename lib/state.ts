@@ -1,7 +1,7 @@
 import { query, type PairRow, type UserRow } from "./db";
 import { HttpError } from "./http";
 import { findCommunity } from "./calgary";
-import { tryMatch } from "./matching";
+import { pairWithPracticePartner, tryMatch } from "./matching";
 import { nearbyFor } from "./nearby";
 import { parseAvatar } from "./avatar";
 import {
@@ -149,6 +149,9 @@ function describeMe(user: UserRow & { group_name?: string | null }, profile: Pro
   };
 }
 
+// How long someone waits on an empty board before a practice partner steps in. Tests set it longer.
+const PRACTICE_PARTNER_AFTER_SECONDS = Number(process.env.PRACTICE_PARTNER_AFTER_SECONDS ?? 30);
+
 // Everything the main screen needs, in one response. Screens ask for this every 3 seconds.
 export async function buildToday(startingUser: UserRow, now = new Date()) {
   let user: UserRow & { group_name?: string | null } = startingUser;
@@ -169,6 +172,15 @@ export async function buildToday(startingUser: UserRow, now = new Date()) {
   const pair = user.status === "paired" ? await findActivePair(user.id) : undefined;
   const myProfile = await profileOf(user.id);
 
+  // Real people choose a partner on the Nearby board. If nobody's there after a short wait, a practice partner steps in.
+  const nearby = myProfile && user.status === "waiting" ? await nearbyFor(user) : null;
+  const waitedSeconds = (now.getTime() - new Date(user.waiting_since ?? now).getTime()) / 1000;
+  if (!pair && nearby && !nearby.people.length && !nearby.requests.length && waitedSeconds >= PRACTICE_PARTNER_AFTER_SECONDS) {
+    await pairWithPracticePartner(user.id);
+    const [fresh] = await query<UserRow>("SELECT * FROM users WHERE id = $1", [user.id]);
+    return buildToday(fresh, now);
+  }
+
   if (!pair) {
     return {
       status: user.status === "left" ? ("left" as const) : ("waiting" as const),
@@ -186,8 +198,7 @@ export async function buildToday(startingUser: UserRow, now = new Date()) {
       messagesReceived: [],
       canSendMessage: false,
       notice: user.notice,
-      // Real people choose a partner on the Nearby board.
-      nearby: myProfile && user.status === "waiting" ? await nearbyFor(user) : null,
+      nearby,
       support: SUPPORT_LINKS,
       notMedicalCare: NOT_MEDICAL_CARE,
     };

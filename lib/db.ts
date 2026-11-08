@@ -56,6 +56,7 @@ export type UserRow = {
   notice: string | null;
   is_demo: boolean;
   last_seen: Date;
+  waiting_since: Date | null;
 };
 
 export type PairRow = {

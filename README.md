@@ -14,7 +14,7 @@ Calgarians who struggle to stick to their health goals, including the people ste
 
 ## What it does
 
-- **Find a partner nearby, fast.** The Nearby board shows real people in Calgary who are looking right now (first name, community, distance, goal). Tap "Ask to team up", they see it within seconds and say yes. Or invite someone you know with a link.
+- **Find a partner nearby, fast.** The Nearby board shows real people in Calgary who are looking right now (first name, community, distance, goal). Tap "Ask to team up", they see it within seconds and say yes. Or invite someone you know with a link. Nobody there after 30 seconds? A clearly labelled practice partner steps in, so you're never stuck waiting.
 - **Check in every day, with real proof.** A photo your partner confirms, or your Fitbit: steps, workouts it detects on its own, and active minutes from heart rate.
 - **Accountability that feels human.** Your pixel character gets annoyed, mad, then furious if you let your partner down, but rough days are allowed and never break your streak. After 2 silent days you can get a new partner.
 
@@ -24,7 +24,7 @@ Open the live app, or tap **See a demo** for a labelled sample run with an insta
 
 ## Accessibility
 
-- Optional "How do you move?" so you can find someone who moves like you, with goal ideas that fit.
+- Optional "How do you move?" so you can find someone who moves like you.
 - Fitbit proof from heart rate (active zone minutes), not only steps.
 - Easy reading switches: bigger text, stronger contrast, less motion. The phone's own reduce-motion setting is respected too.
 - Real buttons and labels, every character's mood described in words, never colour alone, keyboard-friendly, 18px body text, WCAG AA contrast.

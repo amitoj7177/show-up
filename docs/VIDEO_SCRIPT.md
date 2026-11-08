@@ -35,9 +35,9 @@
 
 **"This question is optional. If you use a wheelchair, a walker, or live with chronic pain, you can say so, and you'll see people who move like you first."**
 
-🎬 Make a promise. Tap one of the **Ideas that fit you** buttons. Tap **Find my partner**.
+🎬 Type a promise. Tap **Find my partner**.
 
-**"Then you make a promise. Any health goal counts, and we suggest goals that fit how you move."**
+**"Then you make a promise. Any health goal counts."**
 
 🎬 The **Nearby board**. Point at a card: name, community, distance, goal.
 
@@ -47,7 +47,7 @@
 
 **"I ask someone to team up. Their phone gets the request within three seconds. They say yes, and we're a team. No awkward chat, no waiting in the dark."**
 
-**"If nobody's right for you, you can invite someone you know with a link, and you're paired the moment they join."**
+**"If nobody's right for you, you can invite someone you know with a link, and you're paired the moment they join. And if nobody's around yet, a clearly labelled practice partner steps in after 30 seconds, so you're never stuck waiting."**
 
 ---
 
