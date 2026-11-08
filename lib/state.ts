@@ -144,7 +144,7 @@ function describeMe(user: UserRow & { group_name?: string | null }, profile: Pro
   };
 }
 
-const PRACTICE_PARTNER_AFTER_SECONDS = Number(process.env.PRACTICE_PARTNER_AFTER_SECONDS ?? 30);
+const PRACTICE_PARTNER_AFTER_SECONDS = Number(process.env.PRACTICE_PARTNER_AFTER_SECONDS ?? 10);
 
 export async function buildToday(startingUser: UserRow, now = new Date()) {
   let user: UserRow & { group_name?: string | null } = startingUser;
@@ -166,7 +166,7 @@ export async function buildToday(startingUser: UserRow, now = new Date()) {
 
   const nearby = myProfile && user.status === "waiting" ? await nearbyFor(user) : null;
   const waitedSeconds = (now.getTime() - new Date(user.waiting_since ?? now).getTime()) / 1000;
-  if (!pair && nearby && !nearby.people.length && !nearby.requests.length && waitedSeconds >= PRACTICE_PARTNER_AFTER_SECONDS) {
+  if (!pair && nearby && !nearby.people.some((person) => person.askedByMe) && !nearby.requests.length && waitedSeconds >= PRACTICE_PARTNER_AFTER_SECONDS) {
     await pairWithPracticePartner(user.id);
     const [fresh] = await query<UserRow>("SELECT * FROM users WHERE id = $1", [user.id]);
     return buildToday(fresh, now);
