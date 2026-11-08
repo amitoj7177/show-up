@@ -53,7 +53,7 @@ export async function checkProofPhoto(base64: string): Promise<{ description: st
     { type: "object", properties: { safe: { type: "boolean" }, description: { type: "string" } }, required: ["safe", "description"] },
   );
   if (!answer || typeof answer.safe !== "boolean") {
-    throw new HttpError(503, "photo_check_down", "We couldn't check your photo right now. Try again, or check in without one.");
+    throw new HttpError(503, "photo_check_down", "We couldn't check your photo right now. Please try again in a minute, or check in with Fitbit.");
   }
   if (!answer.safe) throw new HttpError(400, "photo_not_allowed", "That photo can't be shared with your partner. Please try a different one.");
   return { description: String(answer.description ?? "").slice(0, 60) };
