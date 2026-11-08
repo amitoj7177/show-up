@@ -99,7 +99,6 @@ export function FindingScreen({ today, act, onCancel, demo = false }: { today: T
               ))}
             </ul>
           )}
-          <p className="text-muted">While you&apos;re looking, other people looking can see your first name, photo, community and goal.</p>
         </div>
       </div>
 
