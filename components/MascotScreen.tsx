@@ -5,6 +5,7 @@ import type { Act, Today } from "@/lib/types";
 import { Customizer } from "./Customizer";
 import { FitbitCard } from "./FitbitCard";
 import { PhoneStepsCard } from "./PhoneStepsCard";
+import { ReadingSettings } from "./ReadingSettings";
 import { ProfileForm } from "./ProfileForm";
 import { api, ApiError, getToken } from "@/lib/api";
 import { POINTS } from "@/lib/rules";
@@ -27,6 +28,9 @@ export function MascotScreen({ today, act, onLogOut }: { today: Today; act: Act;
   return (
     <div className="space-y-4">
       <h1 className="text-xl font-bold">You</h1>
+      <Card title="Easy reading">
+        <ReadingSettings />
+      </Card>
       {!today.isDemo && <FitbitCard />}
       {!today.isDemo && <PhoneStepsCard />}
       {!today.isDemo && (

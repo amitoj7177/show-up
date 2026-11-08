@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { wantsLessMotion } from "@/lib/reading";
 import { api, getToken } from "@/lib/api";
 import { BADGES, personalStats, TALK } from "@/lib/rules";
 import type { Act, Config, History, Today } from "@/lib/types";
@@ -69,7 +70,7 @@ export function ProgressScreen({ today, config, act, sample }: { today: Today; c
   const earned = badges.filter((badge) => stats.best >= badge.days).length;
   const segments = Math.round(stats.percent / 10);
   const mood = stats.percent >= 70 ? "proud" : "happy"; // always warm, never shaming
-  const reduceMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const reduceMotion = () => wantsLessMotion();
 
   function pepTalk() {
     setSaying(pick("motivation", config?.talk.motivation ?? TALK.motivation));

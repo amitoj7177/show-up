@@ -3,7 +3,7 @@ import type { PoolClient } from "pg";
 import { findCommunity } from "./calgary";
 import { query, transaction } from "./db";
 import { HttpError } from "./http";
-import { GOAL_TYPE_LABELS, todayIn, type GoalType } from "./rules";
+import { GOAL_TYPE_LABELS, moveTag, todayIn, type GoalType } from "./rules";
 
 // The Nearby board. Instead of waiting blind, you see real people near you who are looking right now,
 // ask one to team up, and they say yes or not now. Only people who are looking can see each other.
@@ -14,6 +14,7 @@ export type NearbyPerson = {
   photoId: string | null;
   avatar: string;
   communityName: string | null;
+  moveTag: string | null;
   km: number | null;
   goal: string;
   goalTypeLabel: string;
@@ -31,6 +32,7 @@ type Row = {
   has_photo: boolean;
   avatar: string;
   community: string | null;
+  moves: string | null;
   short_goal: string | null;
   goal_text: string;
   goal_type: string;
@@ -38,7 +40,7 @@ type Row = {
   active_now: boolean;
 };
 
-const PERSON_COLUMNS = `u.id, a.first_name, a.id AS account_id, a.photo IS NOT NULL AS has_photo, u.avatar, a.community,
+const PERSON_COLUMNS = `u.id, a.first_name, a.id AS account_id, a.photo IS NOT NULL AS has_photo, u.avatar, a.community, a.moves,
   u.short_goal, u.goal_text, u.goal_type, u.why_it_matters, u.last_seen > now() - interval '1 minute' AS active_now`;
 
 // Straight-line distance between two Calgary communities, from the City's open data. Never anyone's exact location.
@@ -59,6 +61,7 @@ function describe(row: Row, myCommunity: string | null, askedByMe = false): Near
     photoId: row.has_photo ? row.account_id : null,
     avatar: row.avatar,
     communityName: findCommunity(row.community)?.name ?? null,
+    moveTag: moveTag(row.moves),
     km: distanceKm(myCommunity, row.community),
     goal: row.short_goal ?? GOAL_TYPE_LABELS[row.goal_type as GoalType],
     goalTypeLabel: GOAL_TYPE_LABELS[row.goal_type as GoalType],
@@ -82,14 +85,15 @@ const VISIBLE = `
 // People who asked you show at the top as a request, not again in the list.
 const NOT_ASKED_ME = `AND NOT EXISTS (SELECT 1 FROM team_requests r WHERE r.from_user = u.id AND r.to_user = $1 AND r.answered_at IS NULL)`;
 
-async function myCommunity(userId: string): Promise<string | null> {
-  const [row] = await query<{ community: string | null }>("SELECT community FROM accounts WHERE user_id = $1", [userId]);
-  return row?.community ?? null;
+async function myProfile(userId: string): Promise<{ community: string | null; moves: string | null }> {
+  const [row] = await query<{ community: string | null; moves: string | null }>("SELECT community, moves FROM accounts WHERE user_id = $1", [userId]);
+  return { community: row?.community ?? null, moves: row?.moves ?? null };
 }
 
-// Everyone near you who is looking. Closest first, then the same kind of goal.
+// Everyone near you who is looking. People who move the way you do come first (if you said),
+// then the closest, then the same kind of goal.
 export async function nearbyFor(user: { id: string; group_id: string | null; goal_type: string }): Promise<{ people: NearbyPerson[]; requests: TeamRequest[] }> {
-  const community = await myCommunity(user.id);
+  const { community, moves } = await myProfile(user.id);
   const rows = await query<Row & { asked: boolean }>(
     `SELECT ${PERSON_COLUMNS},
             EXISTS (SELECT 1 FROM team_requests r WHERE r.from_user = $1 AND r.to_user = u.id AND r.answered_at IS NULL) AS asked
@@ -98,8 +102,15 @@ export async function nearbyFor(user: { id: string; group_id: string | null; goa
     [user.id, user.group_id],
   );
   const people = rows
-    .map((row) => ({ person: describe(row, community, row.asked), sameType: row.goal_type === user.goal_type }))
-    .sort((a, b) => (a.person.km ?? 999) - (b.person.km ?? 999) || Number(b.sameType) - Number(a.sameType))
+    .map((row) => ({
+      person: describe(row, community, row.asked),
+      sameType: row.goal_type === user.goal_type,
+      sameMoves: Boolean(moves && moves !== "walking" && row.moves === moves),
+    }))
+    .sort(
+      (a, b) =>
+        Number(b.sameMoves) - Number(a.sameMoves) || (a.person.km ?? 999) - (b.person.km ?? 999) || Number(b.sameType) - Number(a.sameType),
+    )
     .slice(0, 20)
     .map(({ person }) => person);
 

@@ -5,7 +5,7 @@ import { scrollPhoneToTop } from "./PhoneFrame";
 import { useEffect, useState, type FormEvent } from "react";
 import { api, ApiError, getToken, saveToken } from "@/lib/api";
 import { DEFAULT_AVATAR } from "@/lib/avatar";
-import { PASSWORD_RULE, strongEnough } from "@/lib/rules";
+import { isMoves, MOVES, PASSWORD_RULE, strongEnough } from "@/lib/rules";
 import type { Config, JoinResult, Today } from "@/lib/types";
 import { Customizer } from "./Customizer";
 import { ProfileForm } from "./ProfileForm";
@@ -48,14 +48,16 @@ export function PromiseScreen({
   const [note, setNote] = useState("");
   const [refused, setRefused] = useState<Extract<JoinResult, { allowed: false }> | null>(null);
   const invite = useInvite();
+  const [moves, setMoves] = useState<string | null>(null);
 
   useEffect(() => {
     api<Config>("/api/config")
       .then(setConfig)
       .catch(() => setError("We can't reach Promise Pals right now. You can still try the demo."));
     if (getToken()) {
-      api<{ avatar: string }>("/api/account", { token: getToken() })
+      api<{ avatar: string; moves: string | null }>("/api/account", { token: getToken() })
         .then((account) => {
+          setMoves(account.moves);
           if (account.avatar !== DEFAULT_AVATAR) setAvatar(account.avatar);
         })
         .catch(() => undefined);
@@ -279,7 +281,13 @@ export function PromiseScreen({
           <div className="space-y-4 p-5">
             <p>Your partner is a real person in Calgary, and so are you. This is what they&apos;ll see.</p>
             {error && <ErrorNote message={error} />}
-            <ProfileForm submitLabel="Looks good" onSaved={() => go("done")} />
+            <ProfileForm
+              submitLabel="Looks good"
+              onSaved={(saved) => {
+                setMoves(saved.moves);
+                go("done");
+              }}
+            />
           </div>
         </>
       )}
@@ -350,6 +358,16 @@ export function PromiseScreen({
                 className="px-input"
               />
               <p className="mt-1 text-muted">Please leave out names and other personal details.</p>
+              <div className="mt-3">
+                <p className="font-semibold">Ideas that fit you:</p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {(isMoves(moves) ? MOVES[moves].ideas : MOVES.walking.ideas).map((idea) => (
+                    <button key={idea} type="button" onClick={() => setGoalText(idea)} className="min-h-11 border border-line bg-white px-3 text-left">
+                      {idea}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
 
             <div>

@@ -7,6 +7,36 @@ export type DayCheckins = Record<string, CheckinStatus | undefined>; // "2026-11
 export const GOAL_TYPES = ["move", "recovery", "sleep", "routine", "mind", "other"] as const;
 export type GoalType = (typeof GOAL_TYPES)[number];
 
+// How someone moves, only if they choose to say. People who move the same way see each other first,
+// and the promise form suggests goals that fit. Walking gets no tag; it's the default people assume.
+export const MOVES = {
+  walking: { label: "I walk", tag: null, ideas: ["Walk 20 minutes after dinner", "Do my physio exercises every morning", "Take the stairs at work"] },
+  wheelchair: {
+    label: "I use a wheelchair",
+    tag: "Wheelchair user",
+    ideas: ["Wheel 15 minutes around my block", "Do 10 minutes of seated arm exercises", "Go to an adaptive fitness class"],
+  },
+  aid: {
+    label: "I use a walker, cane or crutches",
+    tag: "Uses a walking aid",
+    ideas: ["Walk to the end of my street and back", "Do my physio exercises every morning", "Do 10 minutes of seated stretches"],
+  },
+  energy: {
+    label: "I have limited energy or chronic pain",
+    tag: "Limited energy or chronic pain",
+    ideas: ["Do 5 minutes of gentle stretching", "Sit outside for 10 minutes", "Take my medication on time"],
+  },
+} as const;
+export type Moves = keyof typeof MOVES;
+
+export function isMoves(value: unknown): value is Moves {
+  return typeof value === "string" && value in MOVES;
+}
+
+export function moveTag(value: string | null | undefined): string | null {
+  return isMoves(value) ? MOVES[value].tag : null;
+}
+
 export const SILENT_DAYS_BEFORE_NEW_MATCH = 2;
 export const MATCH_ANY_TYPE_AFTER_SECONDS = 30; // first try to match the same goal type
 export const TIME_ZONE = "America/Edmonton";
@@ -67,9 +97,10 @@ export function checkinPoints(checkin: {
   fitbitSteps: number | null;
   fitbitWorkout?: string | null;
   phoneSteps?: number | null;
+  fitbitActiveMinutes?: number | null;
 }): number {
   if (checkin.status !== "done") return POINTS.rough;
-  const fitbitProved = (checkin.fitbitSteps ?? 0) > 0 || Boolean(checkin.fitbitWorkout);
+  const fitbitProved = (checkin.fitbitSteps ?? 0) > 0 || Boolean(checkin.fitbitWorkout) || (checkin.fitbitActiveMinutes ?? 0) > 0;
   const deviceBonus = fitbitProved ? POINTS.fitbit : (checkin.phoneSteps ?? 0) > 0 ? POINTS.phone : 0;
   return POINTS.done + (checkin.confirmed ? POINTS.confirmed : 0) + deviceBonus;
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { scrollPhoneToTop } from "./PhoneFrame";
+import { wantsLessMotion } from "@/lib/reading";
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { MOOD_BACKGROUND } from "@/lib/avatar";
@@ -114,8 +115,9 @@ function MyProof({ today, partnerName }: { today: Today; partnerName: string }) 
         </p>
       )}
       {proof?.fitbitWorkout && <p className="font-semibold">Fitbit workout: {proof.fitbitWorkout}</p>}
+      {(proof?.fitbitActiveMinutes ?? 0) > 0 && <p className="font-semibold">Fitbit: {proof?.fitbitActiveMinutes} active minutes (heart rate)</p>}
       {(proof?.phoneSteps ?? 0) > 0 && <p className="font-semibold">iPhone: {proof?.phoneSteps?.toLocaleString("en-CA")} steps today</p>}
-      {(proof?.fitbitSteps ?? 0) > 0 || proof?.fitbitWorkout ? (
+      {(proof?.fitbitSteps ?? 0) > 0 || proof?.fitbitWorkout || (proof?.fitbitActiveMinutes ?? 0) > 0 ? (
         <p className="text-muted">Verified by Fitbit: +{POINTS.fitbit} bonus points</p>
       ) : (proof?.phoneSteps ?? 0) > 0 ? (
         <p className="text-muted">Sent from Apple Health: +{POINTS.phone} bonus points</p>
@@ -147,6 +149,7 @@ function PartnerProof({ partner, act }: { partner: NonNullable<Today["partner"]>
         <p className="font-semibold">Fitbit: {proof.fitbitSteps.toLocaleString("en-CA")} steps today</p>
       )}
       {proof.fitbitWorkout && <p className="font-semibold">Fitbit workout: {proof.fitbitWorkout}</p>}
+      {(proof.fitbitActiveMinutes ?? 0) > 0 && <p className="font-semibold">Fitbit: {proof.fitbitActiveMinutes} active minutes (heart rate)</p>}
       {(proof.phoneSteps ?? 0) > 0 && <p className="font-semibold">iPhone: {proof.phoneSteps?.toLocaleString("en-CA")} steps today (sent from Apple Health)</p>}
       {proof.confirmedAt ? (
         <p className="font-semibold">{"\u2705"} You confirmed it at {clockTime(proof.confirmedAt)}.</p>
@@ -204,7 +207,7 @@ export function TodayScreen({
 
   function pepTalk() {
     say(pick("motivation", config?.talk.motivation));
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (wantsLessMotion()) return;
     let frames = 0;
     const timer = setInterval(() => {
       frames += 1;

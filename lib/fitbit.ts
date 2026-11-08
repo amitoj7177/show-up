@@ -139,7 +139,16 @@ export function describeWorkouts(points: unknown[]): string | null {
   return parts.length ? parts.join(", ") : null;
 }
 
-export type FitbitDay = { steps: number | null; workout: string | null };
+// Active Zone Minutes: minutes your heart rate was up. Fitbit counts these from heart rate, not steps,
+// so they prove a workout in a wheelchair, on a bike or on a mat just as well as a walk.
+export function activeMinutes(points: unknown[]): number {
+  return (points as { activeZoneMinutes?: { activeZoneMinutes?: string | number } }[]).reduce(
+    (sum, point) => sum + (Number(point.activeZoneMinutes?.activeZoneMinutes) || 0),
+    0,
+  );
+}
+
+export type FitbitDay = { steps: number | null; workout: string | null; activeMinutes: number | null };
 
 // Today's steps and workouts from the person's Fitbit, or null if they haven't connected one.
 export async function fitbitToday(accountId: string, now = new Date()): Promise<FitbitDay | null> {
@@ -147,15 +156,24 @@ export async function fitbitToday(accountId: string, now = new Date()): Promise<
   const [link] = await query<{ refresh_token: string }>("SELECT refresh_token FROM health_links WHERE account_id = $1", [accountId]);
   if (!link) return null;
   const token = await accessToken(link.refresh_token);
-  if (!token) return { steps: null, workout: null };
+  if (!token) return { steps: null, workout: null, activeMinutes: null };
 
   const start = calgaryMidnight(now).toISOString();
-  const [steps, workouts] = await Promise.all([
+  const [steps, workouts, zones] = await Promise.all([
     readData(token, "steps", `steps.interval.start_time >= "${start}" AND steps.interval.start_time < "${now.toISOString()}"`),
+    readData(
+      token,
+      "active-zone-minutes",
+      `active_zone_minutes.interval.start_time >= "${start}" AND active_zone_minutes.interval.start_time < "${now.toISOString()}"`,
+    ),
     // Workouts can only be filtered by the date on the person's own clock.
     readData(token, "exercise", `exercise.interval.civil_start_time >= "${todayIn(now)}"`),
   ]);
-  return { steps: steps ? totalCount(steps) : null, workout: workouts ? describeWorkouts(workouts) : null };
+  return {
+    steps: steps ? totalCount(steps) : null,
+    workout: workouts ? describeWorkouts(workouts) : null,
+    activeMinutes: zones ? activeMinutes(zones) : null,
+  };
 }
 
 export async function isConnected(accountId: string): Promise<boolean> {

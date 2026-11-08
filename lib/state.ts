@@ -6,6 +6,7 @@ import { nearbyFor } from "./nearby";
 import { parseAvatar } from "./avatar";
 import {
   addDays,
+  moveTag,
   checkinPoints,
   EXTRA_UNLOCKS,
   extraLocked,
@@ -30,13 +31,14 @@ import {
 
 // Proof for one check-in: the photo's id, what Gemini saw in it, and when the partner confirmed it.
 function proofOf(
-  row: { id: string; has_photo: boolean; photo_note: string | null; confirmed_at: Date | null; fitbit_steps: number | null; fitbit_workout: string | null; phone_steps: number | null } | undefined,
+  row: { id: string; has_photo: boolean; photo_note: string | null; confirmed_at: Date | null; fitbit_steps: number | null; fitbit_workout: string | null; phone_steps: number | null; fitbit_active_minutes: number | null } | undefined,
 ) {
   if (!row) return null;
   return {
     fitbitSteps: row.fitbit_steps,
     fitbitWorkout: row.fitbit_workout,
     phoneSteps: row.phone_steps,
+    fitbitActiveMinutes: row.fitbit_active_minutes,
     photoId: row.has_photo ? row.id : null,
     note: row.photo_note,
     confirmedAt: row.confirmed_at ? new Date(row.confirmed_at).toISOString() : null,
@@ -84,12 +86,12 @@ async function checkinsFor(pairId: string): Promise<Record<string, DayCheckins>>
   return byUser;
 }
 
-type Profile = { id: string; first_name: string | null; community: string | null; has_photo: boolean };
+type Profile = { id: string; first_name: string | null; community: string | null; moves: string | null; has_photo: boolean };
 
 // The real-person side of someone: first name, photo and Calgary community. Demo users have none.
 async function profileOf(userId: string): Promise<Profile | undefined> {
   const [profile] = await query<Profile>(
-    "SELECT id, first_name, community, photo IS NOT NULL AS has_photo FROM accounts WHERE user_id = $1",
+    "SELECT id, first_name, community, moves, photo IS NOT NULL AS has_photo FROM accounts WHERE user_id = $1",
     [userId],
   );
   return profile;
@@ -100,17 +102,25 @@ function describeProfile(profile: Profile | undefined) {
     firstName: profile?.first_name ?? null,
     photoId: profile?.has_photo ? profile.id : null,
     communityName: findCommunity(profile?.community)?.name ?? null,
+    moveTag: moveTag(profile?.moves),
     area: findCommunity(profile?.community)?.area ?? null,
   };
 }
 
 // Points for every check-in on this promise.
 export async function pointsFor(userId: string): Promise<number> {
-  const rows = await query<{ status: string; confirmed: boolean; fitbit_steps: number | null; fitbit_workout: string | null; phone_steps: number | null }>(
-    "SELECT status, confirmed_at IS NOT NULL AS confirmed, fitbit_steps, fitbit_workout, phone_steps FROM checkins WHERE user_id = $1",
+  const rows = await query<{
+    status: string;
+    confirmed: boolean;
+    fitbit_steps: number | null;
+    fitbit_workout: string | null;
+    phone_steps: number | null;
+    fitbit_active_minutes: number | null;
+  }>(
+    "SELECT status, confirmed_at IS NOT NULL AS confirmed, fitbit_steps, fitbit_workout, phone_steps, fitbit_active_minutes FROM checkins WHERE user_id = $1",
     [userId],
   );
-  return rows.reduce((sum, row) => sum + checkinPoints({ status: row.status, confirmed: row.confirmed, fitbitSteps: row.fitbit_steps, fitbitWorkout: row.fitbit_workout, phoneSteps: row.phone_steps }), 0);
+  return rows.reduce((sum, row) => sum + checkinPoints({ status: row.status, confirmed: row.confirmed, fitbitSteps: row.fitbit_steps, fitbitWorkout: row.fitbit_workout, phoneSteps: row.phone_steps, fitbitActiveMinutes: row.fitbit_active_minutes }), 0);
 }
 
 // Stops someone saving an extra they haven't earned yet. An extra they already wear is fine.
@@ -207,8 +217,10 @@ export async function buildToday(startingUser: UserRow, now = new Date()) {
     fitbit_steps: number | null;
     fitbit_workout: string | null;
     phone_steps: number | null;
+    fitbit_active_minutes: number | null;
   }>(
-    `SELECT id, user_id, created_at, seen_at, photo IS NOT NULL AS has_photo, photo_note, confirmed_at, fitbit_steps, fitbit_workout, phone_steps
+    `SELECT id, user_id, created_at, seen_at, photo IS NOT NULL AS has_photo, photo_note, confirmed_at, fitbit_steps, fitbit_workout, phone_steps,
+            fitbit_active_minutes
        FROM checkins WHERE pair_id = $1 AND day = $2`,
     [pair.id, today],
   );

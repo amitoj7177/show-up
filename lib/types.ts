@@ -25,6 +25,7 @@ export type Today = {
     firstName?: string | null;
     photoId?: string | null;
     communityName?: string | null;
+    moveTag?: string | null;
     area?: string | null;
     whyItMatters?: string | null;
     goal: { text: string; partnerSees: string | null; type: string; typeLabel: string };
@@ -46,6 +47,7 @@ export type Today = {
     firstName?: string | null;
     photoId?: string | null;
     communityName?: string | null;
+    moveTag?: string | null;
     area?: string | null;
     whyItMatters?: string | null;
     proof?: Proof | null;
@@ -115,13 +117,14 @@ export type History = {
   finished: boolean;
 };
 
-export type Proof = { photoId: string | null; note: string | null; confirmedAt: string | null; fitbitSteps?: number | null; fitbitWorkout?: string | null; phoneSteps?: number | null };
+export type Proof = { photoId: string | null; note: string | null; confirmedAt: string | null; fitbitSteps?: number | null; fitbitWorkout?: string | null; phoneSteps?: number | null; fitbitActiveMinutes?: number | null };
 
 export type Profile = {
   avatar: string;
   firstName: string | null;
   community: string | null;
   communityName: string | null;
+  moves: string | null;
   hasPhoto: boolean;
   photoId: string | null;
   adult: boolean;

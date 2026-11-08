@@ -3,6 +3,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { api, ApiError, getToken } from "@/lib/api";
 import { COMMUNITIES } from "@/lib/calgary";
+import { MOVES } from "@/lib/rules";
 import type { Profile } from "@/lib/types";
 import { PhotoButton, PrivatePhoto } from "./Photos";
 import { ErrorNote, PRIMARY_BUTTON, QUIET_BUTTON, SECONDARY_BUTTON } from "./Shared";
@@ -13,6 +14,7 @@ export function ProfileForm({ submitLabel, onSaved }: { submitLabel: string; onS
   const [firstName, setFirstName] = useState("");
   const [community, setCommunity] = useState("");
   const [adult, setAdult] = useState(false);
+  const [moves, setMoves] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [photoBusy, setPhotoBusy] = useState(false);
   const [error, setError] = useState("");
@@ -24,6 +26,7 @@ export function ProfileForm({ submitLabel, onSaved }: { submitLabel: string; onS
         setFirstName(saved.firstName ?? "");
         setCommunity(saved.community ?? "");
         setAdult(saved.adult);
+        setMoves(saved.moves);
       })
       .catch(() => setError("We couldn't load your profile. Please try again."));
   }, []);
@@ -45,7 +48,7 @@ export function ProfileForm({ submitLabel, onSaved }: { submitLabel: string; onS
 
   async function submit(event: FormEvent) {
     event.preventDefault();
-    const saved = await save({ firstName, community, ...(adult ? { adult: true } : {}) }, setBusy);
+    const saved = await save({ firstName, community, moves, ...(adult ? { adult: true } : {}) }, setBusy);
     if (saved?.profileComplete) onSaved(saved);
     else if (saved) setError("Please confirm you're 18 or older.");
   }
@@ -106,6 +109,19 @@ export function ProfileForm({ submitLabel, onSaved }: { submitLabel: string; onS
         </select>
         <p className="mt-1 text-muted">We pair you with someone nearby, so you can meet up. Your exact address is never asked for.</p>
       </div>
+
+      <fieldset>
+        <legend className="px-label">How do you move? (optional)</legend>
+        <p className="mb-2 text-muted">So we can show you people who move like you, and goals that fit. Leave it if you&apos;d rather not say.</p>
+        <div className="grid gap-2">
+          {[...Object.entries(MOVES).map(([value, option]) => ({ value, label: option.label })), { value: null, label: "I'd rather not say" }].map((option) => (
+            <label key={option.label} className="flex min-h-12 cursor-pointer items-center gap-3 border border-line bg-white px-3 has-checked:bg-[#fffc00]">
+              <input type="radio" name="moves" checked={moves === option.value} onChange={() => setMoves(option.value)} className="size-5 shrink-0 accent-ink" />
+              <span className="font-medium">{option.label}</span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
 
       <label className="flex min-h-12 cursor-pointer items-center gap-3">
         <input type="checkbox" checked={adult} disabled={profile?.adult} onChange={(event) => setAdult(event.target.checked)} className="size-6 shrink-0 accent-ink" />

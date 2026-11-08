@@ -126,6 +126,11 @@ ALTER TABLE accounts ADD COLUMN IF NOT EXISTS phone_steps_day date;
 ALTER TABLE accounts ADD COLUMN IF NOT EXISTS phone_steps_at timestamptz;
 ALTER TABLE checkins ADD COLUMN IF NOT EXISTS phone_steps int;
 
+-- How someone moves (walking, wheelchair, aid, energy), only if they choose to say.
+ALTER TABLE accounts ADD COLUMN IF NOT EXISTS moves text;
+-- Fitbit Active Zone Minutes (from heart rate), so proof doesn't depend on steps.
+ALTER TABLE checkins ADD COLUMN IF NOT EXISTS fitbit_active_minutes int;
+
 -- The Nearby board: "Ask to team up" requests, and invite links for someone you know.
 CREATE TABLE IF NOT EXISTS team_requests (
   id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),

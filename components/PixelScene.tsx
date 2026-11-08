@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { wantsLessMotion } from "@/lib/reading";
 import { AVATAR_H, AVATAR_W, drawAvatar } from "@/lib/avatar";
 import type { MascotMood } from "@/lib/rules";
 
@@ -30,7 +31,7 @@ export function PixelScene({ code, mood, label, bubble }: { code: string; mood: 
   const [frame, setFrame] = useState(1);
 
   useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (wantsLessMotion()) return;
     const timer = setInterval(() => setFrame((current) => (current === 1 ? 2 : 1)), 520);
     return () => clearInterval(timer);
   }, []);

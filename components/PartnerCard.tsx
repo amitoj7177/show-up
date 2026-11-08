@@ -18,6 +18,7 @@ export function PartnerCard({ partner }: { partner: NonNullable<Today["partner"]
       <div className="min-w-0">
         <p className="text-xl font-bold">{partner.nickname}</p>
         {partner.communityName && <p className="text-muted">{partner.communityName}, Calgary</p>}
+        {partner.moveTag && <p className="mt-1 inline-block border border-line bg-[#e6f0ff] px-2 font-semibold">{partner.moveTag}</p>}
         <p className="font-medium">{partner.goal ?? partner.goalTypeLabel}</p>
         {partner.whyItMatters && <p className="mt-1 italic">&ldquo;{partner.whyItMatters}&rdquo;</p>}
       </div>

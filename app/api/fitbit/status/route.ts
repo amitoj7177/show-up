@@ -7,7 +7,7 @@ export const GET = route(async (request) => {
   const account = await requireAccount(request);
   const connected = fitbitAvailable() && (await isConnected(account.id));
   const day = connected ? await fitbitToday(account.id) : null;
-  return ok({ available: fitbitAvailable(), connected, stepsToday: day?.steps ?? null, workoutToday: day?.workout ?? null });
+  return ok({ available: fitbitAvailable(), connected, stepsToday: day?.steps ?? null, workoutToday: day?.workout ?? null, activeMinutesToday: day?.activeMinutes ?? null });
 });
 
 // Disconnect your Fitbit. We delete our access to it.

@@ -134,6 +134,7 @@ function NearbyCard({ person }: { person: NearbyPerson }) {
             {distance}
           </p>
         )}
+        {person.moveTag && <p className="my-1 inline-block border border-line bg-[#e6f0ff] px-2 font-semibold">{person.moveTag}</p>}
         <p className="font-medium">{person.goal}</p>
         {person.whyItMatters && <p className="mt-1 italic">&ldquo;{person.whyItMatters}&rdquo;</p>}
       </div>

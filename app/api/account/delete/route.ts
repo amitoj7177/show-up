@@ -21,7 +21,7 @@ export const POST = route(async (request) => {
     [account.user_id, account.id],
   );
   if (ids.length) {
-    await query("UPDATE checkins SET photo = NULL, photo_note = NULL, fitbit_steps = NULL, fitbit_workout = NULL, phone_steps = NULL WHERE user_id = ANY($1::uuid[])", [ids]);
+    await query("UPDATE checkins SET photo = NULL, photo_note = NULL, fitbit_steps = NULL, fitbit_workout = NULL, phone_steps = NULL, fitbit_active_minutes = NULL WHERE user_id = ANY($1::uuid[])", [ids]);
     await query("DELETE FROM encouragements WHERE from_user = ANY($1::uuid[])", [ids]);
     await query(
       `UPDATE users SET goal_text = '', short_goal = NULL, why_it_matters = NULL, why = '{}', nickname = 'Deleted account',

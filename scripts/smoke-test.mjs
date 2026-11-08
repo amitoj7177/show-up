@@ -214,12 +214,16 @@ if (!sam) {
 } else {
   check("a last name with numbers is refused", (await call("POST", "/api/account", { token: sam.token, body: { firstName: "Sam123" } })).status === 400);
   check("a made-up community is refused", (await call("POST", "/api/account", { token: sam.token, body: { community: "NOPE" } })).status === 400);
+  // How you move: optional, shown as a tag, and people who move the same way come first.
+  check("saying how you move works", (await call("POST", "/api/account", { token: sam.token, body: { moves: "wheelchair" } })).json.data?.moves === "wheelchair");
+  check("a made-up answer is refused", (await call("POST", "/api/account", { token: sam.token, body: { moves: "flying" } })).status === 400);
   const ana = await person("Ana", "BRD", `Do my physio exercises daily ${tag}`, "Walking clears my head.");
   // The Nearby board: real people see each other and choose, instead of being paired blind.
   const anaBoard = ana.joined.json.data.today;
   check("real people pick a partner on the Nearby board", anaBoard.status === "waiting" && Array.isArray(anaBoard.nearby?.people), anaBoard.status);
   const samCard = anaBoard.nearby?.people.find((p) => p.firstName === "Sam");
   check("Sam shows on Ana's board", Boolean(samCard), anaBoard.nearby);
+  check("the board shows how Sam moves", samCard?.moveTag === "Wheelchair user", samCard);
   check("the board shows community and distance", samCard?.communityName === "Hillhurst" && typeof samCard?.km === "number", samCard);
   check("the board never shows an email", !JSON.stringify(anaBoard).includes("@example.com"));
   const asked = await call("POST", "/api/team-up", { token: ana.token, body: { userId: samCard?.userId } });

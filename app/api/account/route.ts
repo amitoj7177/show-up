@@ -4,13 +4,23 @@ import { findCommunity } from "@/lib/calgary";
 import { query } from "@/lib/db";
 import { HttpError, ok, readBody, route } from "@/lib/http";
 import { checkProfilePhoto, cleanFirstName, photoData } from "@/lib/moderation";
+import { isMoves } from "@/lib/rules";
 import { requireUnlocked } from "@/lib/state";
 
-type Profile = { avatar: string; first_name: string | null; community: string | null; adult: boolean; has_photo: boolean; user_id: string | null; id: string };
+type Profile = {
+  avatar: string;
+  first_name: string | null;
+  community: string | null;
+  moves: string | null;
+  adult: boolean;
+  has_photo: boolean;
+  user_id: string | null;
+  id: string;
+};
 
 async function describe(accountId: string) {
   const [account] = await query<Profile>(
-    "SELECT id, avatar, first_name, community, adult, photo IS NOT NULL AS has_photo, user_id FROM accounts WHERE id = $1",
+    "SELECT id, avatar, first_name, community, moves, adult, photo IS NOT NULL AS has_photo, user_id FROM accounts WHERE id = $1",
     [accountId],
   );
   return {
@@ -18,6 +28,7 @@ async function describe(accountId: string) {
     firstName: account.first_name,
     community: account.community,
     communityName: findCommunity(account.community)?.name ?? null,
+    moves: account.moves,
     hasPhoto: account.has_photo,
     photoId: account.has_photo ? account.id : null,
     adult: account.adult,
@@ -51,6 +62,11 @@ export const POST = route(async (request) => {
     if (!community) throw new HttpError(400, "bad_community", "Please choose your Calgary community from the list.");
     await query("UPDATE accounts SET community = $2 WHERE id = $1", [account.id, community.code]);
     if (account.user_id) await query("UPDATE users SET area = $2 WHERE id = $1", [account.user_id, community.area]);
+  }
+  // How you move: optional, and "prefer not to say" is null.
+  if (body.moves !== undefined) {
+    if (body.moves !== null && !isMoves(body.moves)) throw new HttpError(400, "bad_moves", "Please pick one of the options.");
+    await query("UPDATE accounts SET moves = $2 WHERE id = $1", [account.id, body.moves]);
   }
   if (body.adult !== undefined) {
     if (body.adult !== true) throw new HttpError(400, "must_be_adult", "Promise Pals is for people 18 and older.");

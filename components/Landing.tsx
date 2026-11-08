@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, type ReactNode } from "react";
+import { ReadingSettings } from "./ReadingSettings";
 import type { MascotMood } from "@/lib/rules";
 import { MOOD_BACKGROUND } from "@/lib/avatar";
 import { PixelAvatar } from "./PixelAvatar";
@@ -47,12 +48,17 @@ const MOODS: { mood: MascotMood; label: string; line: string }[] = [
 
 // What makes Promise Pals accessible. Each item is something the app really does.
 const ACCESSIBLE = [
-  { title: "Any goal counts", text: "Seated stretches, physio, getting outside. Not just steps, so wheelchair users and people in recovery count too." },
+  {
+    title: "Find someone who moves like you",
+    text: "Tell us if you use a wheelchair, a walking aid, or live with limited energy or chronic pain. Only if you want to. People who move like you show up first, with goal ideas that fit.",
+  },
+  {
+    title: "Proof beyond steps",
+    text: "Fitbit's active minutes come from your heart rate, so a wheelchair workout or seated exercise counts as much as a walk. Or use a photo, or neither.",
+  },
   { title: "Rough days are allowed", text: "Skip a day without breaking your streak. Your character gets sad, never angry, and gentle mode turns the grumpiness off." },
-  { title: "Proof your way", text: "A photo, your Fitbit, or neither. You can always check in without a camera." },
   { title: "Works with screen readers", text: "Real buttons and labels, every picture described, and it works with just a keyboard." },
-  { title: "Big, plain text", text: "Large text, clear contrast and short, simple words throughout." },
-  { title: "Calm when you need it", text: "If your phone is set to reduce motion, every animation switches off." },
+  { title: "Easy reading, your way", text: "A plain font, bigger text, stronger contrast and less motion. Try the switches below. They change this page right now." },
 ];
 
 const TRUST = [
@@ -230,6 +236,10 @@ export function Landing({ onStart }: { onStart: (screen: "signup" | "login") => 
               </li>
             ))}
           </ul>
+          <div className="px-card mt-4 p-5">
+            <h3 className="mb-3 text-lg font-bold">Try it: easy reading</h3>
+            <ReadingSettings />
+          </div>
         </Section>
 
         <MoodStory />

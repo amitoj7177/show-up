@@ -28,7 +28,8 @@ export const POST = route(async (request) => {
 
   const pair = await requirePair(user);
   await query(
-    `INSERT INTO checkins (pair_id, user_id, day, status, photo, photo_note, fitbit_steps, fitbit_workout, phone_steps) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+    `INSERT INTO checkins (pair_id, user_id, day, status, photo, photo_note, fitbit_steps, fitbit_workout, phone_steps, fitbit_active_minutes)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
      ON CONFLICT (pair_id, user_id, day) DO UPDATE SET
        status = EXCLUDED.status,
        photo = COALESCE(EXCLUDED.photo, CASE WHEN EXCLUDED.status = 'done' THEN checkins.photo END),
@@ -36,8 +37,9 @@ export const POST = route(async (request) => {
        confirmed_at = CASE WHEN EXCLUDED.status = 'done' THEN checkins.confirmed_at END,
        fitbit_steps = CASE WHEN EXCLUDED.status = 'done' THEN COALESCE(EXCLUDED.fitbit_steps, checkins.fitbit_steps) END,
        fitbit_workout = CASE WHEN EXCLUDED.status = 'done' THEN COALESCE(EXCLUDED.fitbit_workout, checkins.fitbit_workout) END,
-       phone_steps = CASE WHEN EXCLUDED.status = 'done' THEN COALESCE(EXCLUDED.phone_steps, checkins.phone_steps) END`,
-    [pair.id, user.id, pairToday(pair), status, proof?.data ?? null, proof?.note ?? null, fitbit?.steps ?? null, fitbit?.workout ?? null, phone?.stepsToday ?? null],
+       phone_steps = CASE WHEN EXCLUDED.status = 'done' THEN COALESCE(EXCLUDED.phone_steps, checkins.phone_steps) END,
+       fitbit_active_minutes = CASE WHEN EXCLUDED.status = 'done' THEN COALESCE(EXCLUDED.fitbit_active_minutes, checkins.fitbit_active_minutes) END`,
+    [pair.id, user.id, pairToday(pair), status, proof?.data ?? null, proof?.note ?? null, fitbit?.steps ?? null, fitbit?.workout ?? null, phone?.stepsToday ?? null, fitbit?.activeMinutes ?? null],
   );
   return ok(await buildToday(user));
 });

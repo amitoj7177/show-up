@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { wantsLessMotion } from "@/lib/reading";
 
 // Scroll effects for the landing page, in the style of Apple's product pages.
 // Everything here switches off for people who've asked their device for less motion.
 
 function prefersLessMotion(): boolean {
-  return typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  return wantsLessMotion();
 }
 
 // The thing that scrolls: the phone screen on a computer, or the page itself on a real phone.

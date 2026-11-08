@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { describeWorkouts } from "./fitbit";
+import { activeMinutes, describeWorkouts } from "./fitbit";
 import { readSteps } from "./phone";
 import {
   canOfferNewMatch,
   checkinPoints,
+  isMoves,
+  moveTag,
   extraLocked,
   looksLikeWeightGoal,
   mascotFor,
@@ -239,5 +241,20 @@ describe("iPhone steps", () => {
     expect(readSteps("6816.4")).toBe(6816);
     expect(readSteps("lots")).toBeNull();
     expect(readSteps(-5)).toBeNull();
+  });
+});
+
+describe("accessibility", () => {
+  it("counts heart-rate active minutes as Fitbit proof, with no steps at all", () => {
+    expect(checkinPoints({ status: "done", confirmed: false, fitbitSteps: 0, fitbitActiveMinutes: 12 })).toBe(30);
+  });
+  it("adds up Fitbit's active minutes the way Google sends them", () => {
+    expect(activeMinutes([{ activeZoneMinutes: { activeZoneMinutes: "1" } }, { activeZoneMinutes: { activeZoneMinutes: "2" } }, {}])).toBe(3);
+  });
+  it("only shows a tag when someone says they don't walk", () => {
+    expect(moveTag("wheelchair")).toBe("Wheelchair user");
+    expect(moveTag("walking")).toBeNull();
+    expect(moveTag(null)).toBeNull();
+    expect(isMoves("flying")).toBe(false);
   });
 });

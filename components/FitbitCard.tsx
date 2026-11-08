@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { api, ApiError, getToken } from "@/lib/api";
 import { Card, ErrorNote, PRIMARY_BUTTON, QUIET_BUTTON } from "./Shared";
 
-type Status = { available: boolean; connected: boolean; stepsToday: number | null; workoutToday?: string | null };
+type Status = { available: boolean; connected: boolean; stepsToday: number | null; workoutToday?: string | null; activeMinutesToday?: number | null };
 
 const RESULT_MESSAGES: Record<string, string> = {
   connected: "Fitbit connected. Your steps now count as proof when you check in.",
@@ -67,6 +67,12 @@ export function FitbitCard() {
             )}
           </p>
           <p>{status.workoutToday ? <>Workouts today: <strong>{status.workoutToday}</strong>.</> : "No workouts logged today yet."}</p>
+          {typeof status.activeMinutesToday === "number" && (
+            <p>
+              <strong>{status.activeMinutesToday}</strong> active minutes today. They come from your heart rate, so they count for any kind of
+              movement, not just steps.
+            </p>
+          )}
           <p className="text-muted">When you check in, today&apos;s steps and workouts are added as proof your partner can see.</p>
           <button type="button" className={QUIET_BUTTON} onClick={disconnect}>
             Disconnect Fitbit
