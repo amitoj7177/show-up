@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
-/* The Promise Pals look, from the team's design: chunky ink outlines, square corners,
-   thick outlines, a bright yellow, and a pixel font for headings. */
+/* The Promise Pals look, from the team's design: chunky ink outlines, square corners and a bright yellow.
+   Only the characters are pixel art. All text uses the phone's own easy-to-read font. */
 @theme inline {
   --color-paper: #fff8e7;
   --color-card: #ffffff;
@@ -12,7 +12,7 @@
   --color-accent-dark: #2d2540;
   --color-accent-soft: #fff3b0;
   --color-warn-soft: #ffe0d8;
-  --font-display: var(--font-pixel), "Courier New", monospace;
+  --font-display: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
 }
 
 html {
@@ -27,38 +27,37 @@ body {
   line-height: 1.5;
 }
 
-/* Headings use the pixel font, kept small because it's very wide.
-   These sit outside Tailwind's layers on purpose, so they win over size classes on the screens. */
+/* Heading sizes. These sit outside Tailwind's layers on purpose, so they win over size classes on the screens. */
 h1,
 h2 {
   font-family: var(--font-display);
-  font-weight: 400;
-  letter-spacing: 0;
+  font-weight: 800;
+  letter-spacing: -0.01em;
 }
 h1 {
-  font-size: 18px;
-  line-height: 1.6;
+  font-size: 26px;
+  line-height: 1.25;
 }
 h2 {
-  font-size: 14px;
-  line-height: 1.7;
+  font-size: 21px;
+  line-height: 1.3;
 }
 .landing h1 {
-  font-size: 26px;
-  line-height: 1.5;
+  font-size: 34px;
+  line-height: 1.15;
 }
 .landing h2 {
-  font-size: 20px;
-  line-height: 1.6;
+  font-size: 27px;
+  line-height: 1.2;
 }
 @media (min-width: 640px) {
-  .landing h1 { font-size: 34px; }
-  .landing h2 { font-size: 24px; }
+  .landing h1 { font-size: 44px; }
+  .landing h2 { font-size: 32px; }
 }
 .wordmark {
   font-family: var(--font-display);
-  font-weight: 400;
-  font-size: 16px;
+  font-weight: 800;
+  font-size: 20px;
 }
 .wordmark img {
   border-radius: 0;
@@ -103,7 +102,7 @@ h2 {
   border: 3px solid var(--color-ink);
   background: #ffffff;
   color: var(--color-ink);
-  font: 15px/1.5 var(--font-display);
+  font: 700 18px/1.4 var(--font-display);
   text-align: center;
   cursor: pointer;
 }
@@ -134,7 +133,7 @@ h2 {
 .px-label {
   display: block;
   margin-bottom: 6px;
-  font: 14px/1.5 var(--font-display);
+  font: 700 17px/1.4 var(--font-display);
 }
 
 .px-link {
@@ -163,7 +162,8 @@ h2 {
 }
 .stat-figure {
   font-family: var(--font-display);
-  font-size: 28px;
+  font-weight: 800;
+  font-size: 34px;
   color: #fffc00;
 }
 
@@ -380,32 +380,13 @@ h2 {
 }
 
 /* Easy reading settings (Me tab and landing page), saved per phone in lib/reading.ts. */
-html[data-font="plain"] {
-  --font-pixel: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
-}
-html[data-font="plain"] h1,
-html[data-font="plain"] h2,
-html[data-font="plain"] .px-btn,
-html[data-font="plain"] .px-label,
-html[data-font="plain"] .stat-figure,
-html[data-font="plain"] .wordmark {
-  font-weight: 700;
-}
-html[data-font="plain"] h1 { font-size: 24px; line-height: 1.3; }
-html[data-font="plain"] h2 { font-size: 20px; line-height: 1.3; }
-html[data-font="plain"] .px-btn { font-size: 18px; }
-html[data-font="plain"] .px-label { font-size: 17px; }
-
 html[data-text="large"] { font-size: 20px; }
 html[data-text="large"] body { font-size: 22px; }
 html[data-text="large"] .px-input { font-size: 22px; }
-html[data-text="large"] .px-btn { font-size: 18px; }
-html[data-text="large"] .px-label { font-size: 17px; }
-html[data-text="large"] h1 { font-size: 24px; }
-html[data-text="large"] h2 { font-size: 19px; }
-html[data-text="large"][data-font="plain"] h1 { font-size: 28px; }
-html[data-text="large"][data-font="plain"] h2 { font-size: 23px; }
-html[data-text="large"][data-font="plain"] .px-btn { font-size: 21px; }
+html[data-text="large"] .px-btn { font-size: 21px; }
+html[data-text="large"] .px-label { font-size: 19px; }
+html[data-text="large"] h1 { font-size: 30px; }
+html[data-text="large"] h2 { font-size: 24px; }
 
 html[data-contrast="high"],
 html[data-contrast="high"] body { background: #ffffff; }

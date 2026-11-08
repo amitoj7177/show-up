@@ -58,7 +58,7 @@ const ACCESSIBLE = [
   },
   { title: "Rough days are allowed", text: "Skip a day without breaking your streak. Your character gets sad, never angry, and gentle mode turns the grumpiness off." },
   { title: "Works with screen readers", text: "Real buttons and labels, every picture described, and it works with just a keyboard." },
-  { title: "Easy reading, your way", text: "A plain font, bigger text, stronger contrast and less motion. Try the switches below. They change this page right now." },
+  { title: "Easy reading, your way", text: "Bigger text, stronger contrast and less motion. Try the switches below. They change this page right now." },
 ];
 
 const TRUST = [

@@ -1,10 +1,8 @@
 import type { Metadata, Viewport } from "next";
-import { Press_Start_2P } from "next/font/google";
 import { PhoneFrame } from "@/components/PhoneFrame";
 import { APPLY_BEFORE_PAINT } from "@/lib/reading";
 import "./globals.css";
 
-const pixel = Press_Start_2P({ weight: "400", subsets: ["latin"], variable: "--font-pixel" });
 
 export const metadata: Metadata = {
   title: "Promise Pals",
@@ -19,7 +17,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${pixel.variable} h-full antialiased`} suppressHydrationWarning>
+    <html lang="en" className="h-full antialiased" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: APPLY_BEFORE_PAINT }} />
       </head>

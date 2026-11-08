@@ -1,9 +1,8 @@
-// Easy reading settings: a plain font, bigger text, stronger contrast and less motion.
+// Easy reading settings: bigger text, stronger contrast and less motion.
 // Saved on this device only (they're a personal preference, not account data), and applied to <html>
 // as data attributes that globals.css reads.
 
 export const READING_OPTIONS = [
-  { key: "font", value: "plain", label: "Plain font", hint: "Swap the pixel font for an easy-to-read one." },
   { key: "text", value: "large", label: "Bigger text", hint: "Makes all the words larger." },
   { key: "contrast", value: "high", label: "Stronger contrast", hint: "Darker text and plain white backgrounds." },
   { key: "motion", value: "reduced", label: "Less motion", hint: "Stops animations and moving characters." },
@@ -38,7 +37,7 @@ export function applyReading(settings: ReadingSettings): void {
   }
 }
 
-// Runs before the page draws, so there's no flash of the pixel font for someone who turned it off.
+// Runs before the page draws, so someone who wants bigger text never sees the small version first.
 export const APPLY_BEFORE_PAINT = `try{var s=JSON.parse(localStorage.getItem("${STORAGE_KEY}")||"{}");for(var k in s){if(s[k])document.documentElement.dataset[k]=s[k]}}catch(e){}`;
 
 // True if the device asks for less motion, or the person turned on "Less motion" here.
