@@ -7,7 +7,8 @@ const ROWS: { what: string; where: string; who: string }[] = [
   { what: "First name, photo, Calgary community", where: "Our database (Tiger Data)", who: "You and your current partner." },
   { what: "Your goal and why it matters", where: "Our database (Tiger Data)", who: "You. Your partner sees the checked, cleaned-up version." },
   { what: "Check-ins and proof photos", where: "Our database (Tiger Data)", who: "You and your current partner." },
-  { what: "Fitbit steps (only if you connect)", where: "Read from Google Health when you check in", who: "You and your partner see today's step count. Nothing else is read." },
+  { what: "Fitbit steps and workouts (only if you connect)", where: "Read from Google Health when you check in", who: "You and your partner see today's steps and workout names, like \"Walk 15 min\". Nothing else is read." },
+  { what: "iPhone steps (only if you set it up)", where: "Our database (Tiger Data). Only today's number is kept", who: "You and your partner see today's step count." },
   { what: "Clinic totals (only with a clinic code)", where: "Calculated when staff look", who: "Clinic staff see totals only, once 5 people have joined. Never names." },
 ];
 

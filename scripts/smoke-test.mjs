@@ -223,7 +223,17 @@ if (!sam) {
   check("a real Calgary meet-up spot is suggested", typeof anaView.pair?.meetSpot?.name === "string" && anaView.pair.meetSpot.source.includes("Calgary"), anaView.pair?.meetSpot);
   check("the partner never sees an email", !JSON.stringify(anaView).includes("@example.com"));
 
+  // iPhone steps: the app makes a private link, and the Shortcut sends steps to it.
+  const phoneLink = (await call("POST", "/api/phone-steps/link", { token: sam.token })).json.data;
+  check("an iPhone steps link is made", typeof phoneLink.link === "string" && phoneLink.link.includes("/api/phone-steps?key="), phoneLink);
+  const phonePath = new URL(phoneLink.link).pathname + new URL(phoneLink.link).search;
+  check("the shortcut can send steps", (await call("POST", phonePath, { body: { steps: "6,816" } })).status === 200);
+  check("a wrong link is refused", (await call("POST", "/api/phone-steps?key=nope", { body: { steps: 100 } })).status === 401);
+  check("a silly step count is refused", (await call("POST", phonePath, { body: { steps: "lots" } })).status === 400);
+  check("today's phone steps are saved", (await call("GET", "/api/phone-steps/link", { token: sam.token })).json.data.stepsToday === 6816);
+
   const proofCheckin = await call("POST", "/api/checkin", { token: sam.token, body: { status: "done", photo } });
+  check("phone steps become part of the proof", proofCheckin.json.data.today.proof?.phoneSteps === 6816, proofCheckin.json.data.today.proof);
   check("checking in with a photo works", proofCheckin.status === 200 && proofCheckin.json.data.today.proof?.photoId, proofCheckin.json);
   check("Gemini describes the photo", typeof proofCheckin.json.data.today.proof?.note === "string");
   const anaSees = (await call("GET", "/api/today", { token: ana.token })).json.data;

@@ -58,12 +58,20 @@ export const BADGES = [
 ];
 
 // Points for checking in. Stronger proof earns more, so a Fitbit-proven day is worth the most.
-export const POINTS = { done: 10, rough: 5, confirmed: 5, fitbit: 20 };
+// iPhone steps earn less than Fitbit, because the phone sends the number itself and Google can't vouch for it.
+export const POINTS = { done: 10, rough: 5, confirmed: 5, fitbit: 20, phone: 10 };
 
-export function checkinPoints(checkin: { status: string; confirmed: boolean; fitbitSteps: number | null; fitbitWorkout?: string | null }): number {
+export function checkinPoints(checkin: {
+  status: string;
+  confirmed: boolean;
+  fitbitSteps: number | null;
+  fitbitWorkout?: string | null;
+  phoneSteps?: number | null;
+}): number {
   if (checkin.status !== "done") return POINTS.rough;
   const fitbitProved = (checkin.fitbitSteps ?? 0) > 0 || Boolean(checkin.fitbitWorkout);
-  return POINTS.done + (checkin.confirmed ? POINTS.confirmed : 0) + (fitbitProved ? POINTS.fitbit : 0);
+  const deviceBonus = fitbitProved ? POINTS.fitbit : (checkin.phoneSteps ?? 0) > 0 ? POINTS.phone : 0;
+  return POINTS.done + (checkin.confirmed ? POINTS.confirmed : 0) + deviceBonus;
 }
 
 // Character extras you unlock with points. The number is the "Extras" option in lib/avatar.ts.

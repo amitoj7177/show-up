@@ -119,6 +119,13 @@ CREATE TABLE IF NOT EXISTS health_states (
 ALTER TABLE checkins ADD COLUMN IF NOT EXISTS fitbit_steps int;
 ALTER TABLE checkins ADD COLUMN IF NOT EXISTS fitbit_workout text;
 
+-- iPhone steps, sent by an Apple Shortcut to a private link. Only today's number is kept.
+ALTER TABLE accounts ADD COLUMN IF NOT EXISTS phone_key_hash text;
+ALTER TABLE accounts ADD COLUMN IF NOT EXISTS phone_steps int;
+ALTER TABLE accounts ADD COLUMN IF NOT EXISTS phone_steps_day date;
+ALTER TABLE accounts ADD COLUMN IF NOT EXISTS phone_steps_at timestamptz;
+ALTER TABLE checkins ADD COLUMN IF NOT EXISTS phone_steps int;
+
 -- People asking to be added as Fitbit testers. Deleted once they connect.
 CREATE TABLE IF NOT EXISTS fitbit_requests (
   account_id   uuid PRIMARY KEY REFERENCES accounts(id),

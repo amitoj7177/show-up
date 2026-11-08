@@ -29,12 +29,13 @@ import {
 
 // Proof for one check-in: the photo's id, what Gemini saw in it, and when the partner confirmed it.
 function proofOf(
-  row: { id: string; has_photo: boolean; photo_note: string | null; confirmed_at: Date | null; fitbit_steps: number | null; fitbit_workout: string | null } | undefined,
+  row: { id: string; has_photo: boolean; photo_note: string | null; confirmed_at: Date | null; fitbit_steps: number | null; fitbit_workout: string | null; phone_steps: number | null } | undefined,
 ) {
   if (!row) return null;
   return {
     fitbitSteps: row.fitbit_steps,
     fitbitWorkout: row.fitbit_workout,
+    phoneSteps: row.phone_steps,
     photoId: row.has_photo ? row.id : null,
     note: row.photo_note,
     confirmedAt: row.confirmed_at ? new Date(row.confirmed_at).toISOString() : null,
@@ -104,11 +105,11 @@ function describeProfile(profile: Profile | undefined) {
 
 // Points for every check-in on this promise.
 export async function pointsFor(userId: string): Promise<number> {
-  const rows = await query<{ status: string; confirmed: boolean; fitbit_steps: number | null; fitbit_workout: string | null }>(
-    "SELECT status, confirmed_at IS NOT NULL AS confirmed, fitbit_steps, fitbit_workout FROM checkins WHERE user_id = $1",
+  const rows = await query<{ status: string; confirmed: boolean; fitbit_steps: number | null; fitbit_workout: string | null; phone_steps: number | null }>(
+    "SELECT status, confirmed_at IS NOT NULL AS confirmed, fitbit_steps, fitbit_workout, phone_steps FROM checkins WHERE user_id = $1",
     [userId],
   );
-  return rows.reduce((sum, row) => sum + checkinPoints({ status: row.status, confirmed: row.confirmed, fitbitSteps: row.fitbit_steps, fitbitWorkout: row.fitbit_workout }), 0);
+  return rows.reduce((sum, row) => sum + checkinPoints({ status: row.status, confirmed: row.confirmed, fitbitSteps: row.fitbit_steps, fitbitWorkout: row.fitbit_workout, phoneSteps: row.phone_steps }), 0);
 }
 
 // Stops someone saving an extra they haven't earned yet. An extra they already wear is fine.
@@ -202,8 +203,9 @@ export async function buildToday(startingUser: UserRow, now = new Date()) {
     confirmed_at: Date | null;
     fitbit_steps: number | null;
     fitbit_workout: string | null;
+    phone_steps: number | null;
   }>(
-    `SELECT id, user_id, created_at, seen_at, photo IS NOT NULL AS has_photo, photo_note, confirmed_at, fitbit_steps, fitbit_workout
+    `SELECT id, user_id, created_at, seen_at, photo IS NOT NULL AS has_photo, photo_note, confirmed_at, fitbit_steps, fitbit_workout, phone_steps
        FROM checkins WHERE pair_id = $1 AND day = $2`,
     [pair.id, today],
   );

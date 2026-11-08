@@ -1,5 +1,6 @@
 import { findAccount, requireUser } from "@/lib/auth";
 import { fitbitToday } from "@/lib/fitbit";
+import { phoneStatus } from "@/lib/phone";
 import { query } from "@/lib/db";
 import { HttpError, ok, readBody, route } from "@/lib/http";
 import { checkProofPhoto, photoData } from "@/lib/moderation";
@@ -23,19 +24,20 @@ export const POST = route(async (request) => {
 
   // If they've connected a Fitbit, today's steps and workouts are saved as automatic proof.
   const account = status === "done" ? await findAccount(request) : undefined;
-  const fitbit = account ? await fitbitToday(account.id) : null;
+  const [fitbit, phone] = account ? await Promise.all([fitbitToday(account.id), phoneStatus(account.id)]) : [null, null];
 
   const pair = await requirePair(user);
   await query(
-    `INSERT INTO checkins (pair_id, user_id, day, status, photo, photo_note, fitbit_steps, fitbit_workout) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+    `INSERT INTO checkins (pair_id, user_id, day, status, photo, photo_note, fitbit_steps, fitbit_workout, phone_steps) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
      ON CONFLICT (pair_id, user_id, day) DO UPDATE SET
        status = EXCLUDED.status,
        photo = COALESCE(EXCLUDED.photo, CASE WHEN EXCLUDED.status = 'done' THEN checkins.photo END),
        photo_note = COALESCE(EXCLUDED.photo_note, CASE WHEN EXCLUDED.status = 'done' THEN checkins.photo_note END),
        confirmed_at = CASE WHEN EXCLUDED.status = 'done' THEN checkins.confirmed_at END,
        fitbit_steps = CASE WHEN EXCLUDED.status = 'done' THEN COALESCE(EXCLUDED.fitbit_steps, checkins.fitbit_steps) END,
-       fitbit_workout = CASE WHEN EXCLUDED.status = 'done' THEN COALESCE(EXCLUDED.fitbit_workout, checkins.fitbit_workout) END`,
-    [pair.id, user.id, pairToday(pair), status, proof?.data ?? null, proof?.note ?? null, fitbit?.steps ?? null, fitbit?.workout ?? null],
+       fitbit_workout = CASE WHEN EXCLUDED.status = 'done' THEN COALESCE(EXCLUDED.fitbit_workout, checkins.fitbit_workout) END,
+       phone_steps = CASE WHEN EXCLUDED.status = 'done' THEN COALESCE(EXCLUDED.phone_steps, checkins.phone_steps) END`,
+    [pair.id, user.id, pairToday(pair), status, proof?.data ?? null, proof?.note ?? null, fitbit?.steps ?? null, fitbit?.workout ?? null, phone?.stepsToday ?? null],
   );
   return ok(await buildToday(user));
 });

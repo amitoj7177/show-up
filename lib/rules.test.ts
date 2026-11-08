@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { describeWorkouts } from "./fitbit";
+import { readSteps } from "./phone";
 import {
   canOfferNewMatch,
   checkinPoints,
@@ -224,5 +225,19 @@ describe("Fitbit workouts", () => {
     ];
     expect(describeWorkouts(points)).toBe("Walk 32 min, Strength training 13 min");
     expect(describeWorkouts([])).toBeNull();
+  });
+});
+
+describe("iPhone steps", () => {
+  it("gives less than Fitbit, and never both", () => {
+    expect(checkinPoints({ status: "done", confirmed: false, fitbitSteps: null, phoneSteps: 5000 })).toBe(20);
+    expect(checkinPoints({ status: "done", confirmed: false, fitbitSteps: 5000, phoneSteps: 5000 })).toBe(30);
+  });
+  it("reads the shapes Shortcuts sends", () => {
+    expect(readSteps(6816)).toBe(6816);
+    expect(readSteps("6,816")).toBe(6816);
+    expect(readSteps("6816.4")).toBe(6816);
+    expect(readSteps("lots")).toBeNull();
+    expect(readSteps(-5)).toBeNull();
   });
 });
