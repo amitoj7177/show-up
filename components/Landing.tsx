@@ -6,81 +6,110 @@ import type { MascotMood } from "@/lib/rules";
 import { MOOD_BACKGROUND } from "@/lib/avatar";
 import { PixelAvatar } from "./PixelAvatar";
 import { CountUp, Reveal, useScrollY, useSectionProgress } from "./ScrollFx";
-import { PixelScene } from "./PixelScene";
 import { PRIMARY_BUTTON, SECONDARY_BUTTON } from "./Shared";
 
 // Real, sourced findings only. Each one links to where it comes from.
 const FINDINGS = [
   {
     figure: "Up to 50%",
-    text: "of people don't keep up their home exercise programs.",
+    text: "of people don't keep up their home exercises.",
     source: "JMIR mHealth and uHealth, 2018",
     href: "https://mhealth.jmir.org/2018/3/e47/PDF",
   },
   {
     figure: "50%",
-    text: "higher likelihood of survival for people with strong social ties, across 148 studies.",
+    text: "better survival odds with strong social ties.",
     source: "Holt-Lunstad et al., PLOS Medicine, 2010",
     href: "https://doaj.org/article/c9833ba608474b048444b92ae7ee48ad",
-  },
-  {
-    figure: "138 trials",
-    text: "found tracking progress helps people reach goals, more so when progress is reported.",
-    source: "Harkin et al., Psychological Bulletin, 2016",
-    href: "https://eprints.whiterose.ac.uk/id/eprint/91437/",
   },
 ];
 
 const STEPS: { mood: MascotMood; avatar: string; title: string; text: string }[] = [
-  { mood: "waiting", avatar: "h0-c1-s2-e1-o1-k3-a0", title: "Make a promise", text: "Any health goal counts. Physio, sleep, getting outside. You pick a daily time." },
-  { mood: "caring", avatar: "h3-c3-s1-e2-o0-k9-a0", title: "Meet your partner", text: "A real person in your part of Calgary, on a similar goal. See their name, photo and why it matters." },
-  { mood: "proud", avatar: "h2-c5-s3-e1-o1-k7-a1", title: "Prove it daily", text: "Snap a photo of what you did. Your partner confirms it, and your streak grows together." },
+  { mood: "waiting", avatar: "h0-c1-s2-e1-o1-k3-a0", title: "Make a promise", text: "Any health goal. Physio, a walk, sleep." },
+  { mood: "caring", avatar: "h3-c3-s1-e2-o0-k9-a0", title: "Team up nearby", text: "Pick a real person near you who's looking too." },
+  { mood: "proud", avatar: "h2-c5-s3-e1-o1-k7-a1", title: "Prove it daily", text: "A photo, your Fitbit or your iPhone steps." },
 ];
 
 const MOODS: { mood: MascotMood; label: string; line: string }[] = [
-  { mood: "happy", label: "Checked in", line: "You showed up. Your character is pleased." },
-  { mood: "proud", label: "On a streak", line: "Three days in a row with your partner. Sparkles." },
-  { mood: "sad", label: "Skipped a day", line: "Rough days happen. It's sad, never mad, and your streak stays safe." },
-  { mood: "annoyed", label: "Running late", line: "Your check-in time has passed. Foot tapping begins." },
-  { mood: "mad", label: "Missed a day", line: "You missed yesterday. Your partner noticed. So did it." },
-  { mood: "furious", label: "Gone quiet", line: "Days of silence? Steam. One tap and you're friends again." },
+  { mood: "happy", label: "Checked in", line: "You showed up." },
+  { mood: "proud", label: "On a streak", line: "Three days in a row together." },
+  { mood: "sad", label: "Skipped a day", line: "Sad, never mad. Your streak stays safe." },
+  { mood: "annoyed", label: "Running late", line: "Your check-in time has passed." },
+  { mood: "mad", label: "Missed a day", line: "Your partner noticed. So did it." },
+  { mood: "furious", label: "Gone quiet", line: "One check-in and you're friends again." },
 ];
 
-// What makes Promise Pals accessible. Each item is something the app really does.
+// Short on purpose: each line is something the app really does.
 const ACCESSIBLE = [
-  {
-    title: "Find someone who moves like you",
-    text: "Tell us if you use a wheelchair, a walking aid, or live with limited energy or chronic pain. Only if you want to. People who move like you show up first, with goal ideas that fit.",
-  },
-  {
-    title: "Proof beyond steps",
-    text: "Fitbit's active minutes come from your heart rate, so a wheelchair workout or seated exercise counts as much as a walk. Or use a photo, or neither.",
-  },
-  { title: "Rough days are allowed", text: "Skip a day without breaking your streak. Your character gets sad, never angry, and gentle mode turns the grumpiness off." },
-  { title: "Works with screen readers", text: "Real buttons and labels, every picture described, and it works with just a keyboard." },
-  { title: "Easy reading, your way", text: "Bigger text, stronger contrast and less motion. Try the switches below. They change this page right now." },
+  "Find someone who moves like you: wheelchair, walking aid, chronic pain",
+  "Fitbit proof from heart rate, not just steps",
+  "Rough days don't break your streak",
+  "Screen readers, keyboard, big text, strong contrast, less motion",
 ];
 
 const TRUST = [
-  { title: "Real people, first names only", text: "Partners see your first name, photo and Calgary community. Never your email, last name or address." },
-  { title: "Proof you can trust", text: "Check in with a photo of what you did. Your partner confirms it, and every photo is checked first." },
-  { title: "No chat, no pressure", text: "Partners can only send kind, pre-written messages. Report or leave in one tap." },
-  { title: "Adults only, every goal checked", text: "You must be 18 or older. AI checks each goal and photo before a partner sees it, and a \u201cWhy?\u201d panel shows how it decided." },
+  "First names only. Never your email, address or exact location",
+  "Every goal and photo checked by AI first, with a \u201cWhy?\u201d panel",
+  "No chat. Kind, pre-written messages. Report or leave in one tap",
+  "Real Calgary open data. 18+ only. Delete everything any time",
 ];
+
+// The hero: two characters walk in from each side and team up, over and over.
+function MatchScene() {
+  return (
+    <div
+      role="img"
+      aria-label="Two pixel characters walk in from each side and team up."
+      className="px-card mx-auto w-full max-w-md overflow-hidden"
+      style={{ background: "#bfe6ff" }}
+    >
+      <div aria-hidden="true" className="relative flex h-80 items-end justify-center gap-2 px-4 pb-4">
+        <div className="match-left">
+          <PixelAvatar code="h1-c2-s3-e2-o2-k7-a1" mood="happy" scale={4} />
+        </div>
+        <p className="match-heart absolute top-4 left-1/2 -translate-x-1/2 border border-line bg-[#fffc00] px-3 py-1 text-lg font-bold whitespace-nowrap">
+          Team up!
+        </p>
+        <div className="match-right">
+          <PixelAvatar code="h3-c3-s1-e2-o0-k9-a0" mood="happy" scale={4} />
+        </div>
+      </div>
+      <p aria-hidden="true" className="border-t border-line bg-white p-3 text-center font-bold">
+        Maya + Jordan · 2 km apart · Both doing physio
+      </p>
+    </div>
+  );
+}
 
 function Section({ id, eyebrow, title, children, tint = false }: { id?: string; eyebrow: string; title: string; children: ReactNode; tint?: boolean }) {
   return (
     <section id={id} aria-labelledby={`${id}-title`} className={`border-t border-line ${tint ? "bg-accent-soft" : ""}`}>
-      <div className="mx-auto max-w-6xl px-4 py-14">
+      <div className="mx-auto max-w-6xl px-4 py-10">
         <p className="font-semibold">{eyebrow}</p>
         <Reveal>
         <h2 id={`${id}-title`} className="mt-3 max-w-3xl text-3xl font-bold leading-tight">
           {title}
         </h2>
         </Reveal>
-        <div className="mt-8">{children}</div>
+        <div className="mt-6">{children}</div>
       </div>
     </section>
+  );
+}
+
+// A short list with ticks, instead of paragraphs.
+function TickList({ items }: { items: string[] }) {
+  return (
+    <ul className="grid gap-2">
+      {items.map((item) => (
+        <li key={item} className="px-card flex items-start gap-3 p-4 text-lg font-semibold">
+          <span aria-hidden="true" className="shrink-0">
+            {"\u2713"}
+          </span>
+          {item}
+        </li>
+      ))}
+    </ul>
   );
 }
 
@@ -108,7 +137,7 @@ function MoodStory() {
       <div className="mood-story-pin" style={{ background: MOOD_BACKGROUND[current.mood] }}>
         <p className="font-semibold">Your character</p>
         <h2 id="moods-title" className="mt-2 text-3xl font-bold">
-          It reacts to how your week is going.
+          Let it down, and it notices.
         </h2>
         <div className="mood-story-stage">
           <PixelAvatar key={current.mood} code="h1-c2-s3-e2-o2-k7-a1" mood={current.mood} scale={5} animate label={`Your character when ${current.label.toLowerCase()}.`} />
@@ -150,15 +179,6 @@ export function Landing({ onStart }: { onStart: (screen: "signup" | "login") => 
             Promise Pals
           </a>
           <div className="flex items-center gap-2">
-            <a href="#how" className="hidden">
-              How it works
-            </a>
-            <a href="#clinics" className="hidden">
-              For clinics
-            </a>
-            <a href="#trust" className="hidden">
-              Privacy
-            </a>
             <button type="button" onClick={() => onStart("login")} className="min-h-11 px-2 font-semibold underline underline-offset-4">
               Log in
             </button>
@@ -168,14 +188,11 @@ export function Landing({ onStart }: { onStart: (screen: "signup" | "login") => 
       </header>
 
       <main id="main">
-        <section className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-12">
-          <Reveal className="space-y-6">
+        <section className="mx-auto grid max-w-6xl items-center gap-8 px-4 py-10">
+          <Reveal className="space-y-5">
             <p className="font-semibold">For Calgarians who struggle to stick to their health goals</p>
-            <h1 className="text-4xl font-bold leading-tight">Keep your health promises, together.</h1>
-            <p className="text-xl">
-              Promise Pals pairs Calgarians who struggle to stick to their health goals with a nearby partner, and proves every check-in with a photo or their Fitbit.
-            </p>
-            <p className="text-lg font-semibold">Built for people step counters leave out.</p>
+            <h1 className="leading-tight">Find a health partner near you.</h1>
+            <p className="text-xl">Team up with someone nearby, check in every day, and prove it.</p>
             <div className="grid gap-3">
               <button type="button" className={PRIMARY_BUTTON} onClick={() => onStart("signup")}>
                 Get started
@@ -184,23 +201,19 @@ export function Landing({ onStart }: { onStart: (screen: "signup" | "login") => 
                 See a demo
               </a>
             </div>
-            <p className="text-muted">Free. Accessible. Made in Calgary.</p>
           </Reveal>
-          <div
-            className="px-card mx-auto w-full max-w-md overflow-hidden"
-            style={{ transform: `translateY(${lift * 0.18}px) scale(${1 - lift / 2600}) rotate(${-lift / 260}deg)`, opacity: 1 - lift / 1400 }}
-          >
-            <PixelScene code="h0-c1-s2-e1-o1-k3-a0" mood="happy" label="A pixel character waving hello in a sunny park." bubble="HI!" />
+          <div style={{ transform: `translateY(${lift * 0.15}px)`, opacity: 1 - lift / 1400 }}>
+            <MatchScene />
           </div>
         </section>
 
         <section aria-label="What the research says" className="border-t border-line bg-accent text-white">
-          <ul className="mx-auto grid max-w-6xl gap-8 px-4 py-12">
+          <ul className="mx-auto grid max-w-6xl gap-6 px-4 py-10">
             {FINDINGS.map((finding) => (
               <li key={finding.source}>
-                <CountUp text={finding.figure} className="stat-figure text-4xl font-bold leading-tight text-white" />
-                <p className="mt-2 text-lg">{finding.text}</p>
-                <a href={finding.href} className="mt-2 inline-block text-[#cfe0f5] underline underline-offset-4">
+                <CountUp text={finding.figure} className="stat-figure leading-tight text-white" />
+                <p className="mt-1 text-lg">{finding.text}</p>
+                <a href={finding.href} className="mt-1 inline-block text-[#cfe0f5] underline underline-offset-4">
                   {finding.source}
                 </a>
               </li>
@@ -208,81 +221,41 @@ export function Landing({ onStart }: { onStart: (screen: "signup" | "login") => 
           </ul>
         </section>
 
-        <Section id="how" eyebrow="How it works" title="Three steps. One photo a day.">
-          <ol className="grid gap-6">
+        <Section id="how" eyebrow="How it works" title="Three steps.">
+          <ol className="grid gap-4">
             {STEPS.map((step, index) => (
               <li key={step.title}>
-                <Reveal delay={index * 120} className="px-card flex flex-col items-center p-6 text-center">
-                <span className="text-xl font-bold">Step {index + 1}</span>
-                <div className="my-4">
-                  <PixelAvatar code={step.avatar} mood={step.mood} scale={3} />
-                </div>
-                <h3 className="text-xl font-bold">{step.title}</h3>
-                <p className="mt-2">{step.text}</p>
+                <Reveal delay={index * 120} className="px-card flex items-center gap-4 p-4">
+                  <PixelAvatar code={step.avatar} mood={step.mood} scale={2} />
+                  <div>
+                    <h3 className="text-xl font-bold">
+                      {index + 1}. {step.title}
+                    </h3>
+                    <p>{step.text}</p>
+                  </div>
                 </Reveal>
               </li>
             ))}
           </ol>
         </Section>
 
+        <MoodStory />
+
         <Section id="accessible" eyebrow="Accessible by design" title="Built for people step counters leave out." tint>
-          <ul className="grid gap-4">
-            {ACCESSIBLE.map((item, index) => (
-              <li key={item.title}>
-                <Reveal delay={index * 80} className="px-card p-5">
-                  <h3 className="text-lg font-bold">{item.title}</h3>
-                  <p className="mt-2">{item.text}</p>
-                </Reveal>
-              </li>
-            ))}
-          </ul>
+          <TickList items={ACCESSIBLE} />
           <div className="px-card mt-4 p-5">
             <h3 className="mb-3 text-lg font-bold">Try it: easy reading</h3>
             <ReadingSettings />
           </div>
         </Section>
 
-        <MoodStory />
-
-        <Section id="clinics" eyebrow="For physio clinics and campus programs" title="Give your patients a code. See how they're doing, together.">
-          <div className="grid gap-8">
-            <ul className="space-y-4 text-lg">
-              <li>
-                <strong>Patients pair up within your program.</strong> Same clinic, first names only.
-              </li>
-              <li>
-                <strong>You see totals, never people.</strong> Check-in rates and skipped days, and only once 5 people have joined.
-              </li>
-              <li>
-                <strong>Built for Calgary first.</strong> We&apos;re looking for a local clinic or campus program to pilot with.
-              </li>
-            </ul>
-            <Reveal className="px-card space-y-3 p-6">
-              <h3 className="text-xl font-bold">Run a clinic or program?</h3>
-              <p>Create a group, share its code, and open your dashboard with a staff key.</p>
-              <a href="/clinic" className={SECONDARY_BUTTON}>
-                Open the clinic dashboard
-              </a>
-            </Reveal>
-          </div>
-        </Section>
-
-        <Section id="trust" eyebrow="Privacy and safety" title="Real people, kept safe." tint>
-          <ul className="grid gap-4">
-            {TRUST.map((item, index) => (
-              <li key={item.title}>
-                <Reveal delay={index * 100} className="px-card p-5">
-                  <h3 className="text-lg font-bold">{item.title}</h3>
-                  <p className="mt-2">{item.text}</p>
-                </Reveal>
-              </li>
-            ))}
-          </ul>
+        <Section id="trust" eyebrow="Privacy and safety" title="Real people, kept safe.">
+          <TickList items={TRUST} />
         </Section>
 
         <section className="cta-band border-t border-line bg-card">
-          <div className="mx-auto flex max-w-6xl flex-col items-center gap-5 px-4 py-14 text-center">
-            <h2 className="text-3xl font-bold leading-tight">Ready to make a promise?</h2>
+          <div className="mx-auto flex max-w-6xl flex-col items-center gap-5 px-4 py-12 text-center">
+            <h2 className="leading-tight">Ready to team up?</h2>
             <div className="w-full max-w-xs">
               <button type="button" className={PRIMARY_BUTTON} onClick={() => onStart("signup")}>
                 Get started

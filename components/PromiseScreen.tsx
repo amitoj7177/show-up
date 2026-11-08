@@ -41,7 +41,6 @@ export function PromiseScreen({
   const [goalText, setGoalText] = useState("");
   const [goalType, setGoalType] = useState("recovery");
   const [checkInTime, setCheckInTime] = useState("08:00");
-  const [groupCode, setGroupCode] = useState("");
   const [whyItMatters, setWhyItMatters] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -139,7 +138,7 @@ export function PromiseScreen({
     setRefused(null);
     run(async () => {
       const result = await api<JoinResult>("/api/join", {
-        body: { goalText, goalType, checkInTime, avatar, groupCode, whyItMatters, invite: invite?.code },
+        body: { goalText, goalType, checkInTime, avatar, whyItMatters, invite: invite?.code },
         token: getToken(),
       });
       if (result.allowed) {
@@ -407,22 +406,6 @@ export function PromiseScreen({
               </label>
               <input id="time" type="time" required value={checkInTime} onChange={(event) => setCheckInTime(event.target.value)} className="px-input" />
               <p className="mt-1 text-muted">Calgary time.</p>
-            </div>
-
-            <div>
-              <label htmlFor="group-code" className="px-label">
-                Clinic or campus code (optional)
-              </label>
-              <input
-                id="group-code"
-                className="px-input uppercase"
-                value={groupCode}
-                onChange={(event) => setGroupCode(event.target.value)}
-                autoComplete="off"
-                autoCapitalize="characters"
-                placeholder="From your physio or campus program"
-              />
-              <p className="mt-1 text-muted">With a code, you're only paired with people from the same place.</p>
             </div>
 
             {error && <ErrorNote message={error} />}

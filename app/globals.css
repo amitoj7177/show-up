@@ -369,9 +369,17 @@ h2 {
   animation: pop-in 0.35s steps(4) both;
 }
 
+/* The landing page hero: two characters walk in, "Team up!" pops, then it starts again. */
+@keyframes match-left { 0% { transform: translateX(-120px); } 25%, 100% { transform: none; } }
+@keyframes match-right { 0% { transform: translateX(120px); } 25%, 100% { transform: none; } }
+@keyframes match-heart { 0%, 28% { transform: scale(0); } 36%, 100% { transform: scale(1); } }
+.match-left { animation: match-left 4s steps(24) infinite; }
+.match-right { animation: match-right 4s steps(24) infinite; }
+.match-heart { animation: match-heart 4s steps(16) infinite; }
+
 /* Turned off for anyone who prefers less motion. */
 @media (prefers-reduced-motion: reduce) {
-  .character-happy, .character-mad, .character-furious, .slide-in-left, .slide-in-right, .pop-in { animation: none; }
+  .character-happy, .character-mad, .character-furious, .slide-in-left, .slide-in-right, .pop-in, .match-left, .match-right, .match-heart { animation: none; }
   .typing-dots { animation: none; width: auto; }
   .confetti { display: none; }
   .reveal { opacity: 1; transform: none; transition: none; }
@@ -399,7 +407,10 @@ html[data-motion="reduced"] .character-mad,
 html[data-motion="reduced"] .character-furious,
 html[data-motion="reduced"] .slide-in-left,
 html[data-motion="reduced"] .slide-in-right,
-html[data-motion="reduced"] .pop-in { animation: none; }
+html[data-motion="reduced"] .pop-in,
+html[data-motion="reduced"] .match-left,
+html[data-motion="reduced"] .match-right,
+html[data-motion="reduced"] .match-heart { animation: none; }
 html[data-motion="reduced"] .typing-dots { animation: none; width: auto; }
 html[data-motion="reduced"] .confetti { display: none; }
 html[data-motion="reduced"] .reveal { opacity: 1; transform: none; transition: none; }
