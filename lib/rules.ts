@@ -88,6 +88,10 @@ export const BADGES = [
 ];
 
 // Points for checking in. Stronger proof earns more, so a Fitbit-proven day is worth the most.
+// The ready-made iPhone shortcut. `url` is its iCloud share link (made once by the team, see docs/HANDOFF.md).
+// While it's empty, people get the build-it-yourself steps instead.
+export const IPHONE_SHORTCUT = { name: "Promise Pals steps", url: "" };
+
 // iPhone steps earn less than Fitbit, because the phone sends the number itself and Google can't vouch for it.
 export const POINTS = { done: 10, rough: 5, confirmed: 5, fitbit: 20, phone: 10 };
 

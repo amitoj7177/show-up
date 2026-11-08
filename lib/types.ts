@@ -64,7 +64,6 @@ export type Today = {
     week: { date: string; isToday: boolean; me: DayMark; partner: DayMark }[];
     canOfferNewMatch: boolean;
     summaryDue: boolean;
-    meetSpot?: { name: string; type: string; address: string; kmApart: number; mapUrl: string; source: string } | null;
   } | null;
   mascot: { mood: MascotMood; angerLevel: number; message: string; screenReaderText: string };
   messagesReceived: { id: string; text: string; sentAt: string }[];

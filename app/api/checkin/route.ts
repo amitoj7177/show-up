@@ -6,11 +6,11 @@ import { HttpError, ok, readBody, route } from "@/lib/http";
 import { checkProofPhoto, photoData } from "@/lib/moderation";
 import { buildToday, pairToday, requirePair } from "@/lib/state";
 
-// "Check in" (done) or "Skip today" (rough). A check-in can include a photo as proof.
+// "Check in" (done) or "Skip today" (rough). A check-in is proved by a photo, or by Fitbit (via: "fitbit").
 // Tapping again today changes your answer.
 export const POST = route(async (request) => {
   const user = await requireUser(request);
-  const { status, photo } = await readBody(request);
+  const { status, photo, via } = await readBody(request);
   if (status !== "done" && status !== "rough") {
     throw new HttpError(400, "bad_status", "Please check in or skip today.");
   }
@@ -25,6 +25,10 @@ export const POST = route(async (request) => {
   // If they've connected a Fitbit, today's steps and workouts are saved as automatic proof.
   const account = status === "done" ? await findAccount(request) : undefined;
   const [fitbit, phone] = account ? await Promise.all([fitbitToday(account.id), phoneStatus(account.id)]) : [null, null];
+  // Checking in "with Fitbit" only counts if Fitbit really shows some activity today.
+  if (via === "fitbit" && !((fitbit?.steps ?? 0) > 0 || fitbit?.workout || (fitbit?.activeMinutes ?? 0) > 0)) {
+    throw new HttpError(409, "no_fitbit_activity", "Your Fitbit doesn't show any activity today yet. Open the Fitbit app to sync, then try again, or use a photo.");
+  }
 
   const pair = await requirePair(user);
   await query(

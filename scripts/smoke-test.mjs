@@ -239,7 +239,7 @@ if (!sam) {
   check("partner shows a real first name", anaView.partner?.nickname === "Sam", anaView.partner);
   check("partner shows their Calgary community", anaView.partner?.communityName === "Hillhurst", anaView.partner);
   check("partner shows why it matters", typeof anaView.partner?.whyItMatters === "string" && anaView.partner.whyItMatters.length > 0);
-  check("a real Calgary meet-up spot is suggested", typeof anaView.pair?.meetSpot?.name === "string" && anaView.pair.meetSpot.source.includes("Calgary"), anaView.pair?.meetSpot);
+  check("no meet-up spots are suggested, for safety", !("meetSpot" in (anaView.pair ?? {})));
   check("the partner never sees an email", !JSON.stringify(anaView).includes("@example.com"));
 
   // iPhone steps: the app makes a private link, and the Shortcut sends steps to it.
@@ -251,6 +251,8 @@ if (!sam) {
   check("a silly step count is refused", (await call("POST", phonePath, { body: { steps: "lots" } })).status === 400);
   check("today's phone steps are saved", (await call("GET", "/api/phone-steps/link", { token: sam.token })).json.data.stepsToday === 6816);
 
+  const noFitbit = await call("POST", "/api/checkin", { token: sam.token, body: { status: "done", via: "fitbit" } });
+  check("checking in with Fitbit needs real Fitbit activity", noFitbit.status === 409, noFitbit.json);
   const proofCheckin = await call("POST", "/api/checkin", { token: sam.token, body: { status: "done", photo } });
   check("phone steps become part of the proof", proofCheckin.json.data.today.proof?.phoneSteps === 6816, proofCheckin.json.data.today.proof);
   check("checking in with a photo works", proofCheckin.status === 200 && proofCheckin.json.data.today.proof?.photoId, proofCheckin.json);

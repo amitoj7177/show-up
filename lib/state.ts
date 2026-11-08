@@ -1,6 +1,6 @@
 import { query, type PairRow, type UserRow } from "./db";
 import { HttpError } from "./http";
-import { findCommunity, meetSpot } from "./calgary";
+import { findCommunity } from "./calgary";
 import { tryMatch } from "./matching";
 import { nearbyFor } from "./nearby";
 import { parseAvatar } from "./avatar";
@@ -276,7 +276,6 @@ export async function buildToday(startingUser: UserRow, now = new Date()) {
       week: weekStrip(mine, theirs, pair.started_on, today),
       canOfferNewMatch: canOfferNewMatch(theirs, pair.started_on, today),
       summaryDue: summaryDue(pair.started_on, today),
-      meetSpot: meetSpot(myProfile?.community ?? null, partnerProfile?.community ?? null),
     },
     mascot: mascotFor({
       myStatusToday: mine[today],

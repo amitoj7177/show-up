@@ -22,7 +22,7 @@ export const SOURCES = [
     name: "City of Calgary Open Data",
     url: "https://data.calgary.ca",
     licence: "Open Government Licence - City of Calgary",
-    usedFor: "Calgary communities for matching nearby partners, and community centres and libraries for meet-up spots.",
+    usedFor: "Calgary communities, to show people near you and how far apart you are (community to community, never exact locations).",
   },
   {
     name: "Tiger Data (Postgres)",

@@ -25,7 +25,7 @@ export async function pairWithDemoPartner(user: UserRow): Promise<void> {
 // The longest-waiting person with the same goal type goes first.
 // After 30 seconds of waiting, any goal type is fine, so nobody waits forever.
 // People with a clinic code are only paired with others from the same clinic.
-// Someone in the same part of Calgary comes first, so partners can meet up.
+// Someone in the same part of Calgary comes first.
 export async function tryMatch(userId: string): Promise<void> {
   await transaction(async (client) => {
     const { rows: me } = await client.query<UserRow & { waited_seconds: number }>(

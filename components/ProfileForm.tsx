@@ -107,7 +107,7 @@ export function ProfileForm({ submitLabel, onSaved }: { submitLabel: string; onS
             </option>
           ))}
         </select>
-        <p className="mt-1 text-muted">We pair you with someone nearby, so you can meet up. Your exact address is never asked for.</p>
+        <p className="mt-1 text-muted">We show you people nearby. Your exact address is never asked for, and partners never meet through the app.</p>
       </div>
 
       <fieldset>

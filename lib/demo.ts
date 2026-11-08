@@ -1,4 +1,4 @@
-import { findCommunity, meetSpot } from "./calgary";
+import { findCommunity } from "./calgary";
 import {
   GOAL_TYPE_LABELS,
   MASCOT_MOODS,
@@ -27,7 +27,7 @@ const MOOD_INPUTS: Record<MascotMood, Parameters<typeof mascotFor>[0]> = {
   furious: { mySilentDays: 2, minutesPastCheckIn: 15, partnerCheckedInToday: true, streak: 0, gentle: false },
 };
 
-// Two real Calgary communities, so the sample meet-up spot is a real place.
+// Two real Calgary communities for the sample people.
 const DEMO_ME_COMMUNITY = "HIL";
 const DEMO_PARTNER_COMMUNITY = "BRD";
 
@@ -118,7 +118,6 @@ export function demoToday(requestedMood: string | null, now = new Date()) {
       week: weekStrip(mine, theirs, startedOn, today),
       canOfferNewMatch: false,
       summaryDue: false,
-      meetSpot: meetSpot(DEMO_ME_COMMUNITY, DEMO_PARTNER_COMMUNITY),
     },
     mascot: mascotFor(input),
     messagesReceived: [{ id: "thinking", text: "Thinking of you today.", sentAt: now.toISOString() }],

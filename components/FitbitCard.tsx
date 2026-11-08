@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { api, ApiError, getToken } from "@/lib/api";
-import { Card, ErrorNote, PRIMARY_BUTTON, QUIET_BUTTON } from "./Shared";
+import { Card, ErrorNote, PRIMARY_BUTTON, QUIET_BUTTON, SECONDARY_BUTTON } from "./Shared";
 
 type Status = { available: boolean; connected: boolean; stepsToday: number | null; workoutToday?: string | null; activeMinutesToday?: number | null };
 
@@ -94,18 +94,42 @@ export function FitbitCard() {
 }
 
 // A small prompt on the Today screen, for people who haven't connected a Fitbit yet.
-export function FitbitNudge({ onOpen }: { onOpen: () => void }) {
-  const [show, setShow] = useState(false);
+// The second way to check in: with your Fitbit, or connect one first.
+export function FitbitCheckIn({ onCheckIn, demo = false }: { onCheckIn: () => void; demo?: boolean }) {
+  const [status, setStatus] = useState<Status | null>(null);
+  const [error, setError] = useState("");
   useEffect(() => {
+    if (demo) return;
     api<Status>("/api/fitbit/status", { token: getToken() })
-      .then((status) => setShow(status.available && !status.connected))
-      .catch(() => setShow(false));
-  }, []);
-  if (!show) return null;
+      .then(setStatus)
+      .catch(() => setStatus(null));
+  }, [demo]);
+
+  async function connect() {
+    setError("");
+    try {
+      const { url } = await api<{ url: string }>("/api/fitbit/start", { post: true, token: getToken() });
+      window.location.href = url;
+    } catch (problem) {
+      setError(problem instanceof ApiError ? problem.message : "Something went wrong. Please try again.");
+    }
+  }
+
+  if (demo || status?.connected) {
+    return (
+      <button type="button" className={SECONDARY_BUTTON} onClick={onCheckIn}>
+        Check in with Fitbit
+      </button>
+    );
+  }
+  if (!status?.available) return null;
   return (
-    <button type="button" className={QUIET_BUTTON} onClick={onOpen}>
-      Have a Fitbit? Connect it for automatic proof
-    </button>
+    <>
+      <button type="button" className={SECONDARY_BUTTON} onClick={connect}>
+        Connect Fitbit to check in
+      </button>
+      {error && <ErrorNote message={error} />}
+    </>
   );
 }
 

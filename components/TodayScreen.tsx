@@ -8,7 +8,7 @@ import { MOOD_BACKGROUND } from "@/lib/avatar";
 import type { Act, Config, History, Today } from "@/lib/types";
 import { MascotScreen } from "./MascotScreen";
 import { clockTime, presenceText, useLinePicker } from "./Moments";
-import { FitbitNudge } from "./FitbitCard";
+import { FitbitCheckIn } from "./FitbitCard";
 import { POINTS } from "@/lib/rules";
 import { PartnerCard } from "./PartnerCard";
 import { PhotoButton, PrivatePhoto } from "./Photos";
@@ -166,9 +166,9 @@ export function TodayScreen({
     }, 200);
   }
 
-  async function checkIn(photo?: string) {
+  async function checkIn(photo?: string, withFitbit = false) {
     setCheckingPhoto(Boolean(photo));
-    await act("/api/checkin", photo ? { status: "done", photo } : { status: "done" });
+    await act("/api/checkin", photo ? { status: "done", photo } : { status: "done", ...(withFitbit ? { via: "fitbit" } : {}) });
     setCheckingPhoto(false);
     say(pick("checkin", config?.talk.checkin));
   }
@@ -236,10 +236,7 @@ export function TodayScreen({
                   disabled={checkingPhoto}
                   onPhoto={(photo) => checkIn(photo)}
                 />
-                {!today.isDemo && <FitbitNudge onOpen={() => setTab("mascot")} />}
-                <button type="button" className={SECONDARY_BUTTON} disabled={checkingPhoto} onClick={() => checkIn()}>
-                  Check in without a photo
-                </button>
+                <FitbitCheckIn demo={today.isDemo} onCheckIn={() => checkIn(undefined, true)} />
                 {!skipped && (
                   <button type="button" className={QUIET_BUTTON} onClick={skip}>
                     Skip today
@@ -250,7 +247,7 @@ export function TodayScreen({
             <p className="text-muted">
               {skipped
                 ? "Skipped today. Your streak is safe."
-                : `Check in by ${friendlyTime(me.checkInTime)}. ${partner.nickname} confirms your photo. Skipping keeps your streak safe.`}
+                : `Check in by ${friendlyTime(me.checkInTime)} with a photo or your Fitbit. Skipping keeps your streak safe.`}
             </p>
             {today.today.myCheckin && (
               <p className="font-semibold">
