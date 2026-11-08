@@ -186,7 +186,7 @@ export function PromiseScreen({
           <div className="space-y-4 p-5">
             <h1 className="text-3xl font-bold leading-tight">Promise Pals</h1>
             <p>Make a promise. Check in every day. Your partner sees it live.</p>
-            <p className="font-semibold">For Calgarians doing physio at home. Built for people step counters leave out.</p>
+            <p className="font-semibold">For Calgarians who struggle to stick to their health goals. Built for people step counters leave out.</p>
             {error && <ErrorNote message={error} />}
             <button type="button" className={PRIMARY_BUTTON} onClick={() => go("signup")}>
               Sign up

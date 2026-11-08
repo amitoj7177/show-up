@@ -7,7 +7,7 @@ const pixel = Press_Start_2P({ weight: "400", subsets: ["latin"], variable: "--f
 
 export const metadata: Metadata = {
   title: "Promise Pals",
-  description: "Promise Pals pairs Calgarians doing physio at home with a nearby partner, and proves every check-in with a photo or their Fitbit. Built for people step counters leave out.",
+  description: "Promise Pals pairs Calgarians who struggle to stick to their health goals with a nearby partner, and proves every check-in with a photo or their Fitbit. Built for people step counters leave out.",
   appleWebApp: { capable: true, title: "Promise Pals", statusBarStyle: "default" },
 };
 

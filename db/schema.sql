@@ -118,6 +118,13 @@ CREATE TABLE IF NOT EXISTS health_states (
 );
 ALTER TABLE checkins ADD COLUMN IF NOT EXISTS fitbit_steps int;
 
+-- People asking to be added as Fitbit testers. Deleted once they connect.
+CREATE TABLE IF NOT EXISTS fitbit_requests (
+  account_id   uuid PRIMARY KEY REFERENCES accounts(id),
+  google_email text NOT NULL,
+  requested_at timestamptz NOT NULL DEFAULT now()
+);
+
 -- One row per logged-in device.
 CREATE TABLE IF NOT EXISTS sessions (
   token_hash text PRIMARY KEY,

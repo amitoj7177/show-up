@@ -164,10 +164,10 @@ export function Landing({ onStart }: { onStart: (screen: "signup" | "login") => 
       <main id="main">
         <section className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-12">
           <Reveal className="space-y-6">
-            <p className="font-semibold">For Calgarians doing physio at home</p>
+            <p className="font-semibold">For Calgarians who struggle to stick to their health goals</p>
             <h1 className="text-4xl font-bold leading-tight">Keep your health promises, together.</h1>
             <p className="text-xl">
-              Promise Pals pairs Calgarians doing physio at home with a nearby partner, and proves every check-in with a photo or their Fitbit.
+              Promise Pals pairs Calgarians who struggle to stick to their health goals with a nearby partner, and proves every check-in with a photo or their Fitbit.
             </p>
             <p className="text-lg font-semibold">Built for people step counters leave out.</p>
             <div className="grid gap-3">

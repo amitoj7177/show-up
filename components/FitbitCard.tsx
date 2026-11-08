@@ -77,10 +77,8 @@ export function FitbitCard() {
           <button type="button" className={PRIMARY_BUTTON} onClick={connect}>
             Connect Fitbit
           </button>
-          <p className="text-muted">
-            You&apos;ll need the Google Health app signed in with your Fitbit account. While Fitbit is in testing, only invited Google accounts can
-            connect.
-          </p>
+          <RequestAccess />
+          <p className="text-muted">You&apos;ll need the Google Health app signed in with your Fitbit account.</p>
         </>
       )}
       {error && <ErrorNote message={error} />}
@@ -101,5 +99,61 @@ export function FitbitNudge({ onOpen }: { onOpen: () => void }) {
     <button type="button" className={QUIET_BUTTON} onClick={onOpen}>
       Have a Fitbit? Connect it for automatic proof
     </button>
+  );
+}
+
+// While Fitbit is in Google's testing stage, people must be invited first. This asks the team to add you.
+function RequestAccess() {
+  const [open, setOpen] = useState(false);
+  const [email, setEmail] = useState("");
+  const [requested, setRequested] = useState<string | null>(null);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    api<{ requested: boolean; email: string | null }>("/api/fitbit/request", { token: getToken() })
+      .then((result) => setRequested(result.requested ? result.email : null))
+      .catch(() => undefined);
+  }, []);
+
+  async function send(event: React.FormEvent) {
+    event.preventDefault();
+    setError("");
+    try {
+      await api("/api/fitbit/request", { body: { email }, token: getToken() });
+      setRequested(email.trim().toLowerCase());
+    } catch (problem) {
+      setError(problem instanceof ApiError ? problem.message : "Something went wrong. Please try again.");
+    }
+  }
+
+  if (requested) {
+    return (
+      <p role="status" className="font-semibold">
+        Access requested for {requested}. Try Connect Fitbit again once the team adds you.
+      </p>
+    );
+  }
+  if (!open) {
+    return (
+      <button type="button" className={QUIET_BUTTON} onClick={() => setOpen(true)}>
+        Google said &quot;Access blocked&quot;? Request access
+      </button>
+    );
+  }
+  return (
+    <form onSubmit={send} className="space-y-3">
+      <p>Fitbit is in Google&apos;s testing stage, so the team adds people by hand. Tell us the Google email your Fitbit uses.</p>
+      <div>
+        <label htmlFor="fitbit-email" className="px-label">
+          Google email
+        </label>
+        <input id="fitbit-email" type="email" className="px-input" required value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="email" />
+      </div>
+      <p className="text-muted">We keep this email only until you connect, then delete it.</p>
+      {error && <ErrorNote message={error} />}
+      <button type="submit" className={PRIMARY_BUTTON}>
+        Request access
+      </button>
+    </form>
   );
 }

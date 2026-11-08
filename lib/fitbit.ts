@@ -68,6 +68,7 @@ export async function finishConnecting(state: string, code: string, request: Req
      ON CONFLICT (account_id) DO UPDATE SET refresh_token = EXCLUDED.refresh_token, linked_at = now()`,
     [row.account_id, tokens.refresh_token],
   );
+  await query("DELETE FROM fitbit_requests WHERE account_id = $1", [row.account_id]);
 }
 
 async function accessToken(refreshToken: string): Promise<string | null> {
