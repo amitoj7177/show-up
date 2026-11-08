@@ -10,12 +10,10 @@ import { api, ApiError, getToken } from "@/lib/api";
 import { POINTS } from "@/lib/rules";
 import { Card, ErrorNote, PRIMARY_BUTTON, SECONDARY_BUTTON } from "./Shared";
 
-// The customize menu inside the app. Your partner sees your changes within a few seconds.
 export function MascotScreen({ today, act, onLogOut }: { today: Today; act: Act; onLogOut?: () => void }) {
   const [code, setCode] = useState(today.me.avatar);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
-  // Save shortly after the last change, so clicking around doesn't send lots of requests.
   useEffect(() => () => clearTimeout(saveTimer.current), []);
 
   function change(next: string) {
@@ -69,7 +67,6 @@ export function MascotScreen({ today, act, onLogOut }: { today: Today; act: Act;
   );
 }
 
-// Deletes everything we hold about you, after one confirmation.
 function DeleteAccount({ onDeleted }: { onDeleted: () => void }) {
   const [confirming, setConfirming] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -108,7 +105,6 @@ function DeleteAccount({ onDeleted }: { onDeleted: () => void }) {
   );
 }
 
-// How points work. Stronger proof earns more.
 function PointsCard({ points }: { points: number }) {
   return (
     <Card title={`${points} points`}>

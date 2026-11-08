@@ -29,7 +29,6 @@ import {
   type GoalType,
 } from "./rules";
 
-// Proof for one check-in: the photo's id, what Gemini saw in it, and when the partner confirmed it.
 function proofOf(
   row: { id: string; has_photo: boolean; photo_note: string | null; confirmed_at: Date | null; fitbit_steps: number | null; fitbit_workout: string | null; fitbit_active_minutes: number | null } | undefined,
 ) {
@@ -44,7 +43,6 @@ function proofOf(
   };
 }
 
-// Someone counts as "active now" if they opened the app in the last few minutes.
 const ACTIVE_NOW_MS = 3 * 60_000;
 
 export async function findActivePair(userId: string): Promise<PairRow | undefined> {
@@ -87,7 +85,6 @@ async function checkinsFor(pairId: string): Promise<Record<string, DayCheckins>>
 
 type Profile = { id: string; first_name: string | null; community: string | null; moves: string | null; has_photo: boolean };
 
-// The real-person side of someone: first name, photo and Calgary community. Demo users have none.
 async function profileOf(userId: string): Promise<Profile | undefined> {
   const [profile] = await query<Profile>(
     "SELECT id, first_name, community, moves, photo IS NOT NULL AS has_photo FROM accounts WHERE user_id = $1",
@@ -106,7 +103,6 @@ function describeProfile(profile: Profile | undefined) {
   };
 }
 
-// Points for every check-in on this promise.
 export async function pointsFor(userId: string): Promise<number> {
   const rows = await query<{
     status: string;
@@ -121,7 +117,6 @@ export async function pointsFor(userId: string): Promise<number> {
   return rows.reduce((sum, row) => sum + checkinPoints({ status: row.status, confirmed: row.confirmed, fitbitSteps: row.fitbit_steps, fitbitWorkout: row.fitbit_workout, fitbitActiveMinutes: row.fitbit_active_minutes }), 0);
 }
 
-// Stops someone saving an extra they haven't earned yet. An extra they already wear is fine.
 export async function requireUnlocked(code: string, currentCode: string, userId: string | null): Promise<void> {
   const extra = parseAvatar(code).acc;
   if (extra === parseAvatar(currentCode).acc) return;
@@ -149,14 +144,11 @@ function describeMe(user: UserRow & { group_name?: string | null }, profile: Pro
   };
 }
 
-// How long someone waits on an empty board before a practice partner steps in. Tests set it longer.
 const PRACTICE_PARTNER_AFTER_SECONDS = Number(process.env.PRACTICE_PARTNER_AFTER_SECONDS ?? 30);
 
-// Everything the main screen needs, in one response. Screens ask for this every 3 seconds.
 export async function buildToday(startingUser: UserRow, now = new Date()) {
   let user: UserRow & { group_name?: string | null } = startingUser;
 
-  // Someone returning after going silent goes back in the line for a partner.
   if (user.status === "inactive") {
     await query("UPDATE users SET status = 'waiting', waiting_since = now() WHERE id = $1", [user.id]);
   }
@@ -172,7 +164,6 @@ export async function buildToday(startingUser: UserRow, now = new Date()) {
   const pair = user.status === "paired" ? await findActivePair(user.id) : undefined;
   const myProfile = await profileOf(user.id);
 
-  // Real people choose a partner on the Nearby board. If nobody's there after a short wait, a practice partner steps in.
   const nearby = myProfile && user.status === "waiting" ? await nearbyFor(user) : null;
   const waitedSeconds = (now.getTime() - new Date(user.waiting_since ?? now).getTime()) / 1000;
   if (!pair && nearby && !nearby.people.length && !nearby.requests.length && waitedSeconds >= PRACTICE_PARTNER_AFTER_SECONDS) {
@@ -214,7 +205,6 @@ export async function buildToday(startingUser: UserRow, now = new Date()) {
   const streak = sharedStreak(mine, theirs, pair.started_on, today);
   const dayNumber = daysBetween(pair.started_on, today) + 1;
 
-  // Real signs of a real person: when they last opened the app, when they checked in, and whether they saw yours.
   const todayRows = await query<{
     id: string;
     user_id: string;
@@ -288,7 +278,7 @@ export async function buildToday(startingUser: UserRow, now = new Date()) {
     mascot: mascotFor({
       myStatusToday: mine[today],
       mySilentDays: silentDays(mine, pair.started_on, today),
-      // Nobody gets told off on the day they join, even if their check-in time has passed.
+
       minutesPastCheckIn: today === pair.started_on ? -1 : minutesPast(user.check_in_time, now),
       partnerCheckedInToday: Boolean(theirs[today]),
       streak,
@@ -308,7 +298,6 @@ export async function buildToday(startingUser: UserRow, now = new Date()) {
   };
 }
 
-// An honest count of the last 7 finished days, for both partners.
 export async function buildSummary(user: UserRow) {
   const pair = await requirePair(user);
   const partnerId = partnerIdOf(pair, user.id);
@@ -322,7 +311,7 @@ export async function buildSummary(user: UserRow) {
       if (day < pair.started_on) break;
       const status = days[day];
       if (status) counts[status] += 1;
-      else if (day !== pair.started_on) counts.silent += 1; // the match day never counts against you
+      else if (day !== pair.started_on) counts.silent += 1;
     }
     return counts;
   };
@@ -336,7 +325,6 @@ export async function buildSummary(user: UserRow) {
   };
 }
 
-// Ends the partnership and sends the other person back to look for someone new.
 export async function endPair(
   pair: PairRow,
   endedBy: string,

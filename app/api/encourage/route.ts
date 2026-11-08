@@ -4,7 +4,6 @@ import { HttpError, ok, readBody, route } from "@/lib/http";
 import { MESSAGES } from "@/lib/rules";
 import { buildToday, pairToday, requirePair } from "@/lib/state";
 
-// Sends one pre-written message. We only accept ids from our list, so free text is impossible.
 export const POST = route(async (request) => {
   const user = await requireUser(request);
   const { messageId } = await readBody(request);

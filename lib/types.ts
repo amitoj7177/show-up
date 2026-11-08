@@ -1,4 +1,3 @@
-// The shapes the API sends back. docs/FRONTEND.md explains each field.
 import type { NearbyPerson, TeamRequest } from "./nearby";
 import type { CheckinStatus, DayMark, MascotMood } from "./rules";
 
@@ -107,7 +106,6 @@ export type Stats = {
   cameBackAfterDayOne: number;
 };
 
-// A screen calls this to do something, like checking in. It replaces what's on screen.
 export type Act = (path: string, body?: object) => Promise<void>;
 
 export type History = {

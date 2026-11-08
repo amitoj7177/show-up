@@ -2,7 +2,6 @@ import { hashToken } from "./auth";
 import { query } from "./db";
 import { addDays, daysBetween, todayIn } from "./rules";
 
-// Staff only ever see totals, and only once a clinic has enough people that nobody can be singled out.
 export const MIN_PEOPLE_FOR_TOTALS = 5;
 
 export type GroupRow = { id: string; name: string; join_code: string };
@@ -24,7 +23,7 @@ export type GroupTotals = {
   enoughPeople: boolean;
   minimumPeople: number;
   week?: {
-    checkInRate: number; // done days divided by possible days, as a whole percent
+    checkInRate: number;
     doneDays: number;
     skippedDays: number;
     pairedNow: number;
@@ -33,7 +32,6 @@ export type GroupTotals = {
   };
 };
 
-// Anonymous totals for the last 7 days. Never names, goals or anything about one person.
 export async function groupTotals(group: GroupRow, now = new Date()): Promise<GroupTotals> {
   const today = todayIn(now);
   const from = addDays(today, -6);
@@ -51,7 +49,6 @@ export async function groupTotals(group: GroupRow, now = new Date()): Promise<Gr
     [group.id, from],
   );
 
-  // Each person could have checked in once a day since they joined, within this week.
   const possibleDays = members.reduce((total, member) => {
     const start = member.joined > from ? member.joined : from;
     return total + Math.max(0, daysBetween(start, today) + 1);

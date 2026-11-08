@@ -11,7 +11,6 @@ const MOTION: Partial<Record<MascotMood, string>> = {
   furious: "character-furious",
 };
 
-// Draws one character. Scale is how many screen pixels each art pixel takes up.
 export function PixelAvatar({
   code,
   mood,

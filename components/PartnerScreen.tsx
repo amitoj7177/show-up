@@ -8,7 +8,6 @@ import { presenceText } from "./Moments";
 import { PartnerCard } from "./PartnerCard";
 import { Card, PRIMARY_BUTTON, QUIET_BUTTON, SECONDARY_BUTTON } from "./Shared";
 
-// Screen 3: show up for your partner.
 export function PartnerScreen({ today, config, act }: { today: Today; config: Config | null; act: Act }) {
   const { partner, pair } = today;
   const [reporting, setReporting] = useState(false);

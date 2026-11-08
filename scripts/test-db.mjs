@@ -1,5 +1,3 @@
-// A throwaway Postgres database in memory, for testing without touching the real one.
-// Run with: npm run test:db   (leave it running, then use the DATABASE_URL it prints)
 import { PGlite } from "@electric-sql/pglite";
 import { PGLiteSocketServer } from "@electric-sql/pglite-socket";
 

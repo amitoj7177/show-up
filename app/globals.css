@@ -1,7 +1,5 @@
 @import "tailwindcss";
 
-/* The Promise Pals look, from the team's design: chunky ink outlines, square corners and a bright yellow.
-   Only the characters are pixel art. All text uses the phone's own easy-to-read font. */
 @theme inline {
   --color-paper: #fff8e7;
   --color-card: #ffffff;
@@ -27,7 +25,6 @@ body {
   line-height: 1.5;
 }
 
-/* Heading sizes. These sit outside Tailwind's layers on purpose, so they win over size classes on the screens. */
 h1,
 h2 {
   font-family: var(--font-display);
@@ -64,7 +61,6 @@ h2 {
   border: 2px solid var(--color-ink);
 }
 
-/* Square corners and thick outlines everywhere, except true circles. No shadows. */
 .rounded-md, .rounded-lg, .rounded-xl, .rounded-2xl, .rounded-3xl {
   border-radius: 0;
 }
@@ -81,7 +77,6 @@ h2 {
   box-shadow: none;
 }
 
-/* Every keyboard user can always see where they are. */
 :focus-visible {
   outline: 3px solid #0b6bcb;
   outline-offset: 2px;
@@ -142,7 +137,6 @@ h2 {
   text-underline-offset: 3px;
 }
 
-/* Yellow bars, like the team's mockups. */
 .title-bar,
 .site-header,
 .cta-band,
@@ -202,7 +196,6 @@ h2 {
 .typing-dots { display: inline-block; overflow: hidden; vertical-align: bottom; width: 0; animation: typing-dots 1.2s steps(4) infinite; }
 .confetti { animation: confetti-fall 2.4s steps(8) infinite; }
 
-/* The phone. On a real phone (narrow screens) none of this shows and the app is full screen. */
 .phone-status,
 .phone-home {
   display: none;
@@ -226,7 +219,7 @@ h2 {
     justify-content: center;
     overflow: hidden;
   }
-  /* The phone body: an iPhone 15 Pro Max screen (430 x 932) with a thin black bezel. */
+
   .phone-device {
     position: relative;
     flex-shrink: 0;
@@ -238,7 +231,7 @@ h2 {
     box-shadow: 0 0 0 2px #3a3446, 0 40px 90px rgb(0 0 0 / 0.5);
     transform: scale(var(--phone-scale, 1));
   }
-  /* Side buttons. */
+
   .phone-device::before,
   .phone-device::after {
     content: "";
@@ -259,7 +252,7 @@ h2 {
     height: 110px;
   }
   .phone-frame {
-    /* A transform makes fixed elements, like the tab bar, stick to the screen instead of the window. */
+
     transform: translateZ(0);
     position: relative;
     display: flex;
@@ -318,13 +311,12 @@ h2 {
     background: var(--color-ink);
     transform: translateX(-50%);
   }
-  /* Leave room for the home indicator under the tab bar. */
+
   .phone-frame .tab-bar {
     padding-bottom: 22px;
   }
 }
 
-/* Space for the bottom tab bar, plus the phone's home indicator when installed as an app. */
 .tab-bar-space {
   padding-bottom: calc(96px + env(safe-area-inset-bottom));
 }
@@ -332,7 +324,6 @@ h2 {
   padding-bottom: env(safe-area-inset-bottom);
 }
 
-/* Scroll effects for the landing page. */
 .reveal {
   opacity: 0;
   transform: translateY(32px);
@@ -369,7 +360,6 @@ h2 {
   animation: pop-in 0.35s steps(4) both;
 }
 
-/* The landing page hero: two characters walk in, "Team up!" pops, then it starts again. */
 @keyframes match-left { 0% { transform: translateX(-120px); } 25%, 100% { transform: none; } }
 @keyframes match-right { 0% { transform: translateX(120px); } 25%, 100% { transform: none; } }
 @keyframes match-heart { 0%, 28% { transform: scale(0); } 36%, 100% { transform: scale(1); } }
@@ -377,7 +367,6 @@ h2 {
 .match-right { animation: match-right 4s steps(24) infinite; }
 .match-heart { animation: match-heart 4s steps(16) infinite; }
 
-/* Turned off for anyone who prefers less motion. */
 @media (prefers-reduced-motion: reduce) {
   .character-happy, .character-mad, .character-furious, .slide-in-left, .slide-in-right, .pop-in, .match-left, .match-right, .match-heart { animation: none; }
   .typing-dots { animation: none; width: auto; }
@@ -387,7 +376,6 @@ h2 {
   .mood-story-pin { position: static; }
 }
 
-/* Easy reading settings (Me tab and landing page), saved per phone in lib/reading.ts. */
 html[data-text="large"] { font-size: 20px; }
 html[data-text="large"] body { font-size: 22px; }
 html[data-text="large"] .px-input { font-size: 22px; }

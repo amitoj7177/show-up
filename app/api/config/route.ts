@@ -13,7 +13,6 @@ import {
 } from "@/lib/rules";
 import { SOURCES } from "@/lib/sources";
 
-// All the fixed lists the app shows, so the wording lives in one place.
 export const GET = route(async () =>
   ok({
     goalTypes: GOAL_TYPES.map((id) => ({ id, label: GOAL_TYPE_LABELS[id] })),

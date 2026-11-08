@@ -1,7 +1,5 @@
 import { HttpError } from "./http";
 
-// Our sign-up form talks to Auth0 from the server. Auth0 stores the passwords and sends reset emails.
-// We never store a password or an email ourselves. We only keep Auth0's id for each person.
 const CONNECTION = process.env.AUTH0_CONNECTION || "Username-Password-Authentication";
 
 function settings() {
@@ -36,11 +34,10 @@ export async function createAuth0User(email: string, password: string): Promise<
   if (problem.name === "PasswordStrengthError" || problem.code === "invalid_password") {
     throw new HttpError(400, "weak_password", "Please choose a stronger password. Try mixing letters and numbers.");
   }
-  // The same message whether or not the email exists, so nobody can test who has an account.
+
   throw new HttpError(400, "signup_failed", "We couldn't create that account. If you already have one, try logging in.");
 }
 
-// Returns Auth0's permanent id for this person, or a friendly error.
 export async function checkPassword(email: string, password: string): Promise<string> {
   const { clientId, clientSecret } = settings();
   const response = await post("/oauth/token", {
@@ -56,7 +53,6 @@ export async function checkPassword(email: string, password: string): Promise<st
     throw new HttpError(401, "bad_login", "That email and password don't match.");
   }
 
-  // This token came straight from Auth0 over a secure connection, so we can read its id directly.
   const { id_token: idToken } = await response.json();
   const payload = JSON.parse(Buffer.from(String(idToken).split(".")[1], "base64url").toString());
   if (typeof payload.sub !== "string") throw new HttpError(503, "accounts_down", "Something went wrong signing you in. Please try again.");

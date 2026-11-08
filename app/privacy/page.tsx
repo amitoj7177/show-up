@@ -11,7 +11,6 @@ const ROWS: { what: string; where: string; who: string }[] = [
   { what: "Clinic totals (only with a clinic code)", where: "Calculated when staff look", who: "Clinic staff see totals only, once 5 people have joined. Never names." },
 ];
 
-// What we store, where it lives, who can see it, and how to delete it. In plain language.
 export default function PrivacyPage() {
   return (
     <main className="mx-auto w-full max-w-md flex-1 px-4 py-5">

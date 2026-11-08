@@ -1,7 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-// Lets the web frontend and mobile app call the API from any address.
-// This is safe because we use a token in a header, not cookies.
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",

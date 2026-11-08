@@ -4,7 +4,6 @@ import { useState, type FormEvent } from "react";
 import { Card, ErrorNote, PRIMARY_BUTTON, SECONDARY_BUTTON, TitleBar } from "@/components/Shared";
 import { api, ApiError } from "@/lib/api";
 
-// For the team: copy everyone who asked for Fitbit access, then paste them into Google in one go.
 export default function AdminPage() {
   const [adminKey, setAdminKey] = useState("");
   const [emails, setEmails] = useState<string[] | null>(null);

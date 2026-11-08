@@ -1,7 +1,5 @@
 import { readFileSync } from "node:fs";
-// Walks through the whole product using the real API, the way the app would.
-// Run with: npm run smoke (uses http://localhost:3000)
-// Or against the live site: BASE_URL=https://your-site.vercel.app npm run smoke
+
 const BASE = process.env.BASE_URL ?? "http://localhost:3000";
 let passed = 0;
 let failed = 0;
@@ -27,7 +25,6 @@ async function call(method, path, { token, body } = {}) {
 const join = (goalText, extra = {}) =>
   call("POST", "/api/join", { body: { goalText, goalType: "recovery", checkInTime: "00:00", ...extra } });
 
-// --- No database needed ---
 const sample = await call("GET", "/api/today?demo=1&mood=furious");
 check("demo sample works without signing in", sample.status === 200 && sample.json.source === "snapshot");
 check("demo sample shows the mood asked for", sample.json.data.mascot.mood === "furious");
@@ -40,19 +37,16 @@ check("config has pep talk lines", config.json.data.talk.motivation.length === 4
 const preflight = await fetch(`${BASE}/api/today`, { method: "OPTIONS" });
 check("web apps on other addresses are allowed", preflight.headers.get("access-control-allow-origin") === "*");
 
-// --- Bad input gets a friendly message ---
 const noAuth = await call("GET", "/api/today");
 check("no token gets a friendly 401", noAuth.status === 401 && typeof noAuth.json.error.message === "string");
 check("too-short goal is rejected", (await join("hi")).status === 400);
 check("bad time is rejected", (await join("Walk daily", { checkInTime: "25:00" })).status === 400);
 
-// --- Safety ---
 const weight = await join("Lose 20 pounds by Christmas");
 check("weight goal is refused", weight.json.data.allowed === false);
 check("refused goal explains why", typeof weight.json.data.refusalReason === "string");
 check("refused goal has a Why panel", typeof weight.json.data.why.source === "string");
 
-// --- Real pairing between two people ---
 const tag = Date.now();
 const a = await join(`Do my physio every morning ${tag}`);
 check("first person joins and waits", a.status === 201 && a.json.data.today.status === "waiting");
@@ -68,7 +62,6 @@ check("first person sees the partner", aNow.status === "paired" && aNow.partner 
 check("a real name in a goal never reaches the partner", !JSON.stringify(aNow.partner).includes("Sarah"), aNow.partner);
 check("streak starts at 0", aNow.pair.streak === 0);
 
-// --- Check-ins update the other phone ---
 await call("POST", "/api/checkin", { token: tokenA, body: { status: "done" } });
 const bSees = (await call("GET", "/api/today", { token: tokenB })).json.data;
 check("partner sees my check-in", bSees.partner.checkinToday === "done");
@@ -83,7 +76,6 @@ check("both done raises the streak", bDone.pair.streak === 1, bDone.pair);
 check("mascot is happy after checking in", bDone.mascot.mood === "happy", bDone.mascot);
 check("bad check-in is rejected", (await call("POST", "/api/checkin", { token: tokenA, body: { status: "nope" } })).status === 400);
 
-// --- The customizable character ---
 const code = "h2-c5-s3-e1-o4-k8-a1";
 const saved = (await call("POST", "/api/settings", { token: tokenA, body: { avatar: code } })).json.data;
 check("saving a character works", saved.me.avatar === code, saved.me);
@@ -97,7 +89,6 @@ const lockedExtra = await call("POST", "/api/settings", { token: tokenA, body: {
 check("an extra you haven't earned yet is refused", lockedExtra.status === 403, lockedExtra.status);
 check("the week grid has 7 days", bSeesAvatar.pair.week.length === 7);
 
-// --- Messages ---
 const free = await call("POST", "/api/encourage", { token: tokenA, body: { messageId: "hey meet me at..." } });
 check("free text is impossible", free.status === 400);
 await call("POST", "/api/encourage", { token: tokenA, body: { messageId: "got-this" } });
@@ -106,11 +97,9 @@ check("partner receives the message", bMessages.messagesReceived[0]?.text === "Y
 const twice = await call("POST", "/api/encourage", { token: tokenA, body: { messageId: "proud" } });
 check("only one message per day", twice.status === 409);
 
-// --- Demo-only tools are locked for real people ---
 check("real people can't skip days", (await call("POST", "/api/demo/skip-day", { token: tokenA })).status === 403);
 check("new match is refused too soon", (await call("POST", "/api/rematch", { token: tokenA })).status === 409);
 
-// --- Rough days, gentle mode, leaving and reporting ---
 const rough = (await call("POST", "/api/checkin", { token: tokenB, body: { status: "rough" } })).json.data;
 check("rough day makes your character sad, not angry", rough.mascot.mood === "sad" && rough.mascot.angerLevel === 0);
 
@@ -129,7 +118,6 @@ check("reported people aren't paired together again", again.status === "waiting"
 await call("POST", "/api/leave", { token: tokenB });
 await call("POST", "/api/leave", { token: tokenC });
 
-// --- Time travel with the labelled demo partner ---
 const demo = await join(`Demo goal ${tag}`, { demo: true });
 const tokenD = demo.json.data.token;
 check("demo pairs instantly and is labelled", demo.json.data.today.status === "paired" && demo.json.data.today.isDemo === true);
@@ -166,7 +154,6 @@ check("gentle mode stops the anger", gentle.mascot.angerLevel === 0, gentle.masc
 const demoNew = (await call("POST", "/api/rematch", { token: tokenD })).json.data;
 check("new match brings a new demo partner", demoNew.status === "paired" && demoNew.pair.dayNumber === 1, demoNew.pair);
 
-// --- Accounts (needs Auth0 connected) ---
 const email = `tester${tag}@example.com`;
 const signup = await call("POST", "/api/auth/signup", { body: { email, password: "tulip harbor sunrise 42" } });
 if (signup.status === 503) {
@@ -195,7 +182,6 @@ if (signup.status === 503) {
   await call("POST", "/api/leave", { token: session });
 }
 
-// --- Real profiles, photo proof and Calgary meet-ups (needs Auth0 and Gemini) ---
 const photo = `data:image/jpeg;base64,${readFileSync(new URL("./fixtures/test-photo.jpg", import.meta.url)).toString("base64")}`;
 async function person(name, community, goal, why, extra = {}) {
   const made = await call("POST", "/api/auth/signup", { body: { email: `${name.toLowerCase()}${tag}@example.com`, password: "tulip harbor sunrise 42" } });
@@ -214,11 +200,11 @@ if (!sam) {
 } else {
   check("a last name with numbers is refused", (await call("POST", "/api/account", { token: sam.token, body: { firstName: "Sam123" } })).status === 400);
   check("a made-up community is refused", (await call("POST", "/api/account", { token: sam.token, body: { community: "NOPE" } })).status === 400);
-  // How you move: optional, shown as a tag, and people who move the same way come first.
+
   check("saying how you move works", (await call("POST", "/api/account", { token: sam.token, body: { moves: "wheelchair" } })).json.data?.moves === "wheelchair");
   check("a made-up answer is refused", (await call("POST", "/api/account", { token: sam.token, body: { moves: "flying" } })).status === 400);
   const ana = await person("Ana", "BRD", `Do my physio exercises daily ${tag}`, "Walking clears my head.");
-  // The Nearby board: real people see each other and choose, instead of being paired blind.
+
   const anaBoard = ana.joined.json.data.today;
   check("real people pick a partner on the Nearby board", anaBoard.status === "waiting" && Array.isArray(anaBoard.nearby?.people), anaBoard.status);
   const samCard = anaBoard.nearby?.people.find((p) => p.firstName === "Sam");
@@ -269,7 +255,6 @@ if (!sam) {
   const goneImage = await fetch(`${BASE}/api/photo?kind=proof&id=${proofId}`, { headers: { Authorization: `Bearer ${ana.token}` } });
   check("the deleted person's photo is gone", goneImage.status === 404);
 
-  // Invite links: whoever makes a promise through Ana's link is paired with her straight away.
   const invite = await call("POST", "/api/invite", { token: ana.token });
   const code = invite.json.data?.link?.split("invite=")[1];
   check("Ana gets an invite link", typeof code === "string", invite.json);
@@ -279,7 +264,6 @@ if (!sam) {
   for (const token of [ana.token, lee?.token, outsider.json.data.token]) await call("POST", "/api/leave", { token });
 }
 
-// --- Clinic groups (set GROUP_CODE and STAFF_KEY from npm run group:create) ---
 if (process.env.GROUP_CODE && process.env.STAFF_KEY) {
   const g = (goal) => join(goal, { groupCode: process.env.GROUP_CODE.toLowerCase() });
   const outsider = await join(`Do my knee physio stretches ${tag} outside`);
@@ -303,7 +287,6 @@ if (process.env.GROUP_CODE && process.env.STAFF_KEY) {
   console.log("SKIP  clinic groups: set GROUP_CODE and STAFF_KEY");
 }
 
-// --- Results ignore demo data ---
 const stats = (await call("GET", "/api/stats")).json.data;
 check("stats return numbers", Number.isInteger(stats.people) && Number.isInteger(stats.cameBackAfterDayOne));
 

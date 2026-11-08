@@ -1,6 +1,5 @@
 import type { MetadataRoute } from "next";
 
-// Lets people add Promise Pals to their phone's home screen and open it like a real app.
 export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "Promise Pals",

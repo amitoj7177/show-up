@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { loadReading, READING_OPTIONS, saveReading, type ReadingSettings as Settings } from "@/lib/reading";
 
-// Four switches that change how the whole app looks, straight away.
 export function ReadingSettings() {
   const [settings, setSettings] = useState<Settings>({});
 

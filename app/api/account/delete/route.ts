@@ -3,9 +3,6 @@ import { query } from "@/lib/db";
 import { ok, route } from "@/lib/http";
 import { endPair, findActivePair } from "@/lib/state";
 
-// "Delete my account and data". Removes everything we hold about you.
-// Your partner is matched with someone new. Old check-ins stay only as empty marks in their history,
-// with your photos, goal and words removed, so their streak history still adds up.
 export const POST = route(async (request) => {
   const account = await requireAccount(request);
 
@@ -14,7 +11,6 @@ export const POST = route(async (request) => {
     if (pair) await endPair(pair, account.user_id, { reason: "left", myNextStatus: "left", partnerNextStatus: "waiting" });
   }
 
-  // Every promise this account made.
   const [{ ids }] = await query<{ ids: string[] }>(
     `SELECT coalesce(array_agg(DISTINCT u.id), '{}') AS ids FROM users u
       WHERE u.id = $1 OR u.id IN (SELECT user_id FROM accounts WHERE id = $2)`,

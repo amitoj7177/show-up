@@ -16,9 +16,8 @@ import { Card, ErrorNote, PRIMARY_BUTTON, QUIET_BUTTON, SECONDARY_BUTTON, TitleB
 type Screen = "welcome" | "login" | "signup" | "avatar" | "profile" | "done" | "promise";
 type AuthResult = { token: string; avatar: string; hasPromise: boolean; profileComplete: boolean };
 
-const STARTER_AVATAR = "h0-c1-s2-e1-o1-k3-a0"; // the character in the Promise Pals design
+const STARTER_AVATAR = "h0-c1-s2-e1-o1-k3-a0";
 
-// Everything before the main app: welcome, log in, sign up, avatar, then make a promise.
 export type { Screen as PromiseStart };
 export function PromiseScreen({
   start = "welcome",
@@ -418,7 +417,6 @@ export function PromiseScreen({
   );
 }
 
-// An invite link someone opened: the code, and who sent it (if they're still looking for a partner).
 function useInvite() {
   const [invite, setInvite] = useState<{ code: string; firstName: string | null } | null>(null);
   useEffect(() => {

@@ -13,9 +13,6 @@ import {
   type MascotMood,
 } from "./rules";
 
-// GET /api/today?demo=1 returns this. It needs no database and no sign-in,
-// so the frontend can be built right now and the demo survives bad WiFi.
-// Everything in it is sample data, and isDemo: true means the UI must say so.
 const MOOD_INPUTS: Record<MascotMood, Parameters<typeof mascotFor>[0]> = {
   waiting: { mySilentDays: 0, minutesPastCheckIn: -60, partnerCheckedInToday: true, streak: 4, gentle: false },
   happy: { myStatusToday: "done", mySilentDays: 0, minutesPastCheckIn: 5, partnerCheckedInToday: true, streak: 1, gentle: false },
@@ -27,7 +24,6 @@ const MOOD_INPUTS: Record<MascotMood, Parameters<typeof mascotFor>[0]> = {
   furious: { mySilentDays: 2, minutesPastCheckIn: 15, partnerCheckedInToday: true, streak: 0, gentle: false },
 };
 
-// Two real Calgary communities for the sample people.
 const DEMO_ME_COMMUNITY = "HIL";
 const DEMO_PARTNER_COMMUNITY = "BRD";
 
@@ -41,7 +37,6 @@ export function demoToday(requestedMood: string | null, now = new Date()) {
   const startedOn = todayIn(now, -4);
   const partnerStatus: CheckinStatus = "done";
 
-  // Sample history that matches the mood being shown.
   const mine: DayCheckins = {};
   const theirs: DayCheckins = {};
   for (let back = 4; back >= 1; back -= 1) {

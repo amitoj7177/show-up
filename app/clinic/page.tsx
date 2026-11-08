@@ -7,7 +7,6 @@ import { api, ApiError } from "@/lib/api";
 import type { GroupTotals } from "@/lib/groups";
 import { addDays, todayIn } from "@/lib/rules";
 
-// Labelled sample numbers, for showing the screen without a real clinic.
 function sampleTotals(): GroupTotals {
   const today = todayIn(new Date());
   const done = [9, 11, 10, 12, 8, 13, 11];
@@ -96,7 +95,6 @@ function Totals({ totals }: { totals: GroupTotals }) {
   );
 }
 
-// The clinic staff screen: anonymous totals only. Never names, goals or anything about one person.
 export default function ClinicPage() {
   const [demo, setDemo] = useState(false);
   const [staffKey, setStaffKey] = useState("");

@@ -10,7 +10,6 @@ function adminKeyMatches(given: unknown): boolean {
   return a.length === b.length && timingSafeEqual(a, b);
 }
 
-// For the team only: everyone waiting to be added as a Fitbit tester.
 export const POST = route(async (request) => {
   const { adminKey } = await readBody(request);
   if (!adminKeyMatches(adminKey)) throw new HttpError(401, "bad_admin_key", "That admin key isn't right.");

@@ -1,6 +1,5 @@
 import snapshot from "./calgary.json";
 
-// Real City of Calgary open data, saved by scripts/fetch-calgary.mjs.
 export type Community = { code: string; name: string; area: string; lat: number; lng: number };
 
 export const COMMUNITIES: Community[] = snapshot.communities;

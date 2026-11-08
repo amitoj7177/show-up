@@ -10,12 +10,10 @@ import { PartnerCard } from "./PartnerCard";
 import { PrivatePhoto } from "./Photos";
 import { Card, ErrorNote, PRIMARY_BUTTON, QUIET_BUTTON, SECONDARY_BUTTON, TitleBar } from "./Shared";
 
-// "7:42 AM", in Calgary time.
 export function clockTime(iso: string): string {
   return new Date(iso).toLocaleTimeString("en-CA", { hour: "numeric", minute: "2-digit", timeZone: "America/Edmonton" });
 }
 
-// "Active now", or "Last active 2 hours ago", from when they really last opened the app.
 export function presenceText(partner: NonNullable<Today["partner"]>): string {
   if (partner.activeNow) return "Active now";
   if (!partner.lastActiveAt) return "";
@@ -27,7 +25,6 @@ export function presenceText(partner: NonNullable<Today["partner"]>): string {
   return `Last active ${days} day${days === 1 ? "" : "s"} ago`;
 }
 
-// Picks a random line, never the same one twice in a row.
 export function useLinePicker() {
   const last = useRef<Record<string, number>>({});
   return (key: string, lines: string[] | undefined): string => {
@@ -50,7 +47,6 @@ function Character({ code, mood, name, label, className = "" }: { code: string; 
   );
 }
 
-// While we look for a partner. Real people get the Nearby board; without a profile, it's a simple wait.
 export function FindingScreen({ today, act, onCancel, demo = false }: { today: Today; act: Act; onCancel: () => void; demo?: boolean }) {
   if (!today.nearby) return <BlindWait today={today} onCancel={onCancel} />;
   const { people, requests } = today.nearby;
@@ -110,7 +106,6 @@ export function FindingScreen({ today, act, onCancel, demo = false }: { today: T
   );
 }
 
-// One person on the board: who they are, how far, and what they're working on.
 function NearbyCard({ person }: { person: NearbyPerson }) {
   const distance = person.km === null ? "" : person.km < 1 ? " \u00b7 under 1 km away" : ` \u00b7 ${Math.round(person.km)} km away`;
   return (
@@ -141,7 +136,6 @@ function NearbyCard({ person }: { person: NearbyPerson }) {
   );
 }
 
-// "Invite someone you know": a link that pairs them with you as soon as they make their promise.
 function InviteCard() {
   const [link, setLink] = useState("");
   const [copied, setCopied] = useState(false);
@@ -184,7 +178,6 @@ function InviteCard() {
   );
 }
 
-// No profile (tests, old links): you, a mystery box, and automatic matching.
 function BlindWait({ today, onCancel }: { today: Today; onCancel: () => void }) {
   return (
     <div className="px-card overflow-hidden">
@@ -212,7 +205,6 @@ function BlindWait({ today, onCancel }: { today: Today; onCancel: () => void }) 
   );
 }
 
-// The moment you're matched: both characters slide in.
 export function PartnerFoundScreen({ today, line, onContinue }: { today: Today; line: string; onContinue: () => void }) {
   if (!today.partner) return null;
   return (

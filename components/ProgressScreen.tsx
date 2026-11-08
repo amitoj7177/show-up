@@ -9,7 +9,6 @@ import { useLinePicker } from "./Moments";
 import { PixelAvatar } from "./PixelAvatar";
 import { Card, ErrorNote, PRIMARY_BUTTON, QUIET_BUTTON, SECONDARY_BUTTON, WhyPanel } from "./Shared";
 
-// Tiny pixel icons from the Promise Pals design. Each row of x's is one row of pixels.
 const ICONS = {
   fire: [
     { colour: "#fb8c00", rows: ["...x....", "..xx....", "..xxx...", ".xxxx...", "xxxxxx..", "xxxxxxx.", "xxxxxxx.", ".xxxxx.."] },
@@ -33,7 +32,6 @@ const ICONS = {
   ],
 };
 
-// A different reward icon for each badge.
 const BADGE_ICONS: Record<string, keyof typeof ICONS> = {
   first: "sprout",
   three: "fire",
@@ -60,11 +58,10 @@ function PixelIcon({ name, size = 24 }: { name: keyof typeof ICONS; size?: numbe
 const DAY_STYLE = { done: "bg-[#8fd37f]", skipped: "bg-[#d9c8f2]", missed: "bg-[#e8e2d2]" };
 const CONFETTI = ["#ffd54f", "#ec407a", "#0fadff", "#8fd37f", "#fb8c00"];
 
-// Your progress: streaks, every day so far, badges and your partner.
 export function ProgressScreen({ today, config, act, sample }: { today: Today; config: Config | null; act: Act; sample?: History }) {
   const [history, setHistory] = useState<History | null>(sample ?? null);
   const [error, setError] = useState("");
-  const [shown, setShown] = useState<number | null>(null); // how many days are painted while replaying
+  const [shown, setShown] = useState<number | null>(null);
   const [saying, setSaying] = useState("");
   const [waveFrame, setWaveFrame] = useState(0);
   const [confirmNew, setConfirmNew] = useState(false);
@@ -92,7 +89,7 @@ export function ProgressScreen({ today, config, act, sample }: { today: Today; c
   const badges = config?.badges ?? BADGES;
   const earned = badges.filter((badge) => stats.best >= badge.days).length;
   const segments = Math.round(stats.percent / 10);
-  const mood = stats.percent >= 70 ? "proud" : "happy"; // always warm, never shaming
+  const mood = stats.percent >= 70 ? "proud" : "happy";
   const reduceMotion = () => wantsLessMotion();
 
   function pepTalk() {

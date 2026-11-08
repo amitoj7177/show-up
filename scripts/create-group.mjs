@@ -1,5 +1,3 @@
-// Creates a clinic or campus group, and prints its join code and staff key once.
-// Run with: npm run group:create -- "Demo Physio Clinic"
 import { createHash, randomBytes } from "node:crypto";
 import pg from "pg";
 
@@ -9,7 +7,6 @@ if (!name) {
   process.exit(1);
 }
 
-// Codes leave out letters that look alike, such as O and 0, so they're easy to read out loud.
 const LETTERS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 const joinCode = Array.from(randomBytes(6), (byte) => LETTERS[byte % LETTERS.length]).join("");
 const staffKey = randomBytes(18).toString("base64url");

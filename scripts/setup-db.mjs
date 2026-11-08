@@ -1,4 +1,3 @@
-// Creates the database tables. Run with: npm run db:setup
 import { readFileSync } from "node:fs";
 import pg from "pg";
 

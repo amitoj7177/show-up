@@ -16,19 +16,17 @@ import { TodayScreen } from "./TodayScreen";
 
 const REFRESH_EVERY_MS = 3000;
 
-// The app itself is phone-shaped, even on a laptop. The public website uses the full width.
 function Phone({ children }: { children: React.ReactNode }) {
   return <main className="mx-auto w-full max-w-md flex-1 px-4 py-5">{children}</main>;
 }
 
-// Decides which screen to show. ?demo=1 always shows labelled sample data, with no internet needed.
 export function App() {
   const [mode, setMode] = useState<"loading" | "demo" | "live">("loading");
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     setMode(params.get("demo") === "1" ? "demo" : "live");
-    // Opened an invite link: remember it until they make their promise.
+
     const invite = params.get("invite");
     if (invite) {
       try {
@@ -63,7 +61,6 @@ function LiveApp() {
   const pick = useLinePicker();
   const [foundLine, setFoundLine] = useState("");
 
-  // Celebrate the moment someone goes from waiting to having a partner.
   useEffect(() => {
     const paired = today?.status === "paired";
     if (wasPaired.current === false && paired) {
@@ -90,11 +87,11 @@ function LiveApp() {
         clearToken();
         setToday(null);
       } else if (problem instanceof ApiError && problem.status === 409) {
-        // Logged in, but no promise yet.
+
         setToday(null);
         setNeedsPromise(true);
       } else {
-        // Keep showing the last good screen rather than an error page.
+
         setOfflineSince((since) => since ?? new Date());
       }
     } finally {
@@ -108,7 +105,7 @@ function LiveApp() {
       .catch(() => setConfig(null));
     refresh();
     const timer = setInterval(() => {
-      // While signing up, nothing here needs refreshing, so the form isn't disturbed.
+
       if (document.visibilityState === "visible" && hasToday.current) refresh();
     }, REFRESH_EVERY_MS);
     return () => clearInterval(timer);
@@ -216,7 +213,6 @@ function LiveApp() {
   );
 }
 
-// For a demo that uses the real database, with a labelled sample partner.
 function LiveDemoControls({ act }: { act: Act }) {
   return (
     <Card title="Demo controls">
@@ -230,7 +226,6 @@ function LiveDemoControls({ act }: { act: Act }) {
   );
 }
 
-// Labelled sample progress for the demo, from the team's home screen design.
 const DEMO_HISTORY = {
   promise: "Do my physio exercises every morning",
   days: [..."ddsddddmdddddsddddddddmddddd"].map((key, index) => ({
@@ -240,8 +235,6 @@ const DEMO_HISTORY = {
   finished: true,
 };
 
-// The ?demo=1 tour. Everything happens on the phone, so it works even with no internet.
-// Sample people for the demo board. Clearly labelled as samples on screen.
 function demoPeople(partner: NonNullable<Today["partner"]>): NearbyPerson[] {
   const person = (fields: Partial<NearbyPerson> & Pick<NearbyPerson, "userId" | "firstName" | "avatar" | "goal">): NearbyPerson => ({
     photoId: null,
@@ -297,7 +290,6 @@ function DemoApp() {
     }
   };
 
-  // The demo starts on the Nearby board. Asking anyone matches you straight away.
   if (stage !== "today" && sample.partner) {
     const board = { ...today, status: "waiting", partner: null, pair: null, nearby: { requests: [], people: demoPeople(sample.partner) } } as Today;
     return (
@@ -362,7 +354,6 @@ function DemoApp() {
   );
 }
 
-// Someone who opened an invite link goes straight to sign-up, not the landing page.
 function invited(): boolean {
   try {
     return Boolean(sessionStorage.getItem("invite"));

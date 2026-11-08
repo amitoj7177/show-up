@@ -1,7 +1,6 @@
 import { sendPasswordReset } from "@/lib/auth0";
 import { HttpError, ok, readBody, route } from "@/lib/http";
 
-// Auth0 emails the reset link. The answer is the same whether or not the account exists.
 export const POST = route(async (request) => {
   const { email } = await readBody(request);
   if (typeof email !== "string" || !/^\S+@\S+\.\S+$/.test(email)) {

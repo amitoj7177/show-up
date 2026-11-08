@@ -4,7 +4,6 @@ import { HttpError, ok, readBody, route } from "@/lib/http";
 import { answerRequest } from "@/lib/nearby";
 import { buildToday } from "@/lib/state";
 
-// Answer someone who asked to team up: "Team up" pairs you both, "Not now" hides you from them.
 export const POST = route(async (request) => {
   const user = await requireUser(request);
   const { requestId, accept } = await readBody(request);

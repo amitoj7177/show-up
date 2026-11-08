@@ -8,7 +8,6 @@ import { PixelAvatar } from "./PixelAvatar";
 import { CountUp, Reveal, useScrollY, useSectionProgress } from "./ScrollFx";
 import { PRIMARY_BUTTON, SECONDARY_BUTTON } from "./Shared";
 
-// Real, sourced findings only. Each one links to where it comes from.
 const FINDINGS = [
   {
     figure: "Up to 50%",
@@ -39,7 +38,6 @@ const MOODS: { mood: MascotMood; label: string; line: string }[] = [
   { mood: "furious", label: "Gone quiet", line: "One check-in and you're friends again." },
 ];
 
-// Short on purpose: each line is something the app really does.
 const ACCESSIBLE = [
   "Find someone who moves like you: wheelchair, walking aid, chronic pain",
   "Fitbit proof from heart rate, not just steps",
@@ -47,7 +45,6 @@ const ACCESSIBLE = [
   "Screen readers, keyboard, big text, strong contrast, less motion",
 ];
 
-// The hero: two characters walk in from each side and team up, over and over.
 function MatchScene() {
   return (
     <div
@@ -90,7 +87,6 @@ function Section({ id, eyebrow, title, children, tint = false }: { id?: string; 
   );
 }
 
-// A short list with ticks, instead of paragraphs.
 function TickList({ items }: { items: string[] }) {
   return (
     <ul className="grid gap-2">
@@ -106,8 +102,6 @@ function TickList({ items }: { items: string[] }) {
   );
 }
 
-// The public website, shown before you log in.
-// A thin bar under the header that fills as you read down the page.
 function ReadingBar({ scrollY }: { scrollY: number }) {
   const [total, setTotal] = useState(1);
   useEffect(() => {
@@ -118,11 +112,10 @@ function ReadingBar({ scrollY }: { scrollY: number }) {
   return <div aria-hidden="true" className="reading-bar" style={{ transform: `scaleX(${Math.min(1, scrollY / total)})` }} />;
 }
 
-// The character stays pinned while its mood changes as you scroll, like an Apple product page.
 function MoodStory() {
   const scrollY = useScrollY();
   const { ref, progress } = useSectionProgress<HTMLElement>(scrollY);
-  // All six moods appear within the first 90% of the scroll, so the last one gets time on screen.
+
   const index = Math.min(MOODS.length - 1, Math.floor(Math.min(1, progress / 0.9) * MOODS.length));
   const current = MOODS[index];
   return (

@@ -1,7 +1,6 @@
 import type { DayMark } from "@/lib/rules";
 import type { Today } from "@/lib/types";
 
-// The week at a glance. Every mark also has words, so it never relies on colour.
 const MARKS: Record<DayMark, { symbol: string; words: string; style: string }> = {
   done: { symbol: "✓", words: "done", style: "bg-accent text-white" },
   rough: { symbol: "~", words: "skipped", style: "bg-[#cfe0f5] text-ink" },

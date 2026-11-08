@@ -4,9 +4,6 @@ import { HttpError, route } from "@/lib/http";
 import { canSeeOnBoard } from "@/lib/nearby";
 import { findActivePair, partnerIdOf } from "@/lib/state";
 
-// Sends one photo, but only to its owner and their current partner.
-// Profile photos are also shown on the Nearby board, to other people who are looking.
-// GET /api/photo?kind=profile&id=<account id>  or  GET /api/photo?kind=proof&id=<check-in id>
 export const GET = route(async (request) => {
   const params = new URL(request.url).searchParams;
   const kind = params.get("kind");

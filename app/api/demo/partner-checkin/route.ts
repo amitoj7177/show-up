@@ -3,7 +3,6 @@ import { query } from "@/lib/db";
 import { HttpError, ok, readBody, route } from "@/lib/http";
 import { buildToday, pairToday, partnerIdOf, requireDemoPair } from "@/lib/state";
 
-// Demo only: make the labelled sample partner check in.
 export const POST = route(async (request) => {
   const user = await requireUser(request);
   const { status } = await readBody(request);

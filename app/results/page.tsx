@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { api, ApiError } from "@/lib/api";
 import type { Stats } from "@/lib/types";
 
-// Real results from real people. Demo data is never counted.
 export default function Results() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [error, setError] = useState("");

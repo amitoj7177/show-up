@@ -8,7 +8,6 @@ import type { Profile } from "@/lib/types";
 import { PhotoButton, PrivatePhoto } from "./Photos";
 import { ErrorNote, PRIMARY_BUTTON, QUIET_BUTTON, SECONDARY_BUTTON } from "./Shared";
 
-// The real-person profile: first name, an optional photo, Calgary community, and 18+.
 export function ProfileForm({ submitLabel, onSaved }: { submitLabel: string; onSaved: (profile: Profile) => void }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [firstName, setFirstName] = useState("");

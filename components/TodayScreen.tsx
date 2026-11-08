@@ -19,7 +19,6 @@ import { Card, DemoLabel, ErrorNote, PRIMARY_BUTTON, QUIET_BUTTON, SECONDARY_BUT
 
 type Tab = "today" | "partner" | "progress" | "mascot";
 
-// Simple line icons for the tab bar.
 const ICONS: Record<Tab, string> = {
   today: "M3 11l9-7 9 7v9a1 1 0 01-1 1h-5v-6H9v6H4a1 1 0 01-1-1z",
   partner: "M16 11a3 3 0 100-6 3 3 0 000 6zM8 11a3 3 0 100-6 3 3 0 000 6zM2 20c0-3 3-5 6-5s6 2 6 5M14 15.5c.6-.3 1.3-.5 2-.5 3 0 6 2 6 5",
@@ -42,14 +41,11 @@ function partnerStatusText(partner: NonNullable<Today["partner"]>): string {
   return `${partner.nickname} hasn't checked in yet today.`;
 }
 
-// Turns "08:00" into "8:00 AM".
 function friendlyTime(time: string): string {
   const [hour, minute] = time.split(":").map(Number);
   return `${hour % 12 || 12}:${String(minute).padStart(2, "0")} ${hour < 12 ? "AM" : "PM"}`;
 }
 
-
-// Your proof for today, and whether your partner has confirmed it.
 function MyProof({ today, partnerName }: { today: Today; partnerName: string }) {
   const proof = today.today.proof;
   return (
@@ -80,7 +76,6 @@ function MyProof({ today, partnerName }: { today: Today; partnerName: string }) 
   );
 }
 
-// Your partner's proof, with a button to confirm you believe them.
 function PartnerProof({ partner, act }: { partner: NonNullable<Today["partner"]>; act: Act }) {
   const proof = partner.proof;
   if (!proof) return null;
@@ -108,7 +103,6 @@ function PartnerProof({ partner, act }: { partner: NonNullable<Today["partner"]>
   );
 }
 
-// Screen 2 (Today), Screen 3 (Partner) and the customize menu (Character).
 export function TodayScreen({
   today,
   config,
@@ -144,7 +138,6 @@ export function TodayScreen({
   const checkedIn = today.today.myCheckin === "done";
   const skipped = today.today.myCheckin === "rough";
 
-  // Your character says something for 5 seconds, then goes back to its usual line.
   function say(line: string) {
     clearTimeout(sayTimer.current);
     setSaying(line);
@@ -270,7 +263,6 @@ export function TodayScreen({
             </button>
           </Card>
 
-
         </div>
       )}
 
@@ -280,7 +272,6 @@ export function TodayScreen({
 
       {error && <ErrorNote message={error} />}
       {demoControls}
-
 
       <nav aria-label="Main" className="tab-bar fixed inset-x-0 bottom-0 z-10 w-full border-t border-line bg-card/95 backdrop-blur">
         <div className="mx-auto flex max-w-md">

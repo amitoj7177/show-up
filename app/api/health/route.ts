@@ -1,6 +1,5 @@
 import { query } from "@/lib/db";
 
-// A quick check that the app is running and connected. It never shows secrets.
 export const dynamic = "force-dynamic";
 
 export async function GET() {

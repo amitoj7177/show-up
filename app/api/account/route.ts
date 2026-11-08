@@ -37,13 +37,11 @@ async function describe(accountId: string) {
   };
 }
 
-// Your profile: character, first name, photo, community, and whether you have a promise yet.
 export const GET = route(async (request) => {
   const account = await requireAccount(request);
   return ok(await describe(account.id));
 });
 
-// Save any part of your profile. Photos are checked by Gemini before anyone can see them.
 export const POST = route(async (request) => {
   const account = await requireAccount(request);
   const body = await readBody(request);
@@ -63,7 +61,7 @@ export const POST = route(async (request) => {
     await query("UPDATE accounts SET community = $2 WHERE id = $1", [account.id, community.code]);
     if (account.user_id) await query("UPDATE users SET area = $2 WHERE id = $1", [account.user_id, community.area]);
   }
-  // How you move: optional, and "prefer not to say" is null.
+
   if (body.moves !== undefined) {
     if (body.moves !== null && !isMoves(body.moves)) throw new HttpError(400, "bad_moves", "Please pick one of the options.");
     await query("UPDATE accounts SET moves = $2 WHERE id = $1", [account.id, body.moves]);

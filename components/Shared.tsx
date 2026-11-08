@@ -10,7 +10,6 @@ export function Wordmark() {
   );
 }
 
-// The bar at the top of a screen, with an optional back button.
 export function TitleBar({ title, onBack, right }: { title: string; onBack?: () => void; right?: ReactNode }) {
   return (
     <div className="title-bar flex min-h-16 items-center justify-between gap-2 border-b border-line bg-card px-3 py-2">

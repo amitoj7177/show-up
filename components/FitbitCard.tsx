@@ -12,14 +12,13 @@ const RESULT_MESSAGES: Record<string, string> = {
   failed: "We couldn't connect your Fitbit. Please try again.",
 };
 
-// Connect a Fitbit, so your steps prove you did it, with no photo needed.
 export function FitbitCard() {
   const [status, setStatus] = useState<Status | null>(null);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
   useEffect(() => {
-    // Coming back from Google's "Allow" page.
+
     const result = new URLSearchParams(window.location.search).get("fitbit");
     if (result && RESULT_MESSAGES[result]) {
       setMessage(RESULT_MESSAGES[result]);
@@ -93,8 +92,6 @@ export function FitbitCard() {
   );
 }
 
-// A small prompt on the Today screen, for people who haven't connected a Fitbit yet.
-// The second way to check in: with your Fitbit, or connect one first.
 export function FitbitCheckIn({ onCheckIn, demo = false }: { onCheckIn: () => void; demo?: boolean }) {
   const [status, setStatus] = useState<Status | null>(null);
   const [error, setError] = useState("");
@@ -133,7 +130,6 @@ export function FitbitCheckIn({ onCheckIn, demo = false }: { onCheckIn: () => vo
   );
 }
 
-// While Fitbit is in Google's testing stage, people must be invited first. This asks the team to add you.
 function RequestAccess() {
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");

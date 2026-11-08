@@ -4,7 +4,6 @@ import { ok, route } from "@/lib/http";
 import { historyDays, PROMISE_DAYS, todayIn, type CheckinStatus, type DayCheckins } from "@/lib/rules";
 import { findActivePair, pairToday } from "@/lib/state";
 
-// Your own days since you made this promise, across every partner you've had.
 export const GET = route(async (request) => {
   const user = await requireUser(request);
   const pair = await findActivePair(user.id);

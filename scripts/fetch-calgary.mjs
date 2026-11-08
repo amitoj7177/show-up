@@ -1,7 +1,3 @@
-// Saves a snapshot of real City of Calgary open data into lib/calgary.json.
-// Run with: npm run calgary:fetch
-// Communities: https://data.calgary.ca/resource/surr-xmvs (Community District Boundaries)
-// Places to meet: https://data.calgary.ca/resource/x34e-bcjz (Community Services)
 import { writeFileSync } from "node:fs";
 
 const BASE = "https://data.calgary.ca/resource";
@@ -12,7 +8,6 @@ async function get(path) {
   return response.json();
 }
 
-// The middle of a community, roughly: the average of its outline's points.
 function middleOf(multipolygon) {
   const points = multipolygon.coordinates.flatMap((polygon) => polygon[0]);
   const lng = points.reduce((sum, [x]) => sum + x, 0) / points.length;

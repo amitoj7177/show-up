@@ -2,13 +2,10 @@
 
 import { useEffect, useState, type ReactNode } from "react";
 
-// The size of a real iPhone 15 Pro Max screen, in points.
 const SCREEN_W = 430;
 const SCREEN_H = 932;
 const BEZEL = 14;
 
-// Shows the app inside a realistic phone on a computer, and full screen on a real phone.
-// The whole phone scales down to fit smaller laptop screens, so its proportions never change.
 export function PhoneFrame({ children }: { children: ReactNode }) {
   const [time, setTime] = useState("9:41");
 
@@ -65,7 +62,6 @@ export function PhoneFrame({ children }: { children: ReactNode }) {
   );
 }
 
-// Scrolls the phone screen back to the top (the page itself doesn't scroll on a computer).
 export function scrollPhoneToTop() {
   document.getElementById("phone-scroll")?.scrollTo(0, 0);
   window.scrollTo(0, 0);

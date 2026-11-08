@@ -1,6 +1,3 @@
-// Every successful response looks like { data, source, fetchedAt }.
-// Every failure looks like { error: { code, message } }, with a message safe to show on screen.
-
 export class HttpError extends Error {
   constructor(
     public status: number,
@@ -17,7 +14,6 @@ export function ok(data: unknown, source: "live" | "snapshot" = "live", status =
 
 type Handler = (request: Request) => Promise<Response>;
 
-// Wraps a route so a crash becomes a friendly message, never a stack trace.
 export function route(handler: Handler): Handler {
   return async (request) => {
     try {

@@ -8,7 +8,6 @@ import type { MascotMood } from "@/lib/rules";
 const SCENE_W = 64;
 const SCENE_H = 62;
 
-// A filled pixel oval, for clouds, hills and treetops.
 function oval(context: CanvasRenderingContext2D, cx: number, cy: number, rx: number, ry: number, colour: string) {
   context.fillStyle = colour;
   for (let y = Math.floor(cy - ry); y <= Math.ceil(cy + ry); y += 1) {
@@ -25,7 +24,6 @@ function box(context: CanvasRenderingContext2D, x: number, y: number, w: number,
   context.fillRect(x, y, w, h);
 }
 
-// The friendly outdoor scene from the Promise Pals design, with the character waving.
 export function PixelScene({ code, mood, label, bubble }: { code: string; mood: MascotMood; label: string; bubble?: string }) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const [frame, setFrame] = useState(1);

@@ -1,7 +1,3 @@
-// Easy reading settings: bigger text, stronger contrast and less motion.
-// Saved on this device only (they're a personal preference, not account data), and applied to <html>
-// as data attributes that globals.css reads.
-
 export const READING_OPTIONS = [
   { key: "text", value: "large", label: "Bigger text", hint: "Makes all the words larger." },
   { key: "contrast", value: "high", label: "Stronger contrast", hint: "Darker text and plain white backgrounds." },
@@ -37,10 +33,8 @@ export function applyReading(settings: ReadingSettings): void {
   }
 }
 
-// Runs before the page draws, so someone who wants bigger text never sees the small version first.
 export const APPLY_BEFORE_PAINT = `try{var s=JSON.parse(localStorage.getItem("${STORAGE_KEY}")||"{}");for(var k in s){if(s[k])document.documentElement.dataset[k]=s[k]}}catch(e){}`;
 
-// True if the device asks for less motion, or the person turned on "Less motion" here.
 export function wantsLessMotion(): boolean {
   if (typeof window === "undefined") return false;
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches || document.documentElement.dataset.motion === "reduced";

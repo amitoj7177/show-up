@@ -3,21 +3,15 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { wantsLessMotion } from "@/lib/reading";
 
-// Scroll effects for the landing page, in the style of Apple's product pages.
-// Everything here switches off for people who've asked their device for less motion.
-
 function prefersLessMotion(): boolean {
   return wantsLessMotion();
 }
 
-// The thing that scrolls: the phone screen on a computer, or the page itself on a real phone.
 function scroller(): HTMLElement | Window {
   const phone = document.getElementById("phone-scroll");
   return phone && phone.scrollHeight > phone.clientHeight ? phone : window;
 }
 
-// How far the page has scrolled, updated smoothly once per frame.
-// It listens to both the page and the phone screen, so it works on computers and real phones.
 export function useScrollY(): number {
   const [y, setY] = useState(0);
   useEffect(() => {
@@ -45,13 +39,11 @@ export function useScrollY(): number {
   return y;
 }
 
-// The bottom edge of what you can see: the phone screen on a computer, or the window on a phone.
 function viewBottom(): number {
   const target = scroller();
   return target instanceof Window ? window.innerHeight : target.getBoundingClientRect().bottom;
 }
 
-// True once the element has scrolled into view.
 function useSeen<T extends Element>(threshold = 0.2) {
   const ref = useRef<T>(null);
   const [seen, setSeen] = useState(false);
@@ -75,8 +67,6 @@ function useSeen<T extends Element>(threshold = 0.2) {
   return { ref, seen };
 }
 
-// Fades and lifts its content into place when it scrolls into view.
-// It checks on every scroll, so jumping past it (or following a link) still reveals it.
 export function Reveal({ children, delay = 0, className = "" }: { children: ReactNode; delay?: number; className?: string }) {
   const ref = useRef<HTMLDivElement>(null);
   const [seen, setSeen] = useState(false);
@@ -92,7 +82,6 @@ export function Reveal({ children, delay = 0, className = "" }: { children: Reac
   );
 }
 
-// Counts a number up from zero when it scrolls into view, like "50%" or "138 trials".
 export function CountUp({ text, className = "" }: { text: string; className?: string }) {
   const { ref, seen } = useSeen<HTMLParagraphElement>(0.5);
   const match = text.match(/^(\D*)(\d+)(.*)$/);
@@ -115,7 +104,7 @@ export function CountUp({ text, className = "" }: { text: string; className?: st
     frame = requestAnimationFrame(step);
     return () => cancelAnimationFrame(frame);
     // Only when it first scrolls into view.
-  }, [seen]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [seen]);
 
   return (
     <p ref={ref} className={className}>
@@ -125,8 +114,6 @@ export function CountUp({ text, className = "" }: { text: string; className?: st
   );
 }
 
-// How far through a tall section the reader is, from 0 at its top to 1 at its bottom.
-// Used to change the pinned character's mood as you scroll.
 export function useSectionProgress<T extends HTMLElement>(scrollY: number) {
   const ref = useRef<T>(null);
   const [progress, setProgress] = useState(0);
@@ -136,7 +123,7 @@ export function useSectionProgress<T extends HTMLElement>(scrollY: number) {
     const target = scroller();
     const viewTop = target instanceof Window ? 0 : target.getBoundingClientRect().top;
     const viewHeight = target instanceof Window ? window.innerHeight : target.clientHeight;
-    // On a computer the phone is shrunk to fit the screen, so screen distances are scaled. Undo that.
+
     const scale = target instanceof Window ? 1 : target.getBoundingClientRect().height / target.clientHeight || 1;
     const travelled = (viewTop - element.getBoundingClientRect().top) / scale;
     const distance = element.offsetHeight - viewHeight;

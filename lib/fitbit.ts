@@ -3,10 +3,6 @@ import { query } from "./db";
 import { HttpError } from "./http";
 import { todayIn } from "./rules";
 
-// Fitbit data now comes through Google's Health API (the old Fitbit Web API was switched off on Nov 2, 2026).
-// People connect once. When they check in, we read today's steps from their Fitbit as automatic proof.
-// Docs: https://developers.google.com/health
-
 const SCOPE = "https://www.googleapis.com/auth/googlehealth.activity_and_fitness.readonly";
 const API = "https://health.googleapis.com/v4";
 
@@ -25,7 +21,6 @@ export function callbackUrl(request: Request): string {
   return `${new URL(request.url).origin}/api/fitbit/callback`;
 }
 
-// Step 1: the address of Google's "Allow Promise Pals to see your activity?" page.
 export async function startConnecting(accountId: string, request: Request): Promise<string> {
   const { clientId } = settings();
   const state = randomBytes(24).toString("base64url");
@@ -43,7 +38,6 @@ export async function startConnecting(accountId: string, request: Request): Prom
   return `https://accounts.google.com/o/oauth2/v2/auth?${params}`;
 }
 
-// Step 2: Google sends the person back with a one-time code. We swap it for a long-lived refresh token.
 export async function finishConnecting(state: string, code: string, request: Request): Promise<void> {
   const { clientId, clientSecret } = settings();
   const [row] = await query<{ account_id: string }>(
@@ -83,8 +77,6 @@ async function accessToken(refreshToken: string): Promise<string | null> {
   return response.ok ? body.access_token : null;
 }
 
-// Adds up every number called "count" in Google's answer. Written to be forgiving,
-// because Google's docs don't show the exact shape of a steps data point.
 function totalCount(value: unknown): number {
   if (Array.isArray(value)) return value.reduce((sum: number, item) => sum + totalCount(item), 0);
   if (value && typeof value === "object") {
@@ -96,7 +88,6 @@ function totalCount(value: unknown): number {
   return 0;
 }
 
-// Calgary's midnight today, as a time in UTC.
 function calgaryMidnight(now: Date): Date {
   const offsetHours = Number(
     new Intl.DateTimeFormat("en-US", { timeZone: "America/Edmonton", timeZoneName: "shortOffset" }).formatToParts(now).find((part) => part.type === "timeZoneName")?.value.replace("GMT", "") || -7,
@@ -106,7 +97,6 @@ function calgaryMidnight(now: Date): Date {
   return start;
 }
 
-// Asks Google for one type of data. Returns the data points, or null if Google didn't answer.
 async function readData(token: string, dataType: string, filter: string): Promise<unknown[] | null> {
   try {
     const response = await fetch(`${API}/users/me/dataTypes/${dataType}/dataPoints?${new URLSearchParams({ filter, pageSize: "1440" })}`, {
@@ -126,8 +116,6 @@ async function readData(token: string, dataType: string, filter: string): Promis
 
 type Workout = { exercise?: { displayName?: string; activeDuration?: string } };
 
-// Today's workouts in plain words, like "Strength training 13 min, Walk 15 min".
-// Fitbit spots most workouts by itself, so a "bench press every day" goal gets proof too.
 export function describeWorkouts(points: unknown[]): string | null {
   const minutes = new Map<string, number>();
   for (const point of points as Workout[]) {
@@ -139,8 +127,6 @@ export function describeWorkouts(points: unknown[]): string | null {
   return parts.length ? parts.join(", ") : null;
 }
 
-// Active Zone Minutes: minutes your heart rate was up. Fitbit counts these from heart rate, not steps,
-// so they prove a workout in a wheelchair, on a bike or on a mat just as well as a walk.
 export function activeMinutes(points: unknown[]): number {
   return (points as { activeZoneMinutes?: { activeZoneMinutes?: string | number } }[]).reduce(
     (sum, point) => sum + (Number(point.activeZoneMinutes?.activeZoneMinutes) || 0),
@@ -150,7 +136,6 @@ export function activeMinutes(points: unknown[]): number {
 
 export type FitbitDay = { steps: number | null; workout: string | null; activeMinutes: number | null };
 
-// Today's steps and workouts from the person's Fitbit, or null if they haven't connected one.
 export async function fitbitToday(accountId: string, now = new Date()): Promise<FitbitDay | null> {
   if (!fitbitAvailable()) return null;
   const [link] = await query<{ refresh_token: string }>("SELECT refresh_token FROM health_links WHERE account_id = $1", [accountId]);
@@ -166,7 +151,7 @@ export async function fitbitToday(accountId: string, now = new Date()): Promise<
       "active-zone-minutes",
       `active_zone_minutes.interval.start_time >= "${start}" AND active_zone_minutes.interval.start_time < "${now.toISOString()}"`,
     ),
-    // Workouts can only be filtered by the date on the person's own clock.
+
     readData(token, "exercise", `exercise.interval.civil_start_time >= "${todayIn(now)}"`),
   ]);
   return {

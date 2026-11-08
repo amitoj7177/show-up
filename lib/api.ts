@@ -1,4 +1,3 @@
-// How the screens talk to the backend, and where the phone keeps its secret token.
 const TOKEN_KEY = "show-up-token";
 
 export function getToken(): string | null {

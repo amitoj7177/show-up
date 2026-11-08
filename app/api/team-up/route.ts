@@ -4,7 +4,6 @@ import { HttpError, ok, readBody, route } from "@/lib/http";
 import { askToTeamUp } from "@/lib/nearby";
 import { buildToday } from "@/lib/state";
 
-// "Ask to team up" with someone on the Nearby board. They see it within a few seconds.
 export const POST = route(async (request) => {
   const user = await requireUser(request);
   const { userId } = await readBody(request);

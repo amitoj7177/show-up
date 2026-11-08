@@ -5,7 +5,6 @@ import { pairWithDemoPartner } from "@/lib/matching";
 import { canOfferNewMatch, summaryDue, type CheckinStatus, type DayCheckins } from "@/lib/rules";
 import { buildToday, endPair, pairToday, partnerIdOf, requirePair } from "@/lib/state";
 
-// "Find me a new partner". Allowed after 2 silent days, or at the end of a week.
 export const POST = route(async (request) => {
   const user = await requireUser(request);
   const pair = await requirePair(user);
@@ -23,7 +22,6 @@ export const POST = route(async (request) => {
     throw new HttpError(409, "too_soon", "You can get a new match after 2 silent days, or at the end of the week.");
   }
 
-  // A silent partner waits on the side until they come back, so they can't strand someone else.
   await endPair(pair, user.id, {
     reason: "new_match",
     myNextStatus: "waiting",

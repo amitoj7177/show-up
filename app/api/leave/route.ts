@@ -3,7 +3,6 @@ import { query, type UserRow } from "@/lib/db";
 import { ok, route } from "@/lib/http";
 import { buildToday, endPair, findActivePair } from "@/lib/state";
 
-// Leave at any time, with no questions asked. Your partner is sent to find someone new.
 export const POST = route(async (request) => {
   const user = await requireUser(request);
   const pair = await findActivePair(user.id);

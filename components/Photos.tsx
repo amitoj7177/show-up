@@ -3,8 +3,6 @@
 import { useEffect, useRef, useState } from "react";
 import { getToken } from "@/lib/api";
 
-// Shrinks a photo on the phone before sending it: at most 720 pixels wide, as a JPEG.
-// This keeps uploads small and removes location data, which the original file can contain.
 export async function shrinkPhoto(file: File): Promise<string> {
   const image = await createImageBitmap(file);
   const scale = Math.min(1, 720 / Math.max(image.width, image.height));
@@ -15,7 +13,6 @@ export async function shrinkPhoto(file: File): Promise<string> {
   return canvas.toDataURL("image/jpeg", 0.72);
 }
 
-// A private photo. It's fetched with your login, so only you and your partner can load it.
 export function PrivatePhoto({ kind, id, alt, className = "" }: { kind: "profile" | "proof"; id: string; alt: string; className?: string }) {
   const [url, setUrl] = useState<string | null>(null);
 
@@ -40,7 +37,6 @@ export function PrivatePhoto({ kind, id, alt, className = "" }: { kind: "profile
   return <img src={url} alt={alt} className={`object-cover ${className}`} />;
 }
 
-// A button that opens the camera on phones, or the file picker on laptops.
 export function PhotoButton({ label, className, onPhoto, disabled }: { label: string; className: string; onPhoto: (dataUrl: string) => void; disabled?: boolean }) {
   const input = useRef<HTMLInputElement>(null);
   return (

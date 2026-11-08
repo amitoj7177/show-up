@@ -4,7 +4,6 @@ import { query, type UserRow } from "@/lib/db";
 import { HttpError, ok, readBody, route } from "@/lib/http";
 import { buildToday, requireUnlocked } from "@/lib/state";
 
-// Change your character or check-in time, or turn on gentle mode, where it never gets angry.
 export const POST = route(async (request) => {
   const user = await requireUser(request);
   const { gentleMascot, checkInTime, avatar } = await readBody(request);

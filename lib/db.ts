@@ -1,6 +1,5 @@
 import { Pool, types, type PoolClient } from "pg";
 
-// Keep dates as plain "YYYY-MM-DD" text so time zones can't shift them.
 types.setTypeParser(1082, (value) => value);
 
 let pool: Pool | undefined;
@@ -22,7 +21,6 @@ export async function query<T extends object>(text: string, params: unknown[] = 
   return result.rows;
 }
 
-// Runs several steps as one: either all of them happen, or none do.
 export async function transaction<T>(steps: (client: PoolClient) => Promise<T>): Promise<T> {
   const client = await getPool().connect();
   try {

@@ -3,7 +3,6 @@ import { query } from "@/lib/db";
 import { HttpError, ok, route } from "@/lib/http";
 import { buildToday, pairToday, partnerIdOf, requirePair } from "@/lib/state";
 
-// "I believe you": confirm your partner's check-in for today.
 export const POST = route(async (request) => {
   const user = await requireUser(request);
   const pair = await requirePair(user);

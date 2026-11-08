@@ -1,12 +1,8 @@
 import { GoogleGenAI } from "@google/genai";
 import { HttpError } from "./http";
 
-// Gemini checks photos and short personal text before a partner can see them.
-// If Gemini is unavailable, nothing is shown to the partner: we ask the person to try again instead.
-
 const MAX_PHOTO_BYTES = 400_000;
 
-// The main model first. If Google says it's busy or it's slow, try a backup model once.
 export const GEMINI_MODELS = [process.env.GEMINI_MODEL || "gemini-3.5-flash-lite", "gemini-3.1-flash-lite"];
 
 export async function askGeminiJson(contents: unknown, instructions: string, schema: object, timeoutMs = 9000) {
@@ -31,7 +27,6 @@ export async function askGeminiJson(contents: unknown, instructions: string, sch
 
 const ask = askGeminiJson;
 
-// Accepts only a small JPEG made by our photo picker, and returns the bare base64 data.
 export function photoData(photo: unknown): string {
   const match = typeof photo === "string" ? photo.match(/^data:image\/jpeg;base64,([A-Za-z0-9+/=]+)$/) : null;
   if (!match) throw new HttpError(400, "bad_photo", "That photo didn't work. Please try another one.");
@@ -45,7 +40,6 @@ Return JSON:
 - safe: false if the photo has nudity, sexual content, violence, self-harm, weapons, drugs, or readable personal details such as an ID, address, phone number or screen with private messages. Otherwise true.
 - description: a short, kind, neutral description of the activity shown, at most 60 characters, like "A walk on a snowy path". No guesses about the person's body, weight or health.`;
 
-// For proof photos: is it safe, and what does it show?
 export async function checkProofPhoto(base64: string): Promise<{ description: string }> {
   const answer = await ask(
     [{ role: "user", parts: [{ inlineData: { mimeType: "image/jpeg", data: base64 } }, { text: "Check this proof photo." }] }],
@@ -59,7 +53,6 @@ export async function checkProofPhoto(base64: string): Promise<{ description: st
   return { description: String(answer.description ?? "").slice(0, 60) };
 }
 
-// For profile photos: safe, and a reasonable picture of a person or something personal like a pet.
 export async function checkProfilePhoto(base64: string): Promise<void> {
   const answer = await ask(
     [{ role: "user", parts: [{ inlineData: { mimeType: "image/jpeg", data: base64 } }, { text: "Check this profile photo." }] }],
@@ -72,8 +65,6 @@ export async function checkProfilePhoto(base64: string): Promise<void> {
   if (!answer.safe) throw new HttpError(400, "photo_not_allowed", "That photo can't be used. Please try a different one.");
 }
 
-// For the "why this matters to me" line: kind, safe, and free of contact details.
-// Returns null if Gemini is unavailable, so the line is left out rather than shown unchecked.
 export async function checkWhy(text: string): Promise<string | null> {
   const answer = await ask(
     `<why>${text}</why>`,
@@ -89,7 +80,6 @@ Return JSON:
   return String(answer.cleaned ?? text).slice(0, 140);
 }
 
-// First names only: letters, spaces, hyphens and apostrophes.
 export function cleanFirstName(name: unknown): string {
   const value = typeof name === "string" ? name.trim() : "";
   if (!/^[\p{L}][\p{L}' -]{0,29}$/u.test(value)) {

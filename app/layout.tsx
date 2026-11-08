@@ -3,7 +3,6 @@ import { PhoneFrame } from "@/components/PhoneFrame";
 import { APPLY_BEFORE_PAINT } from "@/lib/reading";
 import "./globals.css";
 
-
 export const metadata: Metadata = {
   title: "Promise Pals",
   description: "Promise Pals pairs Calgarians who struggle to stick to their health goals with a nearby partner, and proves every check-in with a photo or their Fitbit. Built for people step counters leave out.",

@@ -4,7 +4,6 @@ import { DEFAULT_AVATAR } from "@/lib/avatar";
 import { query } from "@/lib/db";
 import { HttpError, ok, readBody, route } from "@/lib/http";
 
-// Log in on any device.
 export const POST = route(async (request) => {
   const { email, password } = await readBody(request);
   if (typeof email !== "string" || typeof password !== "string" || !email || !password) {

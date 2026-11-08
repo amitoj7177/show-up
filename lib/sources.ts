@@ -1,4 +1,3 @@
-// Every outside service the app uses. The UI and README both read from this list.
 export const SOURCES = [
   {
     name: "Google Gemini API",

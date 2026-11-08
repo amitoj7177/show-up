@@ -1,7 +1,6 @@
 import { finishConnecting } from "@/lib/fitbit";
 import { HttpError } from "@/lib/http";
 
-// Google sends the person back here after they allow (or decline) access.
 export async function GET(request: Request) {
   const params = new URL(request.url).searchParams;
   const home = new URL("/", request.url);

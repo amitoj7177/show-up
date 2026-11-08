@@ -4,7 +4,6 @@ import { HttpError, ok, readBody, route } from "@/lib/http";
 import { REPORT_REASONS } from "@/lib/rules";
 import { buildToday, endPair, requirePair } from "@/lib/state";
 
-// Report your partner. The pairing ends straight away, and you never get matched again.
 export const POST = route(async (request) => {
   const user = await requireUser(request);
   const { reason } = await readBody(request);

@@ -1,7 +1,6 @@
 import { query } from "@/lib/db";
 import { ok, route } from "@/lib/http";
 
-// Real results for the pitch. These count real people only, never demo data.
 export const GET = route(async () => {
   const [row] = await query<Record<string, string>>(`
     SELECT

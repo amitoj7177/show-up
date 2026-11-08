@@ -11,7 +11,6 @@ import { pairWithDemoPartner, tryMatch } from "@/lib/matching";
 import { extraLocked, GOAL_TYPES, makeNickname, SUPPORT_LINKS, type GoalType } from "@/lib/rules";
 import { buildToday } from "@/lib/state";
 
-// Make a promise. Nothing is saved unless the goal passes the safety check.
 export const POST = route(async (request) => {
   const body = await readBody(request);
   const account = await findAccount(request);
@@ -28,7 +27,6 @@ export const POST = route(async (request) => {
     throw new HttpError(400, "bad_time", "Please pick a check-in time.");
   }
 
-  // An optional clinic or campus code. A wrong code is an error, so nobody joins the wrong group by mistake.
   const groupCode = typeof body.groupCode === "string" ? body.groupCode.trim().toUpperCase() : "";
   const group = groupCode ? await findGroupByCode(groupCode) : undefined;
   if (groupCode && !group) {
@@ -53,7 +51,6 @@ export const POST = route(async (request) => {
     });
   }
 
-  // People with an account keep their login. Demo people get a token of their own.
   const token = account ? (tokenFrom(request) as string) : newToken();
   const isDemo = body.demo === true;
   let avatar = isAvatarCode(body.avatar) ? body.avatar : (account?.avatar ?? DEFAULT_AVATAR);

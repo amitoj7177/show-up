@@ -4,7 +4,6 @@ import type { Today } from "@/lib/types";
 import { PixelAvatar } from "./PixelAvatar";
 import { PrivatePhoto } from "./Photos";
 
-// Who your partner really is: photo, first name, Calgary community and why their goal matters.
 export function PartnerCard({ partner }: { partner: NonNullable<Today["partner"]> }) {
   return (
     <div className="flex items-start gap-3">

@@ -5,7 +5,6 @@ import { query } from "@/lib/db";
 import { HttpError, ok, readBody, route } from "@/lib/http";
 import { PASSWORD_RULE, strongEnough } from "@/lib/rules";
 
-// Create an account. The email and password go to Auth0, and we keep neither.
 export const POST = route(async (request) => {
   const { email, password } = await readBody(request);
   if (typeof email !== "string" || !/^\S+@\S+\.\S+$/.test(email)) {

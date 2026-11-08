@@ -6,8 +6,6 @@ import { ALL_MOODS, EXTRA_UNLOCKS, extraLocked, type MascotMood } from "@/lib/ru
 import { PixelAvatar } from "./PixelAvatar";
 import { SECONDARY_BUTTON } from "./Shared";
 
-// The customize menu from the Promise Pals design: one row per choice, with left and right arrows.
-// Some extras unlock with points. The arrows skip the locked ones, unless you already wear it.
 export function Customizer({
   code,
   onChange,

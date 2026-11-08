@@ -5,9 +5,6 @@ import { query, transaction } from "./db";
 import { HttpError } from "./http";
 import { GOAL_TYPE_LABELS, moveTag, todayIn, type GoalType } from "./rules";
 
-// The Nearby board. Instead of waiting blind, you see real people near you who are looking right now,
-// ask one to team up, and they say yes or not now. Only people who are looking can see each other.
-
 export type NearbyPerson = {
   userId: string;
   firstName: string;
@@ -43,7 +40,6 @@ type Row = {
 const PERSON_COLUMNS = `u.id, a.first_name, a.id AS account_id, a.photo IS NOT NULL AS has_photo, u.avatar, a.community, a.moves,
   u.short_goal, u.goal_text, u.goal_type, u.why_it_matters, u.last_seen > now() - interval '1 minute' AS active_now`;
 
-// Straight-line distance between two Calgary communities, from the City's open data. Never anyone's exact location.
 function distanceKm(codeA: string | null, codeB: string | null): number | null {
   const a = findCommunity(codeA);
   const b = findCommunity(codeB);
@@ -71,8 +67,6 @@ function describe(row: Row, myCommunity: string | null, askedByMe = false): Near
   };
 }
 
-// The people you're allowed to see: looking now, a real profile, same clinic (or none), seen in the last 3 days,
-// never your partner before, and they haven't said "not now" to you.
 const VISIBLE = `
   FROM users u JOIN accounts a ON a.user_id = u.id
  WHERE u.status = 'waiting' AND u.is_demo = false AND u.id <> $1
@@ -82,7 +76,6 @@ const VISIBLE = `
    AND NOT EXISTS (SELECT 1 FROM pairs p WHERE (p.user_a = $1 AND p.user_b = u.id) OR (p.user_a = u.id AND p.user_b = $1))
    AND NOT EXISTS (SELECT 1 FROM team_requests r WHERE r.from_user = $1 AND r.to_user = u.id AND r.accepted = false)`;
 
-// People who asked you show at the top as a request, not again in the list.
 const NOT_ASKED_ME = `AND NOT EXISTS (SELECT 1 FROM team_requests r WHERE r.from_user = u.id AND r.to_user = $1 AND r.answered_at IS NULL)`;
 
 async function myProfile(userId: string): Promise<{ community: string | null; moves: string | null }> {
@@ -90,8 +83,6 @@ async function myProfile(userId: string): Promise<{ community: string | null; mo
   return { community: row?.community ?? null, moves: row?.moves ?? null };
 }
 
-// Everyone near you who is looking. People who move the way you do come first (if you said),
-// then the closest, then the same kind of goal.
 export async function nearbyFor(user: { id: string; group_id: string | null; goal_type: string }): Promise<{ people: NearbyPerson[]; requests: TeamRequest[] }> {
   const { community, moves } = await myProfile(user.id);
   const rows = await query<Row & { asked: boolean }>(
@@ -124,7 +115,6 @@ export async function nearbyFor(user: { id: string; group_id: string | null; goa
   return { people, requests: asks.map((row) => ({ requestId: row.request_id, from: describe(row, community) })) };
 }
 
-// Whether you can see someone's profile photo on the board.
 export async function canSeeOnBoard(viewer: { id: string; group_id: string | null }, ownerUserId: string): Promise<boolean> {
   const [visible] = await query(`SELECT 1 ${VISIBLE} AND u.id = $3`, [viewer.id, viewer.group_id, ownerUserId]);
   if (visible) return true;
@@ -132,12 +122,11 @@ export async function canSeeOnBoard(viewer: { id: string; group_id: string | nul
   return Boolean(asked);
 }
 
-// "Ask to team up".
 export async function askToTeamUp(user: { id: string; group_id: string | null; status: string }, toUserId: string): Promise<void> {
   if (user.status !== "waiting") throw new HttpError(409, "not_looking", "You already have a partner.");
   const [visible] = await query(`SELECT 1 ${VISIBLE} AND u.id = $3`, [user.id, user.group_id, toUserId]);
   if (!visible) throw new HttpError(404, "gone", "That person isn't looking any more.");
-  // If they already asked you, saying "team up" back is a yes.
+
   const [theirAsk] = await query<{ id: string }>("SELECT id FROM team_requests WHERE from_user = $1 AND to_user = $2 AND answered_at IS NULL", [toUserId, user.id]);
   if (theirAsk) return answerRequest(user.id, theirAsk.id, true);
   await query(
@@ -147,18 +136,16 @@ export async function askToTeamUp(user: { id: string; group_id: string | null; s
   );
 }
 
-// Pairs two people. Used by the board, invites and the automatic matching.
 export async function makePair(client: PoolClient, userA: string, userB: string): Promise<void> {
   await client.query("INSERT INTO pairs (user_a, user_b, started_on) VALUES ($1, $2, $3)", [userA, userB, todayIn(new Date())]);
   await client.query("UPDATE users SET status = 'paired', notice = NULL WHERE id = ANY($1::uuid[])", [[userA, userB]]);
-  // Any other open asks to or from either person are closed.
+
   await client.query(
     "UPDATE team_requests SET answered_at = now() WHERE answered_at IS NULL AND (from_user = ANY($1::uuid[]) OR to_user = ANY($1::uuid[]))",
     [[userA, userB]],
   );
 }
 
-// "Team up" or "Not now". Saying yes pairs you, if you're both still looking.
 export async function answerRequest(userId: string, requestId: string, accept: boolean): Promise<void> {
   await transaction(async (client) => {
     const { rows } = await client.query<{ from_user: string }>(
@@ -170,7 +157,7 @@ export async function answerRequest(userId: string, requestId: string, accept: b
       await client.query("UPDATE team_requests SET answered_at = now(), accepted = false WHERE id = $1", [requestId]);
       return;
     }
-    // Lock both people, so nobody ends up in two pairs.
+
     const { rows: people } = await client.query<{ id: string; status: string }>(
       "SELECT id, status FROM users WHERE id = ANY($1::uuid[]) ORDER BY id FOR UPDATE",
       [[userId, rows[0].from_user]],
@@ -184,7 +171,6 @@ export async function answerRequest(userId: string, requestId: string, accept: b
   });
 }
 
-// An invite link for someone you know. Whoever makes a promise through it is paired with you.
 export async function inviteCodeFor(userId: string): Promise<string> {
   const [row] = await query<{ invite_code: string | null }>("SELECT invite_code FROM users WHERE id = $1", [userId]);
   if (row?.invite_code) return row.invite_code;
@@ -193,7 +179,6 @@ export async function inviteCodeFor(userId: string): Promise<string> {
   return code;
 }
 
-// Who sent an invite, so the invite page can say "Priya invited you".
 export async function inviterName(code: string): Promise<string | null> {
   const [row] = await query<{ first_name: string | null }>(
     "SELECT a.first_name FROM users u JOIN accounts a ON a.user_id = u.id WHERE u.invite_code = $1 AND u.status = 'waiting'",
@@ -202,7 +187,6 @@ export async function inviterName(code: string): Promise<string | null> {
   return row?.first_name ?? null;
 }
 
-// The new person made their promise through an invite: pair them with whoever invited them, if still looking.
 export async function joinByInvite(newUserId: string, code: string): Promise<boolean> {
   return transaction(async (client) => {
     const { rows } = await client.query<{ id: string }>(

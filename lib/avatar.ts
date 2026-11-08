@@ -1,6 +1,3 @@
-// The team's pixel character, moved here from avatar.py so it can be drawn in the app.
-// A character is saved as a short code like "h2-c5-s3-e1-o4-k8-a1", one number per choice.
-// Same grid, same colours, same moods as the original script.
 import type { MascotMood } from "./rules";
 
 export const AVATAR_W = 34;
@@ -13,7 +10,6 @@ const HC = ["#2a2230", "#5a3a1a", "#8d5a2b", "#d9a441", "#ecd28a", "#c0392b", "#
 const OC = ["#3f6fd8", "#e53935", "#43a047", "#fb8c00", "#8e44ad", "#2b2d3a", "#f5f5f5", "#00acc1", "#ffd54f", "#ec407a"];
 const IC = ["#5b3a29", "#2e6fba", "#2f8f5b", "#8a6a2e", "#6b7280", "#8e44ad"];
 
-// The soft background colour behind each mood.
 export const MOOD_BACKGROUND: Record<MascotMood, string> = {
   waiting: "#dfe6f1",
   happy: "#ffe58a",
@@ -30,7 +26,6 @@ export type ChoiceKey = keyof AvatarChoice;
 
 export const DEFAULT_AVATAR = "h0-c0-s1-e0-o1-k0-a0";
 
-// Each choice in the customize menu. The names are also what screen readers announce.
 export const CHOICES: { key: ChoiceKey; letter: string; title: string; kind: "tile" | "swatch"; options: { name: string; colour?: string }[] }[] = [
   { key: "hair", letter: "h", title: "Hair", kind: "tile", options: ["Crop", "Long", "Curly", "Bun", "Buzz"].map((name) => ({ name })) },
   {
@@ -84,13 +79,10 @@ export function randomAvatar(random: () => number = Math.random): string {
   return encodeAvatar(choice);
 }
 
-// The backend only accepts codes that could really have come from the menu.
 export function isAvatarCode(code: unknown): code is string {
   if (typeof code !== "string" || !/^h\d+-c\d+-s\d+-e\d+-o\d+-k\d+-a\d+$/.test(code)) return false;
   return CHOICES.every(({ letter, options }) => Number(code.match(new RegExp(`${letter}(\\d+)`))?.[1]) < options.length);
 }
-
-// --- Drawing -------------------------------------------------------------
 
 type Colour = string | [number, number, number];
 type Pixels = Uint8ClampedArray;
@@ -385,7 +377,7 @@ function drawAll(s: AvatarChoice, m: MascotMood, wave: number) {
   legs(s, skin, sk2, oc, o2);
   torso(s, skin, sk2, oc, o2, o3);
   if (wave) {
-    // Rub out the arm on the right, so it can be drawn raised instead.
+
     for (let y = 31; y < 38; y += 1) for (let x = 22; x < 25; x += 1) px.fill(0, ((y + offsetY) * AVATAR_W + x + offsetX) * 4, ((y + offsetY) * AVATAR_W + x + offsetX) * 4 + 4);
   }
   E(8.5, 38.4, 1.7, 1.7, skin);
@@ -488,7 +480,6 @@ function effects(m: MascotMood) {
   }
 }
 
-// Lays one layer on top of another, the standard way images are stacked.
 function stack(under: Pixels, over: Pixels): Pixels {
   const result = blank();
   for (let i = 0; i < result.length; i += 4) {
@@ -502,8 +493,6 @@ function stack(under: Pixels, over: Pixels): Pixels {
   return result;
 }
 
-// Returns the character as raw pixels: 34 wide, 52 tall, with an outline and a shadow.
-// Wave is 0 for standing still, or 1 and 2 for the two frames of a raised arm.
 export function drawAvatar(code: string, mood: MascotMood, wave = 0): Pixels {
   const choice = parseAvatar(code);
 
