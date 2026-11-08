@@ -18,6 +18,29 @@ const ICONS = {
   star: [{ colour: "#ffd54f", rows: [".........", "...x.....", "...x.....", ".xxxxx...", "..xxx....", "..x.x...."] }],
   heart: [{ colour: "#ec407a", rows: ["........", ".x.x....", "xxxxx...", "xxxxx...", ".xxx....", "..x....."] }],
   badge: [{ colour: "#fb8c00", rows: [".........", "...x.....", "...x.....", ".xxxxx...", "..xxx....", "..x.x...."] }],
+  sprout: [
+    { colour: "#43a047", rows: ["........", ".xx..xx.", "xxx..xxx", ".xxxxxx.", "...xx...", "...xx..."] },
+    { colour: "#8d5a2b", rows: ["........", "........", "........", "........", "........", "........", "..xxxx..", ".xxxxxx."] },
+  ],
+  medal: [
+    { colour: "#3f6fd8", rows: ["x.....x.", ".x...x..", "..x.x...", "........"] },
+    { colour: "#ffd54f", rows: ["........", "........", "........", "..xxx...", ".xxxxx..", ".xxxxx..", ".xxxxx..", "..xxx..."] },
+  ],
+  bolt: [{ colour: "#fbc02d", rows: ["....xx..", "...xx...", "..xx....", ".xxxxx..", "...xx...", "..xx....", ".xx.....", "x......."] }],
+  trophy: [
+    { colour: "#ffd54f", rows: ["xxxxxxx.", "xxxxxxx.", ".xxxxx..", "..xxx...", "...x....", "...x....", "........", "........"] },
+    { colour: "#8d5a2b", rows: ["........", "........", "........", "........", "........", "........", "..xxx...", ".xxxxx.."] },
+  ],
+};
+
+// A different reward icon for each badge.
+const BADGE_ICONS: Record<string, keyof typeof ICONS> = {
+  first: "sprout",
+  three: "fire",
+  week: "star",
+  "two-weeks": "medal",
+  habit: "bolt",
+  month: "trophy",
 };
 
 function PixelIcon({ name, size = 24 }: { name: keyof typeof ICONS; size?: number }) {
@@ -175,7 +198,9 @@ export function ProgressScreen({ today, config, act, sample }: { today: Today; c
             const got = stats.best >= badge.days;
             return (
               <li key={badge.id} className={`border border-line rounded-2xl bg-white p-2 text-center leading-snug ${got ? "" : "border-dashed bg-paper text-muted"}`}>
-                <PixelIcon name="badge" size={28} />
+                <span className={`block ${got ? "" : "opacity-50 grayscale"}`}>
+                  <PixelIcon name={BADGE_ICONS[badge.id] ?? "badge"} size={32} />
+                </span>
                 {badge.name}
                 <span className="sr-only">{got ? ", earned" : ", not yet"}</span>
               </li>

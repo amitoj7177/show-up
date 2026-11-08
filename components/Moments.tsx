@@ -51,7 +51,7 @@ function Character({ code, mood, name, label, className = "" }: { code: string; 
 }
 
 // While we look for a partner. Real people get the Nearby board; without a profile, it's a simple wait.
-export function FindingScreen({ today, act, onCancel }: { today: Today; act: Act; onCancel: () => void }) {
+export function FindingScreen({ today, act, onCancel, demo = false }: { today: Today; act: Act; onCancel: () => void; demo?: boolean }) {
   if (!today.nearby) return <BlindWait today={today} onCancel={onCancel} />;
   const { people, requests } = today.nearby;
   return (
@@ -103,9 +103,9 @@ export function FindingScreen({ today, act, onCancel }: { today: Today; act: Act
         </div>
       </div>
 
-      <InviteCard />
+      {!demo && <InviteCard />}
       <button type="button" className={QUIET_BUTTON} onClick={onCancel}>
-        Stop looking
+        {demo ? "Skip to the Today screen" : "Stop looking"}
       </button>
     </div>
   );

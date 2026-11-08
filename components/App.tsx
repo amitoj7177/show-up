@@ -6,11 +6,12 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { api, ApiError, clearToken, getToken } from "@/lib/api";
 import { DEMO_AVATAR, demoToday } from "@/lib/demo";
 import { BADGES, MASCOT_MOODS, MESSAGES, NOT_MEDICAL_CARE, PRIVACY_LINE, REPORT_REASONS, SUPPORT_LINKS, TALK, type MascotMood } from "@/lib/rules";
+import type { NearbyPerson } from "@/lib/nearby";
 import type { Act, Config, Today } from "@/lib/types";
 import { FindingScreen, PartnerFoundScreen, useLinePicker } from "./Moments";
 import { Landing } from "./Landing";
 import { PromiseScreen, type PromiseStart } from "./PromiseScreen";
-import { Card, ErrorNote, PRIMARY_BUTTON, QUIET_BUTTON, SECONDARY_BUTTON, Wordmark } from "./Shared";
+import { Card, DemoLabel, ErrorNote, PRIMARY_BUTTON, QUIET_BUTTON, SECONDARY_BUTTON, Wordmark } from "./Shared";
 import { TodayScreen } from "./TodayScreen";
 
 const REFRESH_EVERY_MS = 3000;
@@ -240,7 +241,28 @@ const DEMO_HISTORY = {
 };
 
 // The ?demo=1 tour. Everything happens on the phone, so it works even with no internet.
+// Sample people for the demo board. Clearly labelled as samples on screen.
+function demoPeople(partner: NonNullable<Today["partner"]>): NearbyPerson[] {
+  const person = (fields: Partial<NearbyPerson> & Pick<NearbyPerson, "userId" | "firstName" | "avatar" | "goal">): NearbyPerson => ({
+    photoId: null,
+    communityName: null,
+    moveTag: null,
+    km: null,
+    goalTypeLabel: "Recovery or physio",
+    whyItMatters: null,
+    activeNow: false,
+    askedByMe: false,
+    ...fields,
+  });
+  return [
+    person({ userId: "sample-1", firstName: partner.nickname, avatar: partner.avatar, goal: partner.goal ?? "Take a 10-minute walk", communityName: partner.communityName ?? "Hillhurst", km: 2, activeNow: true, whyItMatters: partner.whyItMatters ?? null }),
+    person({ userId: "sample-2", firstName: "Maya", avatar: "h1-c2-s3-e2-o2-k7-a1", goal: "Wheel 15 minutes around my block", communityName: "Bridgeland/Riverside", km: 4, moveTag: "Wheelchair user", whyItMatters: "Getting outside clears my head." }),
+    person({ userId: "sample-3", firstName: "Priya", avatar: "h3-c3-s1-e2-o0-k9-a0", goal: "Do my knee physio stretches daily", communityName: "Sunalta", km: 6 }),
+  ];
+}
+
 function DemoApp() {
+  const [stage, setStage] = useState<"board" | "found" | "today">("board");
   const [mood, setMood] = useState<MascotMood>("mad");
   const [messageSent, setMessageSent] = useState(false);
   const [gentle, setGentle] = useState(false);
@@ -274,6 +296,35 @@ function DemoApp() {
       if (values.avatar) setAvatar(values.avatar);
     }
   };
+
+  // The demo starts on the Nearby board. Asking anyone matches you straight away.
+  if (stage !== "today" && sample.partner) {
+    const board = { ...today, status: "waiting", partner: null, pair: null, nearby: { requests: [], people: demoPeople(sample.partner) } } as Today;
+    return (
+      <div className="space-y-4">
+        <DemoLabel text="Demo: sample people, nothing is saved" />
+        {stage === "board" ? (
+          <FindingScreen
+            today={board}
+            demo
+            act={async (path) => {
+              if (path === "/api/team-up") setStage("found");
+            }}
+            onCancel={() => setStage("today")}
+          />
+        ) : (
+          <PartnerFoundScreen
+            today={today}
+            line={TALK.found[0]}
+            onContinue={() => {
+              setStage("today");
+              scrollPhoneToTop();
+            }}
+          />
+        )}
+      </div>
+    );
+  }
 
   return (
     <TodayScreen

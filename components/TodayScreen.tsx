@@ -277,20 +277,6 @@ export function TodayScreen({
             </button>
           </Card>
 
-          {pair.meetSpot && (
-            <Card title="Meet up this week?">
-              <p>
-                <strong>{pair.meetSpot.name}</strong> is a public {pair.meetSpot.type.toLowerCase()} about halfway between you and{" "}
-                {partner.nickname}
-                {partner.communityName ? ` in ${partner.communityName}` : ""}.
-              </p>
-              <p className="text-muted">{pair.meetSpot.address}</p>
-              <a href={pair.meetSpot.mapUrl} className={SECONDARY_BUTTON} target="_blank" rel="noreferrer">
-                Open in Maps
-              </a>
-              <p className="text-muted">Optional. Meet in public, and only if you both want to. Place from {pair.meetSpot.source}.</p>
-            </Card>
-          )}
 
         </div>
       )}
