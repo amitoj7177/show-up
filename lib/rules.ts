@@ -60,9 +60,10 @@ export const BADGES = [
 // Points for checking in. Stronger proof earns more, so a Fitbit-proven day is worth the most.
 export const POINTS = { done: 10, rough: 5, confirmed: 5, fitbit: 20 };
 
-export function checkinPoints(checkin: { status: string; confirmed: boolean; fitbitSteps: number | null }): number {
+export function checkinPoints(checkin: { status: string; confirmed: boolean; fitbitSteps: number | null; fitbitWorkout?: string | null }): number {
   if (checkin.status !== "done") return POINTS.rough;
-  return POINTS.done + (checkin.confirmed ? POINTS.confirmed : 0) + ((checkin.fitbitSteps ?? 0) > 0 ? POINTS.fitbit : 0);
+  const fitbitProved = (checkin.fitbitSteps ?? 0) > 0 || Boolean(checkin.fitbitWorkout);
+  return POINTS.done + (checkin.confirmed ? POINTS.confirmed : 0) + (fitbitProved ? POINTS.fitbit : 0);
 }
 
 // Character extras you unlock with points. The number is the "Extras" option in lib/avatar.ts.

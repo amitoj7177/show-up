@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { describeWorkouts } from "./fitbit";
 import {
   canOfferNewMatch,
   checkinPoints,
@@ -208,5 +209,20 @@ describe("points", () => {
     expect(extraLocked(5, 99)).toBe(true);
     expect(extraLocked(5, 100)).toBe(false);
     expect(extraLocked(1, 0)).toBe(false);
+  });
+});
+
+describe("Fitbit workouts", () => {
+  it("counts a workout as Fitbit proof, even with no steps", () => {
+    expect(checkinPoints({ status: "done", confirmed: false, fitbitSteps: 0, fitbitWorkout: "Strength training 13 min" })).toBe(30);
+  });
+  it("describes workouts in plain words, adding up repeats", () => {
+    const points = [
+      { exercise: { displayName: "Walk", activeDuration: "925s" } },
+      { exercise: { displayName: "Strength training", activeDuration: "763s" } },
+      { exercise: { displayName: "Walk", activeDuration: "1021s" } },
+    ];
+    expect(describeWorkouts(points)).toBe("Walk 32 min, Strength training 13 min");
+    expect(describeWorkouts([])).toBeNull();
   });
 });

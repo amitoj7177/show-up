@@ -111,9 +111,10 @@ function MyProof({ today, partnerName }: { today: Today; partnerName: string }) 
       {typeof proof?.fitbitSteps === "number" && (
         <p className="font-semibold">
           Fitbit: {proof.fitbitSteps.toLocaleString("en-CA")} steps today
-          {proof.fitbitSteps > 0 && ` \u00b7 verified, +${POINTS.fitbit} bonus points`}
         </p>
       )}
+      {proof?.fitbitWorkout && <p className="font-semibold">Fitbit workout: {proof.fitbitWorkout}</p>}
+      {((proof?.fitbitSteps ?? 0) > 0 || proof?.fitbitWorkout) && <p className="text-muted">Verified by Fitbit: +{POINTS.fitbit} bonus points</p>}
       <p className="font-semibold">
         {proof?.confirmedAt
           ? `\u2705 ${partnerName} confirmed it at ${clockTime(proof.confirmedAt)}`
@@ -140,6 +141,7 @@ function PartnerProof({ partner, act }: { partner: NonNullable<Today["partner"]>
       {typeof proof.fitbitSteps === "number" && (
         <p className="font-semibold">Fitbit: {proof.fitbitSteps.toLocaleString("en-CA")} steps today</p>
       )}
+      {proof.fitbitWorkout && <p className="font-semibold">Fitbit workout: {proof.fitbitWorkout}</p>}
       {proof.confirmedAt ? (
         <p className="font-semibold">{"\u2705"} You confirmed it at {clockTime(proof.confirmedAt)}.</p>
       ) : !proof.photoId ? null : (

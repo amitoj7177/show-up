@@ -96,37 +96,66 @@ function totalCount(value: unknown): number {
   return 0;
 }
 
-// Today's steps from the person's Fitbit, or null if they haven't connected one (or Google didn't answer).
-export async function stepsToday(accountId: string, now = new Date()): Promise<number | null> {
-  if (!fitbitAvailable()) return null;
-  const [link] = await query<{ refresh_token: string }>("SELECT refresh_token FROM health_links WHERE account_id = $1", [accountId]);
-  if (!link) return null;
-  const token = await accessToken(link.refresh_token);
-  if (!token) return null;
-
-  // Calgary's midnight, in UTC, until now.
-  const today = todayIn(now);
+// Calgary's midnight today, as a time in UTC.
+function calgaryMidnight(now: Date): Date {
   const offsetHours = Number(
     new Intl.DateTimeFormat("en-US", { timeZone: "America/Edmonton", timeZoneName: "shortOffset" }).formatToParts(now).find((part) => part.type === "timeZoneName")?.value.replace("GMT", "") || -7,
   );
-  const start = new Date(`${today}T00:00:00Z`);
+  const start = new Date(`${todayIn(now)}T00:00:00Z`);
   start.setUTCHours(start.getUTCHours() - offsetHours);
-  const filter = `steps.interval.start_time >= "${start.toISOString()}" AND steps.interval.start_time < "${now.toISOString()}"`;
+  return start;
+}
 
+// Asks Google for one type of data. Returns the data points, or null if Google didn't answer.
+async function readData(token: string, dataType: string, filter: string): Promise<unknown[] | null> {
   try {
-    const response = await fetch(`${API}/users/me/dataTypes/steps/dataPoints?${new URLSearchParams({ filter, pageSize: "1440" })}`, {
+    const response = await fetch(`${API}/users/me/dataTypes/${dataType}/dataPoints?${new URLSearchParams({ filter, pageSize: "1440" })}`, {
       headers: { Authorization: `Bearer ${token}` },
       signal: AbortSignal.timeout(8000),
     });
     if (!response.ok) {
-      console.error("Google Health steps request failed", response.status, (await response.text()).slice(0, 200));
+      console.error(`Google Health ${dataType} request failed`, response.status, (await response.text()).slice(0, 200));
       return null;
     }
-    return totalCount((await response.json()).dataPoints ?? []);
+    return (await response.json()).dataPoints ?? [];
   } catch (error) {
-    console.error("Google Health steps request failed", error);
+    console.error(`Google Health ${dataType} request failed`, error);
     return null;
   }
+}
+
+type Workout = { exercise?: { displayName?: string; activeDuration?: string } };
+
+// Today's workouts in plain words, like "Strength training 13 min, Walk 15 min".
+// Fitbit spots most workouts by itself, so a "bench press every day" goal gets proof too.
+export function describeWorkouts(points: unknown[]): string | null {
+  const minutes = new Map<string, number>();
+  for (const point of points as Workout[]) {
+    const name = point.exercise?.displayName;
+    const seconds = Number.parseFloat(point.exercise?.activeDuration ?? "0");
+    if (name && seconds > 0) minutes.set(name, (minutes.get(name) ?? 0) + seconds / 60);
+  }
+  const parts = [...minutes].map(([name, total]) => `${name} ${Math.max(1, Math.round(total))} min`);
+  return parts.length ? parts.join(", ") : null;
+}
+
+export type FitbitDay = { steps: number | null; workout: string | null };
+
+// Today's steps and workouts from the person's Fitbit, or null if they haven't connected one.
+export async function fitbitToday(accountId: string, now = new Date()): Promise<FitbitDay | null> {
+  if (!fitbitAvailable()) return null;
+  const [link] = await query<{ refresh_token: string }>("SELECT refresh_token FROM health_links WHERE account_id = $1", [accountId]);
+  if (!link) return null;
+  const token = await accessToken(link.refresh_token);
+  if (!token) return { steps: null, workout: null };
+
+  const start = calgaryMidnight(now).toISOString();
+  const [steps, workouts] = await Promise.all([
+    readData(token, "steps", `steps.interval.start_time >= "${start}" AND steps.interval.start_time < "${now.toISOString()}"`),
+    // Workouts can only be filtered by the date on the person's own clock.
+    readData(token, "exercise", `exercise.interval.civil_start_time >= "${todayIn(now)}"`),
+  ]);
+  return { steps: steps ? totalCount(steps) : null, workout: workouts ? describeWorkouts(workouts) : null };
 }
 
 export async function isConnected(accountId: string): Promise<boolean> {

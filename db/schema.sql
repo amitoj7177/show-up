@@ -117,6 +117,7 @@ CREATE TABLE IF NOT EXISTS health_states (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 ALTER TABLE checkins ADD COLUMN IF NOT EXISTS fitbit_steps int;
+ALTER TABLE checkins ADD COLUMN IF NOT EXISTS fitbit_workout text;
 
 -- People asking to be added as Fitbit testers. Deleted once they connect.
 CREATE TABLE IF NOT EXISTS fitbit_requests (
