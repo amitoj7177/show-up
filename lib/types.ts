@@ -116,7 +116,7 @@ export type History = {
   finished: boolean;
 };
 
-export type Proof = { photoId: string | null; note: string | null; confirmedAt: string | null; fitbitSteps?: number | null; fitbitWorkout?: string | null; phoneSteps?: number | null; fitbitActiveMinutes?: number | null };
+export type Proof = { photoId: string | null; note: string | null; confirmedAt: string | null; fitbitSteps?: number | null; fitbitWorkout?: string | null; fitbitActiveMinutes?: number | null };
 
 export type Profile = {
   avatar: string;

@@ -119,13 +119,6 @@ CREATE TABLE IF NOT EXISTS health_states (
 ALTER TABLE checkins ADD COLUMN IF NOT EXISTS fitbit_steps int;
 ALTER TABLE checkins ADD COLUMN IF NOT EXISTS fitbit_workout text;
 
--- iPhone steps, sent by an Apple Shortcut to a private link. Only today's number is kept.
-ALTER TABLE accounts ADD COLUMN IF NOT EXISTS phone_key_hash text;
-ALTER TABLE accounts ADD COLUMN IF NOT EXISTS phone_steps int;
-ALTER TABLE accounts ADD COLUMN IF NOT EXISTS phone_steps_day date;
-ALTER TABLE accounts ADD COLUMN IF NOT EXISTS phone_steps_at timestamptz;
-ALTER TABLE checkins ADD COLUMN IF NOT EXISTS phone_steps int;
-
 -- How someone moves (walking, wheelchair, aid, energy), only if they choose to say.
 ALTER TABLE accounts ADD COLUMN IF NOT EXISTS moves text;
 -- Fitbit Active Zone Minutes (from heart rate), so proof doesn't depend on steps.

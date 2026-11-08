@@ -27,7 +27,7 @@ const FINDINGS = [
 const STEPS: { mood: MascotMood; avatar: string; title: string; text: string }[] = [
   { mood: "waiting", avatar: "h0-c1-s2-e1-o1-k3-a0", title: "Make a promise", text: "Any health goal. Physio, a walk, sleep." },
   { mood: "caring", avatar: "h3-c3-s1-e2-o0-k9-a0", title: "Team up nearby", text: "Pick a real person near you who's looking too." },
-  { mood: "proud", avatar: "h2-c5-s3-e1-o1-k7-a1", title: "Prove it daily", text: "A photo, your Fitbit or your iPhone steps." },
+  { mood: "proud", avatar: "h2-c5-s3-e1-o1-k7-a1", title: "Prove it daily", text: "A photo or your Fitbit." },
 ];
 
 const MOODS: { mood: MascotMood; label: string; line: string }[] = [

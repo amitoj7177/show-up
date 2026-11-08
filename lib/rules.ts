@@ -88,25 +88,18 @@ export const BADGES = [
 ];
 
 // Points for checking in. Stronger proof earns more, so a Fitbit-proven day is worth the most.
-// The ready-made iPhone shortcut. `url` is its iCloud share link (made once by the team, see docs/HANDOFF.md).
-// While it's empty, people get the build-it-yourself steps instead.
-export const IPHONE_SHORTCUT = { name: "Promise Pals steps", url: "" };
-
-// iPhone steps earn less than Fitbit, because the phone sends the number itself and Google can't vouch for it.
-export const POINTS = { done: 10, rough: 5, confirmed: 5, fitbit: 20, phone: 10 };
+export const POINTS = { done: 10, rough: 5, confirmed: 5, fitbit: 20 };
 
 export function checkinPoints(checkin: {
   status: string;
   confirmed: boolean;
   fitbitSteps: number | null;
   fitbitWorkout?: string | null;
-  phoneSteps?: number | null;
   fitbitActiveMinutes?: number | null;
 }): number {
   if (checkin.status !== "done") return POINTS.rough;
   const fitbitProved = (checkin.fitbitSteps ?? 0) > 0 || Boolean(checkin.fitbitWorkout) || (checkin.fitbitActiveMinutes ?? 0) > 0;
-  const deviceBonus = fitbitProved ? POINTS.fitbit : (checkin.phoneSteps ?? 0) > 0 ? POINTS.phone : 0;
-  return POINTS.done + (checkin.confirmed ? POINTS.confirmed : 0) + deviceBonus;
+  return POINTS.done + (checkin.confirmed ? POINTS.confirmed : 0) + (fitbitProved ? POINTS.fitbit : 0);
 }
 
 // Character extras you unlock with points. The number is the "Extras" option in lib/avatar.ts.

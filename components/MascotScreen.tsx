@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import type { Act, Today } from "@/lib/types";
 import { Customizer } from "./Customizer";
 import { FitbitCard } from "./FitbitCard";
-import { PhoneStepsCard } from "./PhoneStepsCard";
 import { ReadingSettings } from "./ReadingSettings";
 import { ProfileForm } from "./ProfileForm";
 import { api, ApiError, getToken } from "@/lib/api";
@@ -32,7 +31,6 @@ export function MascotScreen({ today, act, onLogOut }: { today: Today; act: Act;
         <ReadingSettings />
       </Card>
       {!today.isDemo && <FitbitCard />}
-      {!today.isDemo && <PhoneStepsCard />}
       {!today.isDemo && (
         <Card title="Your profile">
           <ProfileForm submitLabel="Save profile" onSaved={() => undefined} />

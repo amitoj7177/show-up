@@ -1,6 +1,5 @@
 import { findAccount, requireUser } from "@/lib/auth";
 import { fitbitToday } from "@/lib/fitbit";
-import { phoneStatus } from "@/lib/phone";
 import { query } from "@/lib/db";
 import { HttpError, ok, readBody, route } from "@/lib/http";
 import { checkProofPhoto, photoData } from "@/lib/moderation";
@@ -24,7 +23,7 @@ export const POST = route(async (request) => {
 
   // If they've connected a Fitbit, today's steps and workouts are saved as automatic proof.
   const account = status === "done" ? await findAccount(request) : undefined;
-  const [fitbit, phone] = account ? await Promise.all([fitbitToday(account.id), phoneStatus(account.id)]) : [null, null];
+  const fitbit = account ? await fitbitToday(account.id) : null;
   // Checking in "with Fitbit" only counts if Fitbit really shows some activity today.
   if (via === "fitbit" && !((fitbit?.steps ?? 0) > 0 || fitbit?.workout || (fitbit?.activeMinutes ?? 0) > 0)) {
     throw new HttpError(409, "no_fitbit_activity", "Your Fitbit doesn't show any activity today yet. Open the Fitbit app to sync, then try again, or use a photo.");
@@ -32,8 +31,8 @@ export const POST = route(async (request) => {
 
   const pair = await requirePair(user);
   await query(
-    `INSERT INTO checkins (pair_id, user_id, day, status, photo, photo_note, fitbit_steps, fitbit_workout, phone_steps, fitbit_active_minutes)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+    `INSERT INTO checkins (pair_id, user_id, day, status, photo, photo_note, fitbit_steps, fitbit_workout, fitbit_active_minutes)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
      ON CONFLICT (pair_id, user_id, day) DO UPDATE SET
        status = EXCLUDED.status,
        photo = COALESCE(EXCLUDED.photo, CASE WHEN EXCLUDED.status = 'done' THEN checkins.photo END),
@@ -41,9 +40,8 @@ export const POST = route(async (request) => {
        confirmed_at = CASE WHEN EXCLUDED.status = 'done' THEN checkins.confirmed_at END,
        fitbit_steps = CASE WHEN EXCLUDED.status = 'done' THEN COALESCE(EXCLUDED.fitbit_steps, checkins.fitbit_steps) END,
        fitbit_workout = CASE WHEN EXCLUDED.status = 'done' THEN COALESCE(EXCLUDED.fitbit_workout, checkins.fitbit_workout) END,
-       phone_steps = CASE WHEN EXCLUDED.status = 'done' THEN COALESCE(EXCLUDED.phone_steps, checkins.phone_steps) END,
        fitbit_active_minutes = CASE WHEN EXCLUDED.status = 'done' THEN COALESCE(EXCLUDED.fitbit_active_minutes, checkins.fitbit_active_minutes) END`,
-    [pair.id, user.id, pairToday(pair), status, proof?.data ?? null, proof?.note ?? null, fitbit?.steps ?? null, fitbit?.workout ?? null, phone?.stepsToday ?? null, fitbit?.activeMinutes ?? null],
+    [pair.id, user.id, pairToday(pair), status, proof?.data ?? null, proof?.note ?? null, fitbit?.steps ?? null, fitbit?.workout ?? null, fitbit?.activeMinutes ?? null],
   );
   return ok(await buildToday(user));
 });

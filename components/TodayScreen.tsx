@@ -66,12 +66,9 @@ function MyProof({ today, partnerName }: { today: Today; partnerName: string }) 
       )}
       {proof?.fitbitWorkout && <p className="font-semibold">Fitbit workout: {proof.fitbitWorkout}</p>}
       {(proof?.fitbitActiveMinutes ?? 0) > 0 && <p className="font-semibold">Fitbit: {proof?.fitbitActiveMinutes} active minutes (heart rate)</p>}
-      {(proof?.phoneSteps ?? 0) > 0 && <p className="font-semibold">iPhone: {proof?.phoneSteps?.toLocaleString("en-CA")} steps today</p>}
-      {(proof?.fitbitSteps ?? 0) > 0 || proof?.fitbitWorkout || (proof?.fitbitActiveMinutes ?? 0) > 0 ? (
+      {((proof?.fitbitSteps ?? 0) > 0 || proof?.fitbitWorkout || (proof?.fitbitActiveMinutes ?? 0) > 0) && (
         <p className="text-muted">Verified by Fitbit: +{POINTS.fitbit} bonus points</p>
-      ) : (proof?.phoneSteps ?? 0) > 0 ? (
-        <p className="text-muted">Sent from Apple Health: +{POINTS.phone} bonus points</p>
-      ) : null}
+      )}
       <p className="font-semibold">
         {proof?.confirmedAt
           ? `\u2705 ${partnerName} confirmed it at ${clockTime(proof.confirmedAt)}`
@@ -100,7 +97,6 @@ function PartnerProof({ partner, act }: { partner: NonNullable<Today["partner"]>
       )}
       {proof.fitbitWorkout && <p className="font-semibold">Fitbit workout: {proof.fitbitWorkout}</p>}
       {(proof.fitbitActiveMinutes ?? 0) > 0 && <p className="font-semibold">Fitbit: {proof.fitbitActiveMinutes} active minutes (heart rate)</p>}
-      {(proof.phoneSteps ?? 0) > 0 && <p className="font-semibold">iPhone: {proof.phoneSteps?.toLocaleString("en-CA")} steps today (sent from Apple Health)</p>}
       {proof.confirmedAt ? (
         <p className="font-semibold">{"\u2705"} You confirmed it at {clockTime(proof.confirmedAt)}.</p>
       ) : !proof.photoId ? null : (
